@@ -1,0 +1,168 @@
+# ---------------------------------------------------------------------------
+# AI Recruitment System — orchestration de l'environnement de développement
+#
+# La clé "version" est volontairement omise : elle est obsolète depuis
+# Docker Compose V2 et génère un avertissement.
+# ---------------------------------------------------------------------------
+
+services:
+
+  # -------------------------------------------------------------------------
+  # app — Application Laravel (PHP-FPM). Ne publie aucun port : elle n'est
+  # jamais contactée directement, uniquement via Nginx.
+  # -------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: airs_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      # Bind mount : le code reste sur l'hôte, modifiable depuis l'éditeur.
+      # Les dépendances (vendor/) sont installées via "composer install"
+      # exécuté dans le conteneur, et persistent donc sur l'hôte.
+      - ./backend:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # nginx — Serveur web / reverse proxy vers php-fpm
+  # -------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: airs_nginx
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:80"
+    volumes:
+      - ./backend:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # mysql — Base de données (implémentation du MLD)
+  # Le healthcheck garantit que Laravel ne démarre pas avant que MySQL
+  # n'accepte réellement les connexions (sinon : erreur de migration).
+  # -------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: airs_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-ai_recruitment}
+      MYSQL_USER: ${DB_USERNAME:-airs_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${DB_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # redis — File d'attente des jobs d'analyse IA + cache applicatif
+  # -------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: airs_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # queue — Worker Laravel dédié aux traitements asynchrones.
+  # Réutilise l'image "app" mais avec une commande différente : l'analyse IA
+  # d'une candidature (appel LLM) dure plusieurs secondes et ne doit pas
+  # bloquer la réponse HTTP.
+  # -------------------------------------------------------------------------
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: airs_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan queue:work redis --tries=3 --timeout=180 --sleep=3
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - app
+      - redis
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # phpmyadmin — Interface d'administration de la base (vérification visuelle
+  # du schéma issu du MLD, captures d'écran pour le rapport)
+  # -------------------------------------------------------------------------
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: airs_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "${PMA_PORT:-8081}:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # mailpit — Serveur SMTP de test. Intercepte les e-mails de notification
+  # (RG44) sans les envoyer réellement. Interface web sur le port 8025.
+  # -------------------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: airs_mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAIL_UI_PORT:-8025}:8025"
+    networks:
+      - airs_network
+
+# ---------------------------------------------------------------------------
+# Volumes nommés : les données de la base survivent à un "docker compose down"
+# ---------------------------------------------------------------------------
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ---------------------------------------------------------------------------
+# Réseau bridge dédié : les services se joignent par leur nom de service
+# (ex. DB_HOST=mysql) grâce au DNS interne de Docker.
+# ---------------------------------------------------------------------------
+networks:
+  airs_network:
+    driver: bridge
