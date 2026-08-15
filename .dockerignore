@@ -1,0 +1,11 @@
+# Réduit la taille du contexte de build envoyé au démon Docker
+.git
+.github
+frontend/node_modules
+backend/vendor
+backend/node_modules
+backend/storage/logs/*
+backend/.env
+docs
+*.md
+!README.md
