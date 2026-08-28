@@ -2,44 +2,38 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Enums\EtatCompte;
+use App\Enums\RoleUtilisateur;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * @extends Factory<User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
-
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'name'           => fake()->lastName(),
+            'prenom'         => fake()->firstName(),
+            'email'          => fake()->unique()->safeEmail(),
+            'password'       => 'Password123',
+            'role'           => RoleUtilisateur::Candidat,
+            'etat_compte'    => EtatCompte::Actif,
             'remember_token' => Str::random(10),
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
+    public function recruteur(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this->state(fn() => ['role' => RoleUtilisateur::Recruteur]);
+    }
+
+    public function administrateur(): static
+    {
+        return $this->state(fn() => ['role' => RoleUtilisateur::Administrateur]);
+    }
+
+    public function suspendu(): static
+    {
+        return $this->state(fn() => ['etat_compte' => EtatCompte::Suspendu]);
     }
 }
