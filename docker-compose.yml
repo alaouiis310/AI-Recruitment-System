@@ -1,15 +1,8 @@
-# ---------------------------------------------------------------------------
-# AI Recruitment System — orchestration de l'environnement de développement
-#
-# La clé "version" est volontairement omise : elle est obsolète depuis
-# Docker Compose V2 et génère un avertissement.
-# ---------------------------------------------------------------------------
-
+# docker-compose.yml
 services:
 
   # -------------------------------------------------------------------------
-  # app — Application Laravel (PHP-FPM). Ne publie aucun port : elle n'est
-  # jamais contactée directement, uniquement via Nginx.
+  # app — Laravel PHP-FPM
   # -------------------------------------------------------------------------
   app:
     build:
@@ -22,9 +15,6 @@ services:
     restart: unless-stopped
     working_dir: /var/www/html
     volumes:
-      # Bind mount : le code reste sur l'hôte, modifiable depuis l'éditeur.
-      # Les dépendances (vendor/) sont installées via "composer install"
-      # exécuté dans le conteneur, et persistent donc sur l'hôte.
       - ./backend:/var/www/html
     depends_on:
       mysql:
@@ -35,7 +25,7 @@ services:
       - airs_network
 
   # -------------------------------------------------------------------------
-  # nginx — Serveur web / reverse proxy vers php-fpm
+  # nginx — Serveur web
   # -------------------------------------------------------------------------
   nginx:
     image: nginx:1.27-alpine
@@ -52,9 +42,7 @@ services:
       - airs_network
 
   # -------------------------------------------------------------------------
-  # mysql — Base de données (implémentation du MLD)
-  # Le healthcheck garantit que Laravel ne démarre pas avant que MySQL
-  # n'accepte réellement les connexions (sinon : erreur de migration).
+  # mysql — Base de données
   # -------------------------------------------------------------------------
   mysql:
     image: mysql:8.0
@@ -80,7 +68,7 @@ services:
       - airs_network
 
   # -------------------------------------------------------------------------
-  # redis — File d'attente des jobs d'analyse IA + cache applicatif
+  # redis — Cache et queue
   # -------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
@@ -93,10 +81,7 @@ services:
       - airs_network
 
   # -------------------------------------------------------------------------
-  # queue — Worker Laravel dédié aux traitements asynchrones.
-  # Réutilise l'image "app" mais avec une commande différente : l'analyse IA
-  # d'une candidature (appel LLM) dure plusieurs secondes et ne doit pas
-  # bloquer la réponse HTTP.
+  # queue — Worker Laravel
   # -------------------------------------------------------------------------
   queue:
     build:
@@ -118,8 +103,7 @@ services:
       - airs_network
 
   # -------------------------------------------------------------------------
-  # phpmyadmin — Interface d'administration de la base (vérification visuelle
-  # du schéma issu du MLD, captures d'écran pour le rapport)
+  # phpmyadmin — Interface MySQL
   # -------------------------------------------------------------------------
   phpmyadmin:
     image: phpmyadmin:5
@@ -138,8 +122,7 @@ services:
       - airs_network
 
   # -------------------------------------------------------------------------
-  # mailpit — Serveur SMTP de test. Intercepte les e-mails de notification
-  # (RG44) sans les envoyer réellement. Interface web sur le port 8025.
+  # mailpit — Email de test
   # -------------------------------------------------------------------------
   mailpit:
     image: axllent/mailpit:latest
@@ -150,19 +133,40 @@ services:
     networks:
       - airs_network
 
-# ---------------------------------------------------------------------------
-# Volumes nommés : les données de la base survivent à un "docker compose down"
-# ---------------------------------------------------------------------------
+  # -------------------------------------------------------------------------
+  # frontend — Vue.js
+  # -------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: airs_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    depends_on:
+      - nginx
+    networks:
+      - airs_network
+
+# -------------------------------------------------------------------------
+# Volumes
+# -------------------------------------------------------------------------
 volumes:
   mysql_data:
     driver: local
   redis_data:
     driver: local
 
-# ---------------------------------------------------------------------------
-# Réseau bridge dédié : les services se joignent par leur nom de service
-# (ex. DB_HOST=mysql) grâce au DNS interne de Docker.
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# Réseau
+# -------------------------------------------------------------------------
 networks:
   airs_network:
     driver: bridge
