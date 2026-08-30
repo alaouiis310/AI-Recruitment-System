@@ -1,8 +1,3 @@
-# ✅ Ajout du Frontend au README
-
-Voici une version mise à jour de votre README avec l'ajout de la section **Frontend Vue.js**. Vous pouvez copier-coller ce contenu dans votre fichier `README.md`.
-
----
 
 # AI Recruitment System — Système de Recrutement Intelligent
 
