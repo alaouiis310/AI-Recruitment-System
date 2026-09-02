@@ -1,4 +1,3 @@
-
 # AI Recruitment System — Système de Recrutement Intelligent
 
 Plateforme de recrutement assistée par intelligence artificielle : publication d'offres d'emploi, dépôt de candidatures, analyse automatique des CV et classement des candidats par score de compatibilité.
@@ -245,11 +244,52 @@ ai-recruitment-system/
 │
 ├── frontend/                   # Application Vue 3
 │   ├── src/
+│   │   ├── assets/             # Images, fonts
 │   │   ├── components/
-│   │   ├── views/
+│   │   │   ├── auth/
+│   │   │   │   └── LoginPage.vue      # Page de connexion/inscription
+│   │   │   ├── common/
+│   │   │   │   ├── StatCard.vue        # Carte de statistiques
+│   │   │   │   └── SidebarItem.vue     # Élément de menu
+│   │   │   └── layout/
+│   │   │       └── DashboardLayout.vue # Layout principal avec sidebar
+│   │   ├── composables/        # Composables Vue (useAuth, etc.)
+│   │   ├── layouts/            # Layouts supplémentaires
 │   │   ├── router/
-│   │   └── stores/
+│   │   │   └── index.js        # Configuration des routes
+│   │   ├── stores/
+│   │   │   └── auth.js         # Gestion de l'authentification (Pinia)
+│   │   ├── views/
+│   │   │   ├── AdminAnalytics.vue
+│   │   │   ├── AdminApplications.vue
+│   │   │   ├── AdminCandidates.vue
+│   │   │   ├── AdminDashboard.vue
+│   │   │   ├── AdminJobs.vue
+│   │   │   ├── AdminProfile.vue
+│   │   │   ├── AdminRecruiters.vue
+│   │   │   ├── AdminSettings.vue
+│   │   │   ├── CandidateAIHelper.vue
+│   │   │   ├── CandidateApplications.vue
+│   │   │   ├── CandidateCV.vue
+│   │   │   ├── CandidateDashboard.vue
+│   │   │   ├── CandidateInterviews.vue
+│   │   │   ├── CandidateJobs.vue
+│   │   │   ├── CandidateProfile.vue
+│   │   │   ├── CandidateSavedJobs.vue
+│   │   │   ├── DashboardView.vue
+│   │   │   ├── HomeView.vue
+│   │   │   ├── RecruiterAIHelper.vue
+│   │   │   ├── RecruiterCandidates.vue
+│   │   │   ├── RecruiterDashboard.vue
+│   │   │   ├── RecruiterJobs.vue
+│   │   │   ├── RecruiterMessages.vue
+│   │   │   ├── RecruiterProfile.vue
+│   │   │   └── RecruiterSearch.vue
+│   │   ├── App.vue
+│   │   ├── main.js
+│   │   └── style.css
 │   ├── Dockerfile              # Image Node.js pour le frontend
+│   ├── .dockerignore
 │   ├── package.json
 │   ├── vite.config.js
 │   ├── .env                    # Variables d'environnement (non versionné)
@@ -272,7 +312,79 @@ ai-recruitment-system/
 
 ---
 
-## 7. Résolution des problèmes courants
+## 7. Frontend — Pages et fonctionnalités
+
+### 🔐 Authentification
+
+| Page | Route | Description |
+|:---|:---|:---|
+| Connexion / Inscription | `/` | Page unique avec onglets Connexion / Inscription |
+
+**Comptes de démonstration :**
+
+| Rôle | Email | Mot de passe | Redirection |
+|:---|:---|:---|:---|
+| Administrateur | `admin@demo.com` | `admin123` | `/admin` |
+| Recruteur | `recrut@demo.com` | `recrut123` | `/recruiter` |
+| Candidat | `candidat@demo.com` | `candidat123` | `/candidate` |
+
+---
+
+### 👤 Candidat
+
+| Page | Route | Description |
+|:---|:---|:---|
+| **Accueil** | `/candidate` | Dashboard avec statistiques et offres recommandées |
+| **Mes candidatures** | `/candidate/applications` | Liste des candidatures avec filtres et scores IA |
+| **Offres d'emploi** | `/candidate/jobs` | Recherche et filtrage des offres |
+| **Mes entretiens** | `/candidate/interviews` | Calendrier des entretiens |
+| **Offres sauvegardées** | `/candidate/saved` | Offres mises de côté |
+| **Mon profil** | `/candidate/profile` | Édition des informations personnelles |
+| **Mon CV** | `/candidate/cv` | Upload CV et gestion des compétences |
+| **AI Helper** | `/candidate/ai-helper` | Assistant IA pour optimiser les candidatures |
+
+---
+
+### 👔 Recruteur
+
+| Page | Route | Description |
+|:---|:---|:---|
+| **Accueil** | `/recruiter` | Dashboard avec pipeline et statistiques |
+| **Mes offres** | `/recruiter/jobs` | Gestion des offres d'emploi |
+| **Candidats** | `/recruiter/candidates` | Liste des candidats avec scores IA |
+| **Rechercher** | `/recruiter/search` | Recherche de talents |
+| **AI Helper** | `/recruiter/ai-helper` | Assistant IA pour le recrutement |
+| **Messages** | `/recruiter/messages` | Messagerie avec les candidats |
+| **Mon profil** | `/recruiter/profile` | Édition des informations professionnelles |
+
+---
+
+### 🛡️ Administrateur
+
+| Page | Route | Description |
+|:---|:---|:---|
+| **Accueil** | `/admin` | Dashboard avec statistiques globales |
+| **Recruteurs** | `/admin/recruiters` | Gestion des recruteurs |
+| **Candidats** | `/admin/candidates` | Gestion des candidats |
+| **Offres d'emploi** | `/admin/jobs` | Gestion des offres |
+| **Candidatures** | `/admin/applications` | Gestion des candidatures |
+| **Analytiques** | `/admin/analytics` | Visualisation des performances |
+| **Paramètres** | `/admin/settings` | Configuration de la plateforme |
+| **Mon profil** | `/admin/profile` | Profil administrateur |
+
+---
+
+### 📦 Composants réutilisables
+
+| Composant | Description |
+|:---|:---|
+| `StatCard.vue` | Carte de statistiques avec icône et tendance |
+| `SidebarItem.vue` | Élément de menu avec badge et état actif |
+| `DashboardLayout.vue` | Layout principal avec sidebar responsive |
+
+---
+
+## 8. Résolution des problèmes courants
 
 ### `Bind for 0.0.0.0:8000 failed: port is already allocated`
 
@@ -341,7 +453,7 @@ docker compose up -d
 
 ---
 
-## 8. Documentation liée
+## 9. Documentation liée
 
 | Document | Emplacement |
 |:---|:---|
@@ -349,11 +461,10 @@ docker compose up -d
 | Modèle Logique de Données (MLD) | `docs/mld.png` |
 | Règles de gestion et dictionnaires | `docs/regles_de_gestion.docx` |
 | Rôle des fichiers de configuration | `docs/configuration.md` |
-| Documentation du frontend | `frontend/README.md` |
 
 ---
 
-## 9. Accès rapide
+## 10. Accès rapide
 
 | Service | URL |
 |:---|:---|
@@ -364,3 +475,31 @@ docker compose up -d
 
 ---
 
+## 11. Développement Frontend (hors Docker)
+
+```bash
+# Se placer dans le dossier frontend
+cd frontend
+
+# Installer les dépendances
+npm install
+
+# Démarrer le serveur de développement
+npm run dev
+
+# Build pour la production
+npm run build
+
+# Prévisualiser le build
+npm run preview
+```
+
+### Variables d'environnement Frontend
+
+| Variable | Description | Exemple |
+|:---|:---|:---|
+| `VITE_API_URL` | URL de l'API Laravel | `http://localhost:8000` |
+
+---
+
+**© 2026 AI Recruitment System — Tous droits réservés.**
