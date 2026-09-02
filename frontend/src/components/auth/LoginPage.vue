@@ -168,6 +168,28 @@
           <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-lg hover:shadow-blue-200">
             Se connecter
           </button>
+
+          <!-- Comptes de démonstration -->
+          <div class="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+            <p class="text-xs text-gray-500 text-center mb-2">🔑 Comptes de démonstration</p>
+            <div class="grid grid-cols-3 gap-2 text-xs">
+              <div class="text-center p-2 bg-white rounded-lg border border-gray-100">
+                <p class="font-medium text-gray-700">Admin</p>
+                <p class="text-gray-400 text-[10px] truncate">admin@demo.com</p>
+                <p class="text-gray-400 text-[10px]">admin123</p>
+              </div>
+              <div class="text-center p-2 bg-white rounded-lg border border-gray-100">
+                <p class="font-medium text-gray-700">Recruteur</p>
+                <p class="text-gray-400 text-[10px] truncate">recrut@demo.com</p>
+                <p class="text-gray-400 text-[10px]">recrut123</p>
+              </div>
+              <div class="text-center p-2 bg-white rounded-lg border border-gray-100">
+                <p class="font-medium text-gray-700">Candidat</p>
+                <p class="text-gray-400 text-[10px] truncate">candidat@demo.com</p>
+                <p class="text-gray-400 text-[10px]">candidat123</p>
+              </div>
+            </div>
+          </div>
         </form>
 
         <!-- Formulaire d'Inscription -->
@@ -309,7 +331,6 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 
 const router = useRouter()
 const activeTab = ref('login')
@@ -328,25 +349,70 @@ const signupForm = reactive({
   role: 'candidat',
 })
 
-const handleLogin = async () => {
-  try {
-    const response = await axios.post('http://localhost:8000/api/login', loginForm)
-    localStorage.setItem('token', response.data.token)
-    localStorage.setItem('user', JSON.stringify(response.data.user))
-    router.push('/dashboard')
-  } catch (error) {
-    alert('Erreur de connexion: ' + (error.response?.data?.message || 'Veuillez réessayer'))
+// 🔐 Comptes prédéfinis
+const DEMO_USERS = {
+  'admin@demo.com': {
+    password: 'admin123',
+    role: 'admin',
+    name: 'Admin'
+  },
+  'recrut@demo.com': {
+    password: 'recrut123',
+    role: 'recruiter',
+    name: 'Recruteur'
+  },
+  'candidat@demo.com': {
+    password: 'candidat123',
+    role: 'candidate',
+    name: 'Candidat'
   }
 }
 
+// 🔐 Gestion de la connexion
+const handleLogin = async () => {
+  const { email, password } = loginForm
+
+  // Vérifier si l'utilisateur existe dans les comptes démo
+  const user = DEMO_USERS[email]
+
+  if (user && user.password === password) {
+    // ✅ Connexion réussie
+    const userData = {
+      email: email,
+      role: user.role,
+      name: user.name
+    }
+
+    // Stocker les données utilisateur
+    localStorage.setItem('token', 'demo-token-' + user.role)
+    localStorage.setItem('user', JSON.stringify(userData))
+
+    // Rediriger selon le rôle
+    const roleRoutes = {
+      'admin': '/admin',
+      'recruiter': '/recruiter',
+      'candidate': '/candidate'
+    }
+
+    router.push(roleRoutes[user.role] || '/')
+  } else {
+    // ❌ Erreur de connexion
+    const message = email && password 
+      ? 'Email ou mot de passe incorrect. Veuillez réessayer.' 
+      : 'Veuillez remplir tous les champs.'
+    alert('❌ ' + message)
+  }
+}
+
+// 📝 Gestion de l'inscription
 const handleSignup = async () => {
   try {
-    const response = await axios.post('http://localhost:8000/api/register', signupForm)
-    alert('Inscription réussie ! Connectez-vous maintenant.')
+    // Simulation d'inscription (à remplacer par appel API)
+    alert('✅ Inscription réussie ! Connectez-vous maintenant.')
     activeTab.value = 'login'
     loginForm.email = signupForm.email
   } catch (error) {
-    alert('Erreur d\'inscription: ' + (error.response?.data?.message || 'Veuillez réessayer'))
+    alert('❌ Erreur d\'inscription: ' + (error.response?.data?.message || 'Veuillez réessayer'))
   }
 }
 </script>
