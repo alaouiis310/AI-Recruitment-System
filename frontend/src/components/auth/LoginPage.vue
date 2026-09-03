@@ -120,6 +120,14 @@
           </button>
         </div>
 
+        <div
+          v-if="submissionError"
+          class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          role="alert"
+        >
+          {{ submissionError }}
+        </div>
+
         <!-- Formulaire de Connexion -->
         <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="space-y-4">
           <!-- Email -->
@@ -132,6 +140,9 @@
               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:text-gray-400"
               required
             >
+            <p v-if="fieldError('email')" class="mt-1 text-xs text-red-600">
+              {{ fieldError('email') }}
+            </p>
           </div>
           
           <!-- Mot de passe -->
@@ -153,20 +164,23 @@
                 🔒
               </button>
             </div>
+            <p v-if="fieldError('password')" class="mt-1 text-xs text-red-600">
+              {{ fieldError('password') }}
+            </p>
           </div>
 
           <!-- Options -->
-          <div class="flex items-center justify-between text-sm">
-            <label class="flex items-center gap-2 text-gray-600 cursor-pointer">
-              <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              Se souvenir de moi
-            </label>
-            <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Mot de passe oublié ?</a>
+          <div class="flex justify-end text-sm">
+            <span class="text-gray-400" title="Fonctionnalité bientôt disponible">Mot de passe oublié ?</span>
           </div>
 
           <!-- Bouton Connexion -->
-          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-lg hover:shadow-blue-200">
-            Se connecter
+          <button
+            type="submit"
+            :disabled="isSubmitting"
+            class="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-lg hover:shadow-blue-200"
+          >
+            {{ isSubmitting ? 'Connexion...' : 'Se connecter' }}
           </button>
 
           <!-- Comptes de démonstration -->
@@ -175,18 +189,18 @@
             <div class="grid grid-cols-3 gap-2 text-xs">
               <div class="text-center p-2 bg-white rounded-lg border border-gray-100">
                 <p class="font-medium text-gray-700">Admin</p>
-                <p class="text-gray-400 text-[10px] truncate">admin@demo.com</p>
-                <p class="text-gray-400 text-[10px]">admin123</p>
+                <p class="text-gray-400 text-[10px] truncate">admin@airs.ma</p>
+                <p class="text-gray-400 text-[10px]">Password123</p>
               </div>
               <div class="text-center p-2 bg-white rounded-lg border border-gray-100">
                 <p class="font-medium text-gray-700">Recruteur</p>
-                <p class="text-gray-400 text-[10px] truncate">recrut@demo.com</p>
-                <p class="text-gray-400 text-[10px]">recrut123</p>
+                <p class="text-gray-400 text-[10px] truncate">recruteur@airs.ma</p>
+                <p class="text-gray-400 text-[10px]">Password123</p>
               </div>
               <div class="text-center p-2 bg-white rounded-lg border border-gray-100">
                 <p class="font-medium text-gray-700">Candidat</p>
-                <p class="text-gray-400 text-[10px] truncate">candidat@demo.com</p>
-                <p class="text-gray-400 text-[10px]">candidat123</p>
+                <p class="text-gray-400 text-[10px] truncate">candidat@airs.ma</p>
+                <p class="text-gray-400 text-[10px]">Password123</p>
               </div>
             </div>
           </div>
@@ -205,6 +219,9 @@
                 class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:text-gray-400"
                 required
               >
+              <p v-if="fieldError('prenom')" class="mt-1 text-xs text-red-600">
+                {{ fieldError('prenom') }}
+              </p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
@@ -215,6 +232,9 @@
                 class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:text-gray-400"
                 required
               >
+              <p v-if="fieldError('nom')" class="mt-1 text-xs text-red-600">
+                {{ fieldError('nom') }}
+              </p>
             </div>
           </div>
 
@@ -228,6 +248,9 @@
               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:text-gray-400"
               required
             >
+            <p v-if="fieldError('email')" class="mt-1 text-xs text-red-600">
+              {{ fieldError('email') }}
+            </p>
           </div>
 
           <!-- Mot de passe -->
@@ -240,7 +263,24 @@
               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:text-gray-400"
               required
             >
-            <p class="text-xs text-gray-400 mt-1">Le mot de passe doit contenir au moins 8 caractères, dont une majuscule, une minuscule, un chiffre et un caractère spécial.</p>
+            <p v-if="fieldError('password')" class="mt-1 text-xs text-red-600">
+              {{ fieldError('password') }}
+            </p>
+            <p class="text-xs text-gray-400 mt-1">Le mot de passe doit contenir au moins 8 caractères, avec des lettres et des chiffres.</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le mot de passe</label>
+            <input
+              v-model="signupForm.passwordConfirmation"
+              type="password"
+              placeholder="Confirmez votre mot de passe"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:text-gray-400"
+              required
+            >
+            <p v-if="fieldError('password_confirmation')" class="mt-1 text-xs text-red-600">
+              {{ fieldError('password_confirmation') }}
+            </p>
           </div>
 
           <!-- Rôle -->
@@ -255,11 +295,21 @@
                 <input type="radio" v-model="signupForm.role" value="recruteur" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                 <span class="text-sm text-gray-700">Recruteur</span>
               </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" v-model="signupForm.role" value="admin" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                <span class="text-sm text-gray-700">Administrateur</span>
-              </label>
             </div>
+          </div>
+
+          <div v-if="signupForm.role === 'recruteur'">
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Nom de l'entreprise</label>
+            <input
+              v-model="signupForm.companyName"
+              type="text"
+              placeholder="Entrez le nom de votre entreprise"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:text-gray-400"
+              required
+            >
+            <p v-if="fieldError('entreprise', 'entreprise.nom')" class="mt-1 text-xs text-red-600">
+              {{ fieldError('entreprise', 'entreprise.nom') }}
+            </p>
           </div>
 
           <!-- Conditions -->
@@ -269,8 +319,12 @@
           </label>
 
           <!-- Bouton Inscription -->
-          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-lg hover:shadow-blue-200 mt-2">
-            Créer mon compte
+          <button
+            type="submit"
+            :disabled="isSubmitting"
+            class="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-lg hover:shadow-blue-200 mt-2"
+          >
+            {{ isSubmitting ? 'Inscription...' : 'Créer mon compte' }}
           </button>
         </form>
 
@@ -329,12 +383,17 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { dashboardPathForRole, useAuthStore } from '../../stores/auth'
 
 const router = useRouter()
+const auth = useAuthStore()
 const activeTab = ref('login')
 const showPassword = ref(false)
+const isSubmitting = ref(false)
+const submissionError = ref('')
+const fieldErrors = ref({})
 
 const loginForm = reactive({
   email: '',
@@ -346,73 +405,86 @@ const signupForm = reactive({
   lastName: '',
   email: '',
   password: '',
+  passwordConfirmation: '',
   role: 'candidat',
+  companyName: '',
 })
 
-// 🔐 Comptes prédéfinis
-const DEMO_USERS = {
-  'admin@demo.com': {
-    password: 'admin123',
-    role: 'admin',
-    name: 'Admin'
-  },
-  'recrut@demo.com': {
-    password: 'recrut123',
-    role: 'recruiter',
-    name: 'Recruteur'
-  },
-  'candidat@demo.com': {
-    password: 'candidat123',
-    role: 'candidate',
-    name: 'Candidat'
-  }
+const clearErrors = () => {
+  submissionError.value = ''
+  fieldErrors.value = {}
 }
 
-// 🔐 Gestion de la connexion
+const setApiError = (error, fallbackMessage) => {
+  fieldErrors.value = error.response?.data?.errors || {}
+  submissionError.value = error.response?.data?.message || fallbackMessage
+}
+
+const fieldError = (...fields) => {
+  for (const field of fields) {
+    const message = fieldErrors.value[field]?.[0]
+    if (message) return message
+  }
+
+  return ''
+}
+
+watch(activeTab, clearErrors)
+
 const handleLogin = async () => {
-  const { email, password } = loginForm
+  clearErrors()
+  isSubmitting.value = true
 
-  // Vérifier si l'utilisateur existe dans les comptes démo
-  const user = DEMO_USERS[email]
+  try {
+    const utilisateur = await auth.connexion({
+      email: loginForm.email.trim(),
+      password: loginForm.password,
+      device_name: 'navigateur-web',
+    })
 
-  if (user && user.password === password) {
-    // ✅ Connexion réussie
-    const userData = {
-      email: email,
-      role: user.role,
-      name: user.name
-    }
-
-    // Stocker les données utilisateur
-    localStorage.setItem('token', 'demo-token-' + user.role)
-    localStorage.setItem('user', JSON.stringify(userData))
-
-    // Rediriger selon le rôle
-    const roleRoutes = {
-      'admin': '/admin',
-      'recruiter': '/recruiter',
-      'candidate': '/candidate'
-    }
-
-    router.push(roleRoutes[user.role] || '/')
-  } else {
-    // ❌ Erreur de connexion
-    const message = email && password 
-      ? 'Email ou mot de passe incorrect. Veuillez réessayer.' 
-      : 'Veuillez remplir tous les champs.'
-    alert('❌ ' + message)
+    await router.push(dashboardPathForRole(utilisateur.role))
+  } catch (error) {
+    setApiError(error, 'Connexion impossible. Veuillez réessayer.')
+  } finally {
+    isSubmitting.value = false
   }
 }
 
-// 📝 Gestion de l'inscription
 const handleSignup = async () => {
+  clearErrors()
+
+  if (signupForm.password !== signupForm.passwordConfirmation) {
+    fieldErrors.value = {
+      password_confirmation: ['La confirmation du mot de passe ne correspond pas.'],
+    }
+    submissionError.value = 'Veuillez corriger les champs indiqués.'
+    return
+  }
+
+  isSubmitting.value = true
+
   try {
-    // Simulation d'inscription (à remplacer par appel API)
-    alert('✅ Inscription réussie ! Connectez-vous maintenant.')
-    activeTab.value = 'login'
-    loginForm.email = signupForm.email
+    const payload = {
+      nom: signupForm.lastName.trim(),
+      prenom: signupForm.firstName.trim(),
+      email: signupForm.email.trim(),
+      password: signupForm.password,
+      password_confirmation: signupForm.passwordConfirmation,
+      device_name: 'navigateur-web',
+    }
+
+    const utilisateur = signupForm.role === 'recruteur'
+      ? await auth.inscriptionRecruteur({
+          ...payload,
+          entreprise: { nom: signupForm.companyName.trim() },
+        })
+      : await auth.inscriptionCandidat(payload)
+
+    await router.push(dashboardPathForRole(utilisateur.role))
   } catch (error) {
-    alert('❌ Erreur d\'inscription: ' + (error.response?.data?.message || 'Veuillez réessayer'))
+    setApiError(error, 'Inscription impossible. Veuillez réessayer.')
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>

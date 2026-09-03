@@ -148,6 +148,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import SidebarItem from '../components/SidebarItem.vue'
+import { useAuthStore } from '../stores/auth'
 
 const props = defineProps({
   userName: {
@@ -169,6 +170,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const auth = useAuthStore()
 const isSidebarOpen = ref(false)
 
 const userAvatar = ref('')
@@ -181,9 +183,11 @@ const closeSidebar = () => {
   isSidebarOpen.value = false
 }
 
-const handleLogout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-  router.push('/')
+const handleLogout = async () => {
+  try {
+    await auth.deconnexion()
+  } finally {
+    await router.push('/')
+  }
 }
 </script>

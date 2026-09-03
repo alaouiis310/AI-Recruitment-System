@@ -23,6 +23,7 @@ import AdminApplications from '../views/AdminApplications.vue'
 import AdminAnalytics from '../views/AdminAnalytics.vue'
 import AdminSettings from '../views/AdminSettings.vue'
 import AdminProfile from '../views/AdminProfile.vue'
+import { dashboardPathForRole, useAuthStore } from '../stores/auth'
 
 
 
@@ -33,6 +34,7 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: LoginPage,
+      meta: { public: true },
     },
     {
       path: '/admin',
@@ -177,24 +179,45 @@ const router = createRouter({
   ],
 })
 
-// Navigation Guard
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
+const backendRoleForRouteRole = {
+  admin: 'administrateur',
+  recruiter: 'recruteur',
+  candidate: 'candidat',
+}
 
-  if (to.meta.requiresAuth && !token) {
-    next('/')
-  } else if (to.meta.role && user.role !== to.meta.role) {
-    // Rediriger selon le rôle
-    const roleMap = {
-      'admin': '/admin',
-      'recruiter': '/recruiter',
-      'candidate': '/candidate'
+router.beforeEach(async (to) => {
+  const auth = useAuthStore()
+
+  if (to.meta.public) {
+    if (!auth.estConnecte) return true
+
+    try {
+      const utilisateur = auth.utilisateur || await auth.chargerUtilisateur()
+      return dashboardPathForRole(utilisateur.role)
+    } catch {
+      return true
     }
-    next(roleMap[user.role] || '/')
-  } else {
-    next()
   }
+
+  if (to.meta.requiresAuth && !auth.estConnecte) {
+    return { name: 'home', query: { redirect: to.fullPath } }
+  }
+
+  if (to.meta.requiresAuth && !auth.utilisateur) {
+    try {
+      await auth.chargerUtilisateur()
+    } catch {
+      return { name: 'home' }
+    }
+  }
+
+  const requiredRole = backendRoleForRouteRole[to.meta.role]
+
+  if (requiredRole && auth.utilisateur?.role !== requiredRole) {
+    return dashboardPathForRole(auth.utilisateur?.role)
+  }
+
+  return true
 })
 
 export default router
