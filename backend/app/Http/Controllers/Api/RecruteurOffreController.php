@@ -9,6 +9,7 @@ use App\Http\Requests\Offre\ListerOffresRequest;
 use App\Http\Requests\Offre\ModifierOffreRequest;
 use App\Http\Resources\OffreEmploiResource;
 use App\Models\OffreEmploi;
+use App\Models\Recruteur;
 use App\Services\OffreEmploiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -76,7 +77,7 @@ class RecruteurOffreController extends Controller
      * RG7 — le profil recruteur du compte authentifié. Un administrateur n'en
      * possède pas : ces points d'accès sont ceux de l'espace recruteur.
      */
-    private function recruteur(Request $request): \App\Models\Recruteur
+    private function recruteur(Request $request): Recruteur
     {
         $recruteur = $request->user()->recruteur;
 
