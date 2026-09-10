@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CompetenceController;
 use App\Http\Controllers\Api\DepartementController;
 use App\Http\Controllers\Api\EntrepriseController;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ Route::prefix('auth')->group(function () {
 // interroger la base.
 Route::pattern('entreprise', '[0-9]+');
 Route::pattern('departement', '[0-9]+');
+Route::pattern('competence', '[0-9]+');
 
 Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
 
@@ -58,19 +60,6 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         ]));
     });
 
-    /*
-     |--------------------------------------------------------------------------
-     | Entreprises et départements — RG5, RG6, RG8, RG9
-     |--------------------------------------------------------------------------
-     | Lecture ouverte à tout compte authentifié ; écriture réservée aux
-     | administrateurs et aux recruteurs, la propriété de l'enregistrement
-     | étant tranchée par EntreprisePolicy et DepartementPolicy.
-     |
-     | RG9 — la collection des départements est imbriquée sous son
-     | entreprise : l'appartenance vient de l'URL, jamais du corps de la
-     | requête. Les routes portant sur un département précis restent
-     | à plat, sa clé suffisant à l'identifier.
-     */
     Route::get('/entreprises', [EntrepriseController::class, 'index']);
     Route::get('/entreprises/{entreprise}', [EntrepriseController::class, 'show']);
     Route::get('/entreprises/{entreprise}/departements', [DepartementController::class, 'index']);
@@ -84,5 +73,22 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::post('/entreprises/{entreprise}/departements', [DepartementController::class, 'store']);
         Route::patch('/departements/{departement}', [DepartementController::class, 'update']);
         Route::delete('/departements/{departement}', [DepartementController::class, 'destroy']);
+    });
+
+    /*
+     |--------------------------------------------------------------------------
+     | Compétences — RG20, RG25
+     |--------------------------------------------------------------------------
+     | Référentiel partagé : consultable par tout compte authentifié, maintenu
+     | par l'administrateur seul.
+     */
+    Route::get('/competences', [CompetenceController::class, 'index']);
+    Route::get('/competences/categories', [CompetenceController::class, 'categories']);
+    Route::get('/competences/{competence}', [CompetenceController::class, 'show']);
+
+    Route::middleware('role:administrateur')->group(function () {
+        Route::post('/competences', [CompetenceController::class, 'store']);
+        Route::patch('/competences/{competence}', [CompetenceController::class, 'update']);
+        Route::delete('/competences/{competence}', [CompetenceController::class, 'destroy']);
     });
 });
