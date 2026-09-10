@@ -16,7 +16,7 @@ class VerifierCompteActif
             $user->tokens()->delete();
 
             return response()->json([
-                'message' => 'Ce compte est ' . $user->etat_compte->libelle() . '. Contactez un administrateur.',
+                'message' => 'Ce compte est '.$user->etat_compte->libelle().'. Contactez un administrateur.',
             ], 403);
         }
 

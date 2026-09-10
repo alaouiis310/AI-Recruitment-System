@@ -24,16 +24,16 @@ class UserFactory extends Factory
 
     public function recruteur(): static
     {
-        return $this->state(fn() => ['role' => RoleUtilisateur::Recruteur]);
+        return $this->state(fn () => ['role' => RoleUtilisateur::Recruteur]);
     }
 
     public function administrateur(): static
     {
-        return $this->state(fn() => ['role' => RoleUtilisateur::Administrateur]);
+        return $this->state(fn () => ['role' => RoleUtilisateur::Administrateur]);
     }
 
     public function suspendu(): static
     {
-        return $this->state(fn() => ['etat_compte' => EtatCompte::Suspendu]);
+        return $this->state(fn () => ['etat_compte' => EtatCompte::Suspendu]);
     }
 }

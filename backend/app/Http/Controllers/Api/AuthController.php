@@ -45,7 +45,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-
     public function connexion(ConnexionRequest $request): JsonResponse
     {
         $user = User::where('email', $request->email)->first();
@@ -59,7 +58,7 @@ class AuthController extends Controller
 
         if (! $user->compteActif()) {
             return response()->json([
-                'message' => 'Ce compte est ' . $user->etat_compte->libelle() . '. Contactez un administrateur.',
+                'message' => 'Ce compte est '.$user->etat_compte->libelle().'. Contactez un administrateur.',
             ], 403);
         }
 
@@ -92,7 +91,7 @@ class AuthController extends Controller
             'name'   => $donnees['nom']    ?? null,
             'prenom' => $donnees['prenom'] ?? null,
             'email'  => $donnees['email']  ?? null,
-        ], fn($v) => $v !== null);
+        ], fn ($v) => $v !== null);
 
         if ($champsUser) {
             $user->update($champsUser);
@@ -103,7 +102,7 @@ class AuthController extends Controller
         if ($profil) {
             $champsProfil = collect($donnees)
                 ->except(['nom', 'prenom', 'email'])
-                ->filter(fn($v, $k) => in_array($k, $profil->getFillable(), true))
+                ->filter(fn ($v, $k) => in_array($k, $profil->getFillable(), true))
                 ->all();
 
             if ($champsProfil) {
@@ -116,7 +115,6 @@ class AuthController extends Controller
             'utilisateur' => new UserResource($this->auth->chargerProfil($user->fresh())),
         ]);
     }
-
 
     public function changerMotDePasse(ChangerMotDePasseRequest $request): JsonResponse
     {
