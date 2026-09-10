@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
             CompetenceSeeder::class,
             // Dépend des départements et du référentiel de compétences.
             OffreEmploiSeeder::class,
+            // Dépend du référentiel de compétences.
+            ProfilCandidatSeeder::class,
         ]);
     }
 }
