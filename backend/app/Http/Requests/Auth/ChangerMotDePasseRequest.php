@@ -20,7 +20,7 @@ class ChangerMotDePasseRequest extends FormRequest
                 'required',
                 'confirmed',
                 'different:ancien_password',
-                Password::min(8)->letters()->numbers()
+                Password::min(8)->letters()->numbers(),
             ],
         ];
     }

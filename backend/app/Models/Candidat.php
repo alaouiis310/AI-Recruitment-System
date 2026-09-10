@@ -11,6 +11,7 @@ class Candidat extends Model
     use HasFactory;
 
     protected $table      = 'candidats';
+
     protected $primaryKey = 'id_candidat';
 
     protected $fillable = [
