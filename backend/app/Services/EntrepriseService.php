@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\SuppressionImpossibleException;
 use App\Models\Entreprise;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,9 +42,25 @@ class EntrepriseService
         return $entreprise->fresh();
     }
 
-    /** Suppression d'une entreprise. */
+    /**
+     * RG6/RG8 — la suppression est refusée tant que l'entreprise emploie des
+     * recruteurs ou possède des départements : la cascade détruirait les
+     * profils recruteurs en laissant leurs comptes utilisateurs orphelins, et
+     * effacerait les départements auxquels les offres seront rattachées
+     * (RG10, RG11).
+     */
     public function supprimer(Entreprise $entreprise): void
     {
+        $recruteurs   = $entreprise->recruteurs()->count();
+        $departements = $entreprise->departements()->count();
+
+        if ($recruteurs > 0 || $departements > 0) {
+            throw new SuppressionImpossibleException(
+                "Cette entreprise ne peut pas être supprimée : elle compte encore {$recruteurs} recruteur(s) et {$departements} département(s).",
+                ['entreprise' => ['Détachez les recruteurs et supprimez les départements au préalable.']],
+            );
+        }
+
         $entreprise->delete();
     }
 
