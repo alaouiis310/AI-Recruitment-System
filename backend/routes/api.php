@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CandidatCandidatureController;
 use App\Http\Controllers\Api\CompetenceController;
 use App\Http\Controllers\Api\DepartementController;
 use App\Http\Controllers\Api\EntrepriseController;
 use App\Http\Controllers\Api\OffreEmploiController;
 use App\Http\Controllers\Api\ProfilCandidatController;
+use App\Http\Controllers\Api\RecruteurCandidatureController;
 use App\Http\Controllers\Api\RecruteurOffreController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +34,7 @@ Route::prefix('auth')->group(function () {
 Route::pattern('entreprise', '[0-9]+');
 Route::pattern('departement', '[0-9]+');
 Route::pattern('offre', '[0-9]+');
+Route::pattern('candidature', '[0-9]+');
 Route::pattern('competence', '[0-9]+');
 
 Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
@@ -62,6 +65,12 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::put('/competences', [ProfilCandidatController::class, 'synchroniserCompetences']);
         Route::post('/competences', [ProfilCandidatController::class, 'declarerCompetence']);
         Route::delete('/competences/{competence}', [ProfilCandidatController::class, 'retirerCompetence']);
+
+        // RG27/RG31 — une seule candidature par candidat et par offre.
+        Route::get('/candidatures', [CandidatCandidatureController::class, 'index']);
+        Route::post('/candidatures', [CandidatCandidatureController::class, 'store']);
+        Route::get('/candidatures/{candidature}', [CandidatCandidatureController::class, 'show']);
+        Route::delete('/candidatures/{candidature}', [CandidatCandidatureController::class, 'destroy']);
     });
 
     Route::middleware('role:recruteur')->prefix('recruteur')->group(function () {
@@ -76,6 +85,13 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::post('/offres', [RecruteurOffreController::class, 'store']);
         Route::patch('/offres/{offre}', [RecruteurOffreController::class, 'update']);
         Route::delete('/offres/{offre}', [RecruteurOffreController::class, 'destroy']);
+
+        // RG14 — le recruteur ne voit que les candidatures portant sur
+        // les offres qu'il a publiées ; la restriction est appliquée par
+        // la requête, jamais en filtrant une collection déjà chargée.
+        Route::get('/candidatures', [RecruteurCandidatureController::class, 'index']);
+        Route::get('/candidatures/{candidature}', [RecruteurCandidatureController::class, 'show']);
+        Route::patch('/candidatures/{candidature}/statut', [RecruteurCandidatureController::class, 'changerStatut']);
     });
 
     Route::middleware('role:administrateur')->prefix('admin')->group(function () {
