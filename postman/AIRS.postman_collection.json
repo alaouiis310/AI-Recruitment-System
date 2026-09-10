@@ -1,0 +1,1352 @@
+{
+  "info": {
+    "name": "AIRS — Systeme de Recrutement Intelligent",
+    "description": "Collection de l'API backend du Systeme de Recrutement Intelligent.\n\nOrdre d'utilisation : lancer une requete de connexion du dossier Authentification — le jeton est enregistre automatiquement dans la variable d'environnement `token` — puis parcourir les dossiers Entreprises et Departements.\n\nCertaines requetes attendent un role precis : leur description indique avec quel compte les rejouer.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentification",
+      "item": [
+        {
+          "name": "Sante du service",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Connexion — administrateur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/connexion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "connexion"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@airs.ma\",\n  \"password\": \"Password123\",\n  \"device_name\": \"postman\"\n}"
+            },
+            "description": "Enregistre le jeton dans la variable d'environnement token."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Un jeton est retourne\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"token\");",
+                  "});",
+                  "// Le jeton alimente la variable utilisee par les requetes suivantes.",
+                  "pm.environment.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Connexion — recruteur (TechnoMaroc)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/connexion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "connexion"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"recruteur@airs.ma\",\n  \"password\": \"Password123\",\n  \"device_name\": \"postman\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Un jeton est retourne\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"token\");",
+                  "});",
+                  "// Le jeton alimente la variable utilisee par les requetes suivantes.",
+                  "pm.environment.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Connexion — recruteur 2 (Atlas Digital)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/connexion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "connexion"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"recruteur2@airs.ma\",\n  \"password\": \"Password123\",\n  \"device_name\": \"postman\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Un jeton est retourne\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"token\");",
+                  "});",
+                  "// Le jeton alimente la variable utilisee par les requetes suivantes.",
+                  "pm.environment.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Connexion — candidat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/connexion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "connexion"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"candidat@airs.ma\",\n  \"password\": \"Password123\",\n  \"device_name\": \"postman\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Un jeton est retourne\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"token\");",
+                  "});",
+                  "// Le jeton alimente la variable utilisee par les requetes suivantes.",
+                  "pm.environment.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Utilisateur courant",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/moi",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "moi"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deconnexion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/deconnexion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "deconnexion"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Entreprises",
+      "item": [
+        {
+          "name": "Liste des entreprises",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Enveloppe paginee\", function () {",
+                  "    var d = pm.response.json();",
+                  "    pm.expect(d).to.have.property(\"entreprises\");",
+                  "    pm.expect(d).to.have.property(\"pagination\");",
+                  "});",
+                  "var liste = pm.response.json().entreprises;",
+                  "if (liste.length > 0) {",
+                  "    pm.environment.set(\"id_entreprise\", liste[0].id_entreprise);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liste — recherche et filtres",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises?recherche=Techno&ville=Tanger&per_page=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises"
+              ],
+              "query": [
+                {
+                  "key": "recherche",
+                  "value": "Techno"
+                },
+                {
+                  "key": "ville",
+                  "value": "Tanger"
+                },
+                {
+                  "key": "per_page",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liste — per_page invalide (422)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises?per_page=500",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "500"
+                }
+              ]
+            },
+            "description": "per_page est borne entre 1 et 100."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultation d'une entreprise",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/{{id_entreprise}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "{{id_entreprise}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Entreprise inexistante (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "999999"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Creation — administrateur (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Nouvelle Entreprise\",\n  \"secteur\": \"Technologies de l'information\",\n  \"ville\": \"Rabat\",\n  \"site_web\": \"https://nouvelle.example.ma\"\n}"
+            },
+            "description": "Exige un jeton administrateur."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Creation — nom manquant (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ville\": \"Rabat\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Creation — recruteur refuse (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Entreprise interdite\"\n}"
+            },
+            "description": "A rejouer connecte en recruteur : RG7, il n'a qu'une entreprise."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modification — proprietaire (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/{{id_entreprise}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "{{id_entreprise}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ville\": \"Tetouan\"\n}"
+            },
+            "description": "Administrateur, ou recruteur employe par cette entreprise."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modification — autre entreprise (403)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "2"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ville\": \"Rabat\"\n}"
+            },
+            "description": "A rejouer connecte en recruteur@airs.ma : Atlas Digital ne lui appartient pas."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modification — site_web invalide (422)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/{{id_entreprise}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "{{id_entreprise}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"site_web\": \"pas-une-url\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Suppression — entreprise non vide (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/{{id_entreprise}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "{{id_entreprise}}"
+              ]
+            },
+            "description": "RG6 — refus tant que des recruteurs ou des departements existent."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Departements",
+      "item": [
+        {
+          "name": "Liste des departements d'une entreprise",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/{{id_entreprise}}/departements",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "{{id_entreprise}}",
+                "departements"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var liste = pm.response.json().departements;",
+                  "if (liste.length > 0) {",
+                  "    pm.environment.set(\"id_departement\", liste[0].id_departement);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liste — recherche",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/{{id_entreprise}}/departements?recherche=Ressources",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "{{id_entreprise}}",
+                "departements"
+              ],
+              "query": [
+                {
+                  "key": "recherche",
+                  "value": "Ressources"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultation d'un departement",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/departements/{{id_departement}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "departements",
+                "{{id_departement}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Departement inexistant (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/departements/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "departements",
+                "999999"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Creation (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/{{id_entreprise}}/departements",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "{{id_entreprise}}",
+                "departements"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Qualite\",\n  \"description\": \"Assurance qualite et conformite.\"\n}"
+            },
+            "description": "RG9 — l'entreprise vient de l'URL, jamais du corps."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Creation — id_entreprise falsifie ignore (RG9)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/{{id_entreprise}}/departements",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "{{id_entreprise}}",
+                "departements"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Comptabilite\",\n  \"id_entreprise\": 999\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Rattache a l'entreprise de l'URL\", function () {",
+                  "    var attendu = String(pm.environment.get(\"id_entreprise\"));",
+                  "    var obtenu = String(pm.response.json().departement.id_entreprise);",
+                  "    pm.expect(obtenu).to.eql(attendu);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Creation — doublon dans la meme entreprise (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/{{id_entreprise}}/departements",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "{{id_entreprise}}",
+                "departements"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Ressources humaines\"\n}"
+            },
+            "description": "RG8 — unicite du nom au sein de l'entreprise."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Creation — nom manquant (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/{{id_entreprise}}/departements",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "{{id_entreprise}}",
+                "departements"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Sans nom\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Creation — autre entreprise (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/entreprises/2/departements",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "entreprises",
+                "2",
+                "departements"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Intrusion\"\n}"
+            },
+            "description": "A rejouer connecte en recruteur@airs.ma."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modification (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/departements/{{id_departement}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "departements",
+                "{{id_departement}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Description mise a jour.\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Suppression (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/departements/{{id_departement}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "departements",
+                "{{id_departement}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
