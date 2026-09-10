@@ -6,10 +6,11 @@ use App\Enums\NiveauEtude;
 use App\Enums\StatutOffre;
 use App\Enums\TypeContrat;
 use App\Models\Departement;
+use App\Models\OffreEmploi;
 use App\Models\Recruteur;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/** @extends Factory<\App\Models\OffreEmploi> */
+/** @extends Factory<OffreEmploi> */
 class OffreEmploiFactory extends Factory
 {
     public function definition(): array
