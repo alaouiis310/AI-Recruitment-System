@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Candidat extends Model
 {
@@ -54,6 +55,12 @@ class Candidat extends Model
             'id_candidat',
             'id_competence',
         )->withPivot('niveau', 'annees_experience');
+    }
+
+    /** RG27 — un candidat peut déposer plusieurs candidatures. */
+    public function candidatures(): HasMany
+    {
+        return $this->hasMany(Candidature::class, 'id_candidat');
     }
 
     /** RG22 — le candidat dispose-t-il d'un CV exploitable par l'analyse (RG37) ? */
