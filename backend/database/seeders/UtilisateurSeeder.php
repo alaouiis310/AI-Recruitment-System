@@ -69,6 +69,33 @@ class UtilisateurSeeder extends Seeder
             'experience_totale' => 2.5,
         ]);
 
+        // Seconde entreprise : elle rend démontrable le refus d'accès d'un
+        // recruteur aux données d'une entreprise qui n'est pas la sienne.
+        $atlas = Entreprise::create([
+            'nom'         => 'Atlas Digital',
+            'secteur'     => 'Conseil et transformation digitale',
+            'adresse'     => '45 boulevard Zerktouni',
+            'ville'       => 'Casablanca',
+            'site_web'    => 'https://atlasdigital.example.ma',
+            'description' => 'Cabinet de conseil en transformation digitale.',
+        ]);
+
+        $userRecruteur2 = User::create([
+            'name'        => 'Idrissi',
+            'prenom'      => 'Karim',
+            'email'       => 'recruteur2@airs.ma',
+            'password'    => 'Password123',
+            'role'        => RoleUtilisateur::Recruteur,
+            'etat_compte' => EtatCompte::Actif,
+        ]);
+
+        Recruteur::create([
+            'id_user'       => $userRecruteur2->id,
+            'id_entreprise' => $atlas->id_entreprise,
+            'telephone'     => '0522000000',
+            'poste'         => 'Chargé de recrutement',
+        ]);
+
         User::create([
             'name'        => 'Compte',
             'prenom'      => 'Suspendu',
