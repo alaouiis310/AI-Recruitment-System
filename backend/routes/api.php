@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DepartementController;
 use App\Http\Controllers\Api\EntrepriseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,7 @@ Route::prefix('auth')->group(function () {
 // Les clés primaires sont numériques : /entreprises/abc renvoie 404 sans
 // interroger la base.
 Route::pattern('entreprise', '[0-9]+');
+Route::pattern('departement', '[0-9]+');
 
 Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
 
@@ -61,18 +63,29 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
 
     /*
      |--------------------------------------------------------------------------
-     | Entreprises — RG5, RG6
+     | Entreprises et départements — RG5, RG6, RG8, RG9
      |--------------------------------------------------------------------------
      | Lecture ouverte à tout compte authentifié ; écriture réservée aux
      | administrateurs et aux recruteurs, la propriété de l'enregistrement
-     | étant tranchée par EntreprisePolicy.
+     | étant tranchée par EntreprisePolicy et DepartementPolicy.
+     |
+     | RG9 — la collection des départements est imbriquée sous son
+     | entreprise : l'appartenance vient de l'URL, jamais du corps de la
+     | requête. Les routes portant sur un département précis restent
+     | à plat, sa clé suffisant à l'identifier.
      */
     Route::get('/entreprises', [EntrepriseController::class, 'index']);
     Route::get('/entreprises/{entreprise}', [EntrepriseController::class, 'show']);
+    Route::get('/entreprises/{entreprise}/departements', [DepartementController::class, 'index']);
+    Route::get('/departements/{departement}', [DepartementController::class, 'show']);
 
     Route::middleware('role:administrateur,recruteur')->group(function () {
         Route::post('/entreprises', [EntrepriseController::class, 'store']);
         Route::patch('/entreprises/{entreprise}', [EntrepriseController::class, 'update']);
         Route::delete('/entreprises/{entreprise}', [EntrepriseController::class, 'destroy']);
+
+        Route::post('/entreprises/{entreprise}/departements', [DepartementController::class, 'store']);
+        Route::patch('/departements/{departement}', [DepartementController::class, 'update']);
+        Route::delete('/departements/{departement}', [DepartementController::class, 'destroy']);
     });
 });
