@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EntrepriseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,10 @@ Route::prefix('auth')->group(function () {
         ->middleware('throttle:5,1');
 });
 
+
+// Les clés primaires sont numériques : /entreprises/abc renvoie 404 sans
+// interroger la base.
+Route::pattern('entreprise', '[0-9]+');
 
 Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
 
@@ -52,5 +57,22 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::get('/tableau-de-bord', fn() => response()->json([
             'message' => 'Espace administrateur',
         ]));
+    });
+
+    /*
+     |--------------------------------------------------------------------------
+     | Entreprises — RG5, RG6
+     |--------------------------------------------------------------------------
+     | Lecture ouverte à tout compte authentifié ; écriture réservée aux
+     | administrateurs et aux recruteurs, la propriété de l'enregistrement
+     | étant tranchée par EntreprisePolicy.
+     */
+    Route::get('/entreprises', [EntrepriseController::class, 'index']);
+    Route::get('/entreprises/{entreprise}', [EntrepriseController::class, 'show']);
+
+    Route::middleware('role:administrateur,recruteur')->group(function () {
+        Route::post('/entreprises', [EntrepriseController::class, 'store']);
+        Route::patch('/entreprises/{entreprise}', [EntrepriseController::class, 'update']);
+        Route::delete('/entreprises/{entreprise}', [EntrepriseController::class, 'destroy']);
     });
 });
