@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             UtilisateurSeeder::class,
             // Dépend des entreprises créées par le seeder précédent.
             DepartementSeeder::class,
+            CompetenceSeeder::class,
         ]);
     }
 }
