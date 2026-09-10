@@ -11,6 +11,7 @@ class Departement extends Model
     use HasFactory;
 
     protected $table      = 'departements';
+
     protected $primaryKey = 'id_departement';
 
     protected $fillable = ['id_entreprise', 'nom', 'description'];

@@ -4,6 +4,7 @@ namespace App\Http\Concerns;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 trait ReponsePaginee
 {
@@ -11,7 +12,7 @@ trait ReponsePaginee
      * Enveloppe standard des collections paginées : la ressource est exposée
      * sous son nom français au pluriel, accompagnée du bloc de pagination.
      *
-     * @param  class-string<\Illuminate\Http\Resources\Json\JsonResource>  $resource
+     * @param  class-string<JsonResource>  $resource
      */
     protected function paginee(LengthAwarePaginator $page, string $cle, string $resource): JsonResponse
     {
