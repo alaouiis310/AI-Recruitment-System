@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             // Dépend des entreprises créées par le seeder précédent.
             DepartementSeeder::class,
             CompetenceSeeder::class,
+            // Dépend des départements et du référentiel de compétences.
+            OffreEmploiSeeder::class,
         ]);
     }
 }
