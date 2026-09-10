@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Departement;
 use App\Models\Entreprise;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/** @extends Factory<\App\Models\Departement> */
+/** @extends Factory<Departement> */
 class DepartementFactory extends Factory
 {
     /** Compteur de noms : RG8 impose l'unicité du nom au sein d'une entreprise. */

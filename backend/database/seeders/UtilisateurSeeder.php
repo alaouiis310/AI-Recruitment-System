@@ -10,7 +10,6 @@ use App\Models\Recruteur;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-
 class UtilisateurSeeder extends Seeder
 {
     public function run(): void

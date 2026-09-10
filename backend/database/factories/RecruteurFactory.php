@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Entreprise;
+use App\Models\Recruteur;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/** @extends Factory<\App\Models\Recruteur> */
+/** @extends Factory<Recruteur> */
 class RecruteurFactory extends Factory
 {
     public function definition(): array

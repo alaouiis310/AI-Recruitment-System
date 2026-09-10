@@ -11,6 +11,7 @@ class Recruteur extends Model
     use HasFactory;
 
     protected $table      = 'recruteurs';
+
     protected $primaryKey = 'id_recruteur';
 
     protected $fillable = ['id_user', 'id_entreprise', 'telephone', 'poste'];

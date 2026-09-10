@@ -11,6 +11,7 @@ class Entreprise extends Model
     use HasFactory;
 
     protected $table      = 'entreprises';
+
     protected $primaryKey = 'id_entreprise';
 
     protected $fillable = [
