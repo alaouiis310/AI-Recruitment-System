@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UtilisateurSeeder::class,
+            // Dépend des entreprises créées par le seeder précédent.
+            DepartementSeeder::class,
         ]);
     }
 }
