@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Departement extends Model
 {
@@ -27,5 +28,11 @@ class Departement extends Model
     public function entreprise(): BelongsTo
     {
         return $this->belongsTo(Entreprise::class, 'id_entreprise');
+    }
+
+    /** RG10 — un département gère plusieurs offres. */
+    public function offres(): HasMany
+    {
+        return $this->hasMany(OffreEmploi::class, 'id_departement');
     }
 }
