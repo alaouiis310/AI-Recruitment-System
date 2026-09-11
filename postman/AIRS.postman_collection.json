@@ -3251,6 +3251,724 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Candidatures — candidat",
+      "item": [
+        {
+          "name": "Postuler a une offre (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/candidatures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "candidatures"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_offre\": \"{{id_offre}}\",\n  \"lettre_motivation\": \"Madame, Monsieur, je souhaite rejoindre votre equipe.\"\n}"
+            },
+            "description": "RG33 — la date de depot est celle du jour, jamais fournie par le client."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"En attente au depart\", function () {",
+                  "    pm.expect(pm.response.json().candidature.statut).to.eql(\"en_attente\");",
+                  "});",
+                  "pm.environment.set(\"id_candidature\", pm.response.json().candidature.id_candidature);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Postuler deux fois — doublon (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/candidatures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "candidatures"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_offre\": \"{{id_offre}}\"\n}"
+            },
+            "description": "RG31 — une seule candidature par candidat et par offre."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Postuler a une offre fermee (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/candidatures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "candidatures"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_offre\": 6\n}"
+            },
+            "description": "RG17/RG18 — l'offre de stage seedee est fermee et expiree."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mes candidatures",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/candidatures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "candidatures"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var liste = pm.response.json().candidatures;",
+                  "if (liste.length > 0) {",
+                  "    pm.environment.set(\"id_candidature\", liste[0].id_candidature);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mes candidatures — filtre par statut",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/candidatures?statut=en_attente",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "candidatures"
+              ],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "en_attente"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detail d'une candidature",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/candidatures/{{id_candidature}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "candidatures",
+                "{{id_candidature}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Retrait de la candidature (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/candidatures/{{id_candidature}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "candidatures",
+                "{{id_candidature}}"
+              ]
+            },
+            "description": "Refuse en 403 si la candidature a deja ete acceptee ou refusee."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Candidatures — recruteur",
+      "item": [
+        {
+          "name": "Candidatures recues — classees par score",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures"
+              ]
+            },
+            "description": "RG14 — seules les candidatures portant sur vos offres. RG43 — classees par score decroissant, les non analysees en fin de liste."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Enveloppe paginee\", function () {",
+                  "    var d = pm.response.json();",
+                  "    pm.expect(d).to.have.property(\"candidatures\");",
+                  "    pm.expect(d).to.have.property(\"pagination\");",
+                  "});",
+                  "var liste = pm.response.json().candidatures;",
+                  "if (liste.length > 0) {",
+                  "    pm.environment.set(\"id_candidature\", liste[0].id_candidature);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Candidatures recues — filtre par offre",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures?id_offre={{id_offre}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures"
+              ],
+              "query": [
+                {
+                  "key": "id_offre",
+                  "value": "{{id_offre}}"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Candidatures recues — filtre par statut",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures?statut=preselectionnee",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures"
+              ],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "preselectionnee"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detail — candidat et offre compares",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures/{{id_candidature}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures",
+                "{{id_candidature}}"
+              ]
+            },
+            "description": "Charge les competences declarees (RG26) et celles exigees (RG21)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mise en examen du dossier",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures/{{id_candidature}}/statut",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures",
+                "{{id_candidature}}",
+                "statut"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"en_cours\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preselection",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures/{{id_candidature}}/statut",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures",
+                "{{id_candidature}}",
+                "statut"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"preselectionnee\",\n  \"commentaire_recruteur\": \"Bon niveau technique.\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Acceptation — decision datee",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures/{{id_candidature}}/statut",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures",
+                "{{id_candidature}}",
+                "statut"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"acceptee\",\n  \"commentaire_recruteur\": \"Proposition envoyee.\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Decision datee et definitive\", function () {",
+                  "    var c = pm.response.json().candidature;",
+                  "    pm.expect(c.statut_definitif).to.eql(true);",
+                  "    pm.expect(c.date_decision).to.not.eql(null);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Transition hors cycle (422)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures/{{id_candidature}}/statut",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures",
+                "{{id_candidature}}",
+                "statut"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"en_cours\"\n}"
+            },
+            "description": "RG32 — une candidature tranchee ne revient pas en arriere."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Candidature d'un autre recruteur (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures",
+                "1"
+              ]
+            },
+            "description": "RG14 — a rejouer connecte en recruteur2@airs.ma."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }
