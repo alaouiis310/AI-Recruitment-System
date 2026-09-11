@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\StatutCandidature;
 use App\Exceptions\CandidatureImpossibleException;
 use App\Exceptions\TransitionInterditeException;
+use App\Jobs\AnalyseCandidatureJob;
 use App\Models\Candidat;
 use App\Models\Candidature;
 use App\Models\OffreEmploi;
@@ -58,7 +59,9 @@ class CandidatureService
             throw $e;
         }
 
-        // Le module 6 déclenchera ici l'analyse IA de la candidature (RG37).
+        // RG37 — l'analyse est trop lente pour la requête HTTP : elle part
+        // en file d'attente et renseignera score_final (RG43).
+        AnalyseCandidatureJob::dispatch($candidature->id_candidature);
 
         return $candidature->load(['offre.departement', 'offre.recruteur.entreprise']);
     }
