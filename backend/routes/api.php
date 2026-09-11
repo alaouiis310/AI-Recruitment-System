@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AnalyseIaController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CandidatCandidatureController;
 use App\Http\Controllers\Api\CompetenceController;
@@ -71,6 +72,7 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::post('/candidatures', [CandidatCandidatureController::class, 'store']);
         Route::get('/candidatures/{candidature}', [CandidatCandidatureController::class, 'show']);
         Route::delete('/candidatures/{candidature}', [CandidatCandidatureController::class, 'destroy']);
+        Route::get('/candidatures/{candidature}/analyse', [AnalyseIaController::class, 'show']);
     });
 
     Route::middleware('role:recruteur')->prefix('recruteur')->group(function () {
@@ -92,6 +94,11 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::get('/candidatures', [RecruteurCandidatureController::class, 'index']);
         Route::get('/candidatures/{candidature}', [RecruteurCandidatureController::class, 'show']);
         Route::patch('/candidatures/{candidature}/statut', [RecruteurCandidatureController::class, 'changerStatut']);
+
+        // RG37/RG42 — résultat de l'analyse, et relance après mise à jour
+        // du profil du candidat.
+        Route::get('/candidatures/{candidature}/analyse', [AnalyseIaController::class, 'show']);
+        Route::post('/candidatures/{candidature}/analyse', [AnalyseIaController::class, 'relancer']);
     });
 
     Route::middleware('role:administrateur')->prefix('admin')->group(function () {

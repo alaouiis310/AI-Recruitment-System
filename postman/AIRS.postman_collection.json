@@ -3969,6 +3969,267 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Analyse IA",
+      "item": [
+        {
+          "name": "Analyse d'une candidature (recruteur)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures/{{id_candidature}}/analyse",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures",
+                "{{id_candidature}}",
+                "analyse"
+              ]
+            },
+            "description": "RG40 — le score est calcule en PHP, jamais produit par le modele. RG42 — la recommandation decoule des seuils 70 et 45."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Score borne entre 0 et 100\", function () {",
+                  "    var a = pm.response.json().analyse;",
+                  "    pm.expect(a.score_matching).to.be.at.least(0);",
+                  "    pm.expect(a.score_matching).to.be.at.most(100);",
+                  "});",
+                  "pm.test(\"Recommandation coherente avec le score\", function () {",
+                  "    var a = pm.response.json().analyse;",
+                  "    var attendue = a.score_matching >= 70 ? \"retenir\"",
+                  "                 : a.score_matching >= 45 ? \"a_examiner\" : \"rejeter\";",
+                  "    pm.expect(a.recommandation).to.eql(attendue);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Analyse de sa candidature (candidat)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/candidatures/{{id_candidature}}/analyse",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "candidatures",
+                "{{id_candidature}}",
+                "analyse"
+              ]
+            },
+            "description": "Le candidat consulte l'analyse de sa propre candidature."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Candidature non encore analysee (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures/999999/analyse",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures",
+                "999999",
+                "analyse"
+              ]
+            },
+            "description": "Normal juste apres un depot : le travail est encore en file (RG37)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Relance de l'analyse (202)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures/{{id_candidature}}/analyse",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures",
+                "{{id_candidature}}",
+                "analyse"
+              ]
+            },
+            "description": "RG38 — la relance remplace l'analyse existante, elle n'en ajoute pas. Utile apres mise a jour du CV ou des competences declarees."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 202\", function () {",
+                  "    pm.response.to.have.status(202);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Analyse d'une autre offre (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures/1/analyse",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures",
+                "1",
+                "analyse"
+              ]
+            },
+            "description": "RG14 — a rejouer connecte en recruteur2@airs.ma."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Classement par score apres analyse",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/candidatures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "candidatures"
+              ]
+            },
+            "description": "RG43 — le classement s'appuie sur score_final renseigne par l'analyse."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Scores decroissants, non analysees en dernier\", function () {",
+                  "    var liste = pm.response.json().candidatures;",
+                  "    var avecScore = liste.filter(function (c) { return c.score_final !== null; });",
+                  "    for (var i = 1; i < avecScore.length; i++) {",
+                  "        pm.expect(avecScore[i - 1].score_final).to.be.at.least(avecScore[i].score_final);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }
