@@ -652,6 +652,7 @@ Créés par `php artisan db:seed`. Mot de passe commun : `Password123`
 |---|---|
 | Administrateur | `admin@airs.ma` |
 | Recruteur | `recruteur@airs.ma` |
+| Recruteur (seconde entreprise) | `recruteur2@airs.ma` |
 | Candidat | `candidat@airs.ma` |
 | Candidat suspendu (test du `403`) | `suspendu@airs.ma` |
 

@@ -11,6 +11,7 @@ class Entreprise extends Model
     use HasFactory;
 
     protected $table      = 'entreprises';
+
     protected $primaryKey = 'id_entreprise';
 
     protected $fillable = [
@@ -22,8 +23,15 @@ class Entreprise extends Model
         'description',
     ];
 
+    /** RG6 — une entreprise emploie un ou plusieurs recruteurs. */
     public function recruteurs(): HasMany
     {
         return $this->hasMany(Recruteur::class, 'id_entreprise');
+    }
+
+    /** RG8 — une entreprise est composée d'un ou plusieurs départements. */
+    public function departements(): HasMany
+    {
+        return $this->hasMany(Departement::class, 'id_entreprise');
     }
 }

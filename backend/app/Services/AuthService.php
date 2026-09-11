@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class AuthService
 {
-
     public function inscrireCandidat(array $donnees): User
     {
         return DB::transaction(function () use ($donnees) {
