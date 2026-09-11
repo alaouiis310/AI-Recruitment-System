@@ -25,6 +25,8 @@ class DatabaseSeeder extends Seeder
             ProfilCandidatSeeder::class,
             // Dépend des offres et des profils candidats.
             CandidatureSeeder::class,
+            // Calcule les scores des candidatures déjà déposées (RG40, RG43).
+            AnalyseIaSeeder::class,
         ]);
     }
 }
