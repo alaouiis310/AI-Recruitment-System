@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CategorieCompetence;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Competence extends Model
 {
@@ -21,7 +22,20 @@ class Competence extends Model
         return ['categorie' => CategorieCompetence::class];
     }
 
-    // RG19/RG20 — la relation vers les offres (pivot requerir) sera ajoutée
-    // avec le module 3, RG24/RG25 celle vers les candidats (pivot posseder)
-    // avec le module 4.
+    /**
+     * RG19/RG20 — offres exigeant cette compétence, via le pivot requerir.
+     * Table d'association : aucun modèle dédié, on passe par le pivot.
+     */
+    public function offres(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            OffreEmploi::class,
+            'requerir',
+            'id_competence',
+            'id_offre',
+        )->withPivot('niveau_requis', 'importance');
+    }
+
+    // RG24/RG25 — la relation vers les candidats (pivot posseder) sera
+    // ajoutée avec le module 4.
 }

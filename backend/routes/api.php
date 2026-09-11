@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompetenceController;
 use App\Http\Controllers\Api\DepartementController;
 use App\Http\Controllers\Api\EntrepriseController;
+use App\Http\Controllers\Api\OffreEmploiController;
+use App\Http\Controllers\Api\RecruteurOffreController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +30,7 @@ Route::prefix('auth')->group(function () {
 // interroger la base.
 Route::pattern('entreprise', '[0-9]+');
 Route::pattern('departement', '[0-9]+');
+Route::pattern('offre', '[0-9]+');
 Route::pattern('competence', '[0-9]+');
 
 Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
@@ -52,6 +55,13 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
             'message'    => 'Espace recruteur',
             'entreprise' => $r->user()->recruteur?->entreprise?->nom,
         ]));
+
+        // RG12/RG13 — le recruteur ne gère que les offres qu'il a publiées ;
+        // la propriété de l'enregistrement est vérifiée par OffreEmploiPolicy.
+        Route::get('/offres', [RecruteurOffreController::class, 'index']);
+        Route::post('/offres', [RecruteurOffreController::class, 'store']);
+        Route::patch('/offres/{offre}', [RecruteurOffreController::class, 'update']);
+        Route::delete('/offres/{offre}', [RecruteurOffreController::class, 'destroy']);
     });
 
     Route::middleware('role:administrateur')->prefix('admin')->group(function () {
@@ -91,4 +101,18 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::patch('/competences/{competence}', [CompetenceController::class, 'update']);
         Route::delete('/competences/{competence}', [CompetenceController::class, 'destroy']);
     });
+
+    /*
+     |--------------------------------------------------------------------------
+     | Offres d'emploi — RG15 à RG21
+     |--------------------------------------------------------------------------
+     | Consultation ouverte à tout compte authentifié : la liste ne montre que
+     | les offres ouvertes et non expirées (RG17, RG18). Une offre fermée,
+     | suspendue ou expirée reste consultable par son auteur.
+     |
+     | La publication et la gestion se font dans l'espace recruteur, sous
+     | /api/recruteur/offres.
+     */
+    Route::get('/offres', [OffreEmploiController::class, 'index']);
+    Route::get('/offres/{offre}', [OffreEmploiController::class, 'show']);
 });
