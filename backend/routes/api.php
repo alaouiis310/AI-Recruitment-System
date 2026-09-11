@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CompetenceController;
 use App\Http\Controllers\Api\DepartementController;
 use App\Http\Controllers\Api\EntrepriseController;
 use App\Http\Controllers\Api\OffreEmploiController;
+use App\Http\Controllers\Api\ProfilCandidatController;
 use App\Http\Controllers\Api\RecruteurOffreController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,19 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
             'message' => 'Espace candidat',
             'role'    => $r->user()->role->value,
         ]));
+
+        // RG22/RG23 — le candidat dépose et remplace son CV à tout moment.
+        Route::post('/cv', [ProfilCandidatController::class, 'televerserCv']);
+        Route::delete('/cv', [ProfilCandidatController::class, 'supprimerCv']);
+
+        Route::post('/photo', [ProfilCandidatController::class, 'televerserPhoto']);
+        Route::delete('/photo', [ProfilCandidatController::class, 'supprimerPhoto']);
+
+        // RG24/RG26 — compétences déclarées et leur niveau de maîtrise.
+        Route::get('/competences', [ProfilCandidatController::class, 'competences']);
+        Route::put('/competences', [ProfilCandidatController::class, 'synchroniserCompetences']);
+        Route::post('/competences', [ProfilCandidatController::class, 'declarerCompetence']);
+        Route::delete('/competences/{competence}', [ProfilCandidatController::class, 'retirerCompetence']);
     });
 
     Route::middleware('role:recruteur')->prefix('recruteur')->group(function () {

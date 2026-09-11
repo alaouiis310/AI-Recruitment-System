@@ -21,6 +21,9 @@ class CandidatResource extends JsonResource
             'github'            => $this->github,
             'linkedin'          => $this->linkedin,
             'experience_totale' => (float) $this->experience_totale,
+
+            // RG24/RG26 — compétences déclarées via le pivot posseder.
+            'competences' => CompetenceDeclareeResource::collection($this->whenLoaded('competences')),
         ];
     }
 }

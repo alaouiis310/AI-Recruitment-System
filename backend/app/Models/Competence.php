@@ -36,6 +36,17 @@ class Competence extends Model
         )->withPivot('niveau_requis', 'importance');
     }
 
-    // RG24/RG25 — la relation vers les candidats (pivot posseder) sera
-    // ajoutée avec le module 4.
+    /**
+     * RG24/RG25 — candidats déclarant cette compétence, via posseder.
+     * Table d'association : aucun modèle dédié, on passe par le pivot.
+     */
+    public function candidats(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Candidat::class,
+            'posseder',
+            'id_competence',
+            'id_candidat',
+        )->withPivot('niveau', 'annees_experience');
+    }
 }

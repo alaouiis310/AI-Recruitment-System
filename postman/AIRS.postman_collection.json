@@ -2733,6 +2733,524 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Profil candidat",
+      "item": [
+        {
+          "name": "Depot du CV (PDF)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/cv",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "cv"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "cv",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "description": "RG22/RG23 — choisir un PDF dans l'onglet Body avant de lancer. Le depot remplace le CV precedent et efface son fichier."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Suppression du CV",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/cv",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "cv"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Depot de la photo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/photo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "photo"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "description": "JPEG, PNG ou WebP, 2 Mo maximum."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Suppression de la photo",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/photo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "photo"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mes competences",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/competences",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "competences"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Liste de competences\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"competences\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remplacement complet des competences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/competences",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "competences"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"competences\": [\n    {\n      \"id_competence\": 1,\n      \"niveau\": \"avance\",\n      \"annees_experience\": 2.5\n    },\n    {\n      \"id_competence\": 5,\n      \"niveau\": \"intermediaire\",\n      \"annees_experience\": 1\n    }\n  ]\n}"
+            },
+            "description": "RG24/RG26 — toute competence absente de la liste est retiree."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Effacement de toutes les competences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/competences",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "competences"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"competences\": []\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Declaration unitaire (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/competences",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "competences"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_competence\": 2,\n  \"niveau\": \"expert\",\n  \"annees_experience\": 5\n}"
+            },
+            "description": "Ajoute ou met a jour sans toucher aux autres."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Declaration — niveau inconnu (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/competences",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "competences"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_competence\": 2,\n  \"niveau\": \"grand_maitre\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Declaration — competence hors referentiel (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/competences",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "competences"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_competence\": 999999,\n  \"niveau\": \"avance\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Retrait d'une competence (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/competences/2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "competences",
+                "2"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Recruteur refuse (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/candidat/competences",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "candidat",
+                "competences"
+              ]
+            },
+            "description": "A rejouer connecte en recruteur@airs.ma."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

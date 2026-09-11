@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Resources;
+
+use App\Enums\NiveauCompetence;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/**
+ * RG26 — compétence déclarée par un candidat, vue à travers le pivot posseder.
+ * Les attributs du pivot sont exposés à plat, à côté de la compétence.
+ */
+class CompetenceDeclareeResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        $niveau = NiveauCompetence::from($this->pivot->niveau);
+
+        return [
+            'id_competence' => $this->id_competence,
+            'nom'           => $this->nom,
+            'categorie'     => $this->categorie->value,
+
+            'niveau'            => $niveau->value,
+            'niveau_libelle'    => $niveau->libelle(),
+            'annees_experience' => (float) $this->pivot->annees_experience,
+        ];
+    }
+}
