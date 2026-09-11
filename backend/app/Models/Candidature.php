@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Candidature extends Model
 {
@@ -51,7 +52,11 @@ class Candidature extends Model
         return $this->belongsTo(OffreEmploi::class, 'id_offre');
     }
 
-    // L'analyse IA associée (RG37, RG38) sera exposée ici avec le module 6.
+    /** RG37/RG38 — une candidature ne reçoit qu'une seule analyse. */
+    public function analyse(): HasOne
+    {
+        return $this->hasOne(AnalyseIa::class, 'id_candidature');
+    }
 
     // Les entretiens liés (RG34) seront exposés ici lorsque le module
     // correspondant sera développé.
