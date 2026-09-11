@@ -6,29 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Recruteur extends Model
+class Departement extends Model
 {
     use HasFactory;
 
-    protected $table      = 'recruteurs';
+    protected $table      = 'departements';
 
-    protected $primaryKey = 'id_recruteur';
+    protected $primaryKey = 'id_departement';
 
-    protected $fillable = ['id_user', 'id_entreprise', 'telephone', 'poste'];
+    protected $fillable = ['id_entreprise', 'nom', 'description'];
 
     protected function casts(): array
     {
-        // La comparaison de propriété dans les politiques d'accès est stricte :
+        // La comparaison de propriété dans DepartementPolicy est stricte :
         // la clé étrangère doit être un entier quel que soit le pilote.
         return ['id_entreprise' => 'integer'];
     }
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'id_user');
-    }
-
-    /** RG7 — un recruteur appartient à exactement une entreprise. */
+    /** RG9 — chaque département appartient à une et une seule entreprise. */
     public function entreprise(): BelongsTo
     {
         return $this->belongsTo(Entreprise::class, 'id_entreprise');

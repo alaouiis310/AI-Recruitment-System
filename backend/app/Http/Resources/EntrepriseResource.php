@@ -17,6 +17,13 @@ class EntrepriseResource extends JsonResource
             'ville'         => $this->ville,
             'site_web'      => $this->site_web,
             'description'   => $this->description,
+            'date_creation' => $this->created_at?->toDateString(),
+
+            // RG6/RG8 — décomptes exposés uniquement lorsqu'ils ont été chargés.
+            'nombre_recruteurs'   => $this->whenCounted('recruteurs'),
+            'nombre_departements' => $this->whenCounted('departements'),
+
+            'departements' => DepartementResource::collection($this->whenLoaded('departements')),
         ];
     }
 }

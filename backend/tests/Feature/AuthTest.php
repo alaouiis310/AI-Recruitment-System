@@ -107,7 +107,7 @@ class AuthTest extends TestCase
 
     public function test_un_candidat_ne_peut_pas_acceder_a_l_espace_recruteur(): void
     {
-        /** @var \App\Models\User $candidat */
+        /** @var User $candidat */
         $candidat = User::factory()->create(['role' => RoleUtilisateur::Candidat]);
 
         $this->actingAs($candidat, 'sanctum')

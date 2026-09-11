@@ -18,14 +18,14 @@ class VerifierRole
 
         if (! $user->compteActif()) {
             return response()->json([
-                'message' => 'Ce compte est ' . $user->etat_compte->libelle() . '.',
+                'message' => 'Ce compte est '.$user->etat_compte->libelle().'.',
             ], 403);
         }
 
         if (! in_array($user->role->value, $roles, true)) {
             return response()->json([
                 'message' => 'Accès refusé : cette ressource est réservée aux rôles suivants : '
-                    . implode(', ', $roles) . '.',
+                    .implode(', ', $roles).'.',
             ], 403);
         }
 
