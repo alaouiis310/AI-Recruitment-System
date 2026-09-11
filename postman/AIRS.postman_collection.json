@@ -1929,6 +1929,810 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Offres",
+      "item": [
+        {
+          "name": "Liste des offres ouvertes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/offres",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offres"
+              ]
+            },
+            "description": "RG17/RG18 — seules les offres ouvertes et non expirees remontent."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Enveloppe paginee\", function () {",
+                  "    var d = pm.response.json();",
+                  "    pm.expect(d).to.have.property(\"offres\");",
+                  "    pm.expect(d).to.have.property(\"pagination\");",
+                  "});",
+                  "var liste = pm.response.json().offres;",
+                  "if (liste.length > 0) {",
+                  "    pm.environment.set(\"id_offre\", liste[0].id_offre);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liste — recherche par mots cles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/offres?mots_cles=PHP",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offres"
+              ],
+              "query": [
+                {
+                  "key": "mots_cles",
+                  "value": "PHP"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liste — localisation et type de contrat",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/offres?localisation=Tanger&type_contrat=cdi",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offres"
+              ],
+              "query": [
+                {
+                  "key": "localisation",
+                  "value": "Tanger"
+                },
+                {
+                  "key": "type_contrat",
+                  "value": "cdi"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liste — par departement",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/offres?id_departement={{id_departement}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offres"
+              ],
+              "query": [
+                {
+                  "key": "id_departement",
+                  "value": "{{id_departement}}"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liste — type de contrat inconnu (422)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/offres?type_contrat=benevolat",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offres"
+              ],
+              "query": [
+                {
+                  "key": "type_contrat",
+                  "value": "benevolat"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultation d'une offre",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/offres/{{id_offre}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offres",
+                "{{id_offre}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Offre inexistante (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/offres/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offres",
+                "999999"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Offres — espace recruteur",
+      "item": [
+        {
+          "name": "Mes offres — tous statuts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres"
+              ]
+            },
+            "description": "RG12 — portefeuille du recruteur connecte, statuts fermes inclus."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var liste = pm.response.json().offres;",
+                  "if (liste.length > 0) {",
+                  "    pm.environment.set(\"id_offre\", liste[0].id_offre);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mes offres — filtre par statut",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres?statut=fermee",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres"
+              ],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "fermee"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publication d'une offre (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Developpeur back-end PHP / Laravel\",\n  \"description\": \"Conception et maintenance des API du systeme d'information.\",\n  \"type_contrat\": \"cdi\",\n  \"localisation\": \"Tanger\",\n  \"salaire\": 14000,\n  \"experience_min\": 2,\n  \"niveau_etude\": \"bac_5\",\n  \"id_departement\": \"{{id_departement}}\",\n  \"competences\": [\n    {\n      \"id_competence\": 1,\n      \"niveau_requis\": \"avance\",\n      \"importance\": \"essentielle\"\n    },\n    {\n      \"id_competence\": 5,\n      \"niveau_requis\": \"intermediaire\",\n      \"importance\": \"souhaitee\"\n    }\n  ]\n}"
+            },
+            "description": "id_departement doit relever de l'entreprise du recruteur (RG9, RG11)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Ouverte par defaut\", function () {",
+                  "    pm.expect(pm.response.json().offre.statut).to.eql(\"ouverte\");",
+                  "});",
+                  "pm.environment.set(\"id_offre\", pm.response.json().offre.id_offre);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publication — titre manquant (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Conception et maintenance des API du systeme d'information.\",\n  \"type_contrat\": \"cdi\",\n  \"localisation\": \"Tanger\",\n  \"salaire\": 14000,\n  \"experience_min\": 2,\n  \"niveau_etude\": \"bac_5\",\n  \"id_departement\": \"{{id_departement}}\",\n  \"competences\": [\n    {\n      \"id_competence\": 1,\n      \"niveau_requis\": \"avance\",\n      \"importance\": \"essentielle\"\n    },\n    {\n      \"id_competence\": 5,\n      \"niveau_requis\": \"intermediaire\",\n      \"importance\": \"souhaitee\"\n    }\n  ]\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publication — departement d'une autre entreprise (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Developpeur back-end PHP / Laravel\",\n  \"description\": \"Conception et maintenance des API du systeme d'information.\",\n  \"type_contrat\": \"cdi\",\n  \"localisation\": \"Tanger\",\n  \"salaire\": 14000,\n  \"experience_min\": 2,\n  \"niveau_etude\": \"bac_5\",\n  \"id_departement\": 999999,\n  \"competences\": [\n    {\n      \"id_competence\": 1,\n      \"niveau_requis\": \"avance\",\n      \"importance\": \"essentielle\"\n    },\n    {\n      \"id_competence\": 5,\n      \"niveau_requis\": \"intermediaire\",\n      \"importance\": \"souhaitee\"\n    }\n  ]\n}"
+            },
+            "description": "RG9/RG11 — un identifiant hors perimetre est refuse sans reveler son existence."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publication — candidat refuse (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Developpeur back-end PHP / Laravel\",\n  \"description\": \"Conception et maintenance des API du systeme d'information.\",\n  \"type_contrat\": \"cdi\",\n  \"localisation\": \"Tanger\",\n  \"salaire\": 14000,\n  \"experience_min\": 2,\n  \"niveau_etude\": \"bac_5\",\n  \"id_departement\": \"{{id_departement}}\",\n  \"competences\": [\n    {\n      \"id_competence\": 1,\n      \"niveau_requis\": \"avance\",\n      \"importance\": \"essentielle\"\n    },\n    {\n      \"id_competence\": 5,\n      \"niveau_requis\": \"intermediaire\",\n      \"importance\": \"souhaitee\"\n    }\n  ]\n}"
+            },
+            "description": "A rejouer connecte en candidat@airs.ma."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modification du titre (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres/{{id_offre}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres",
+                "{{id_offre}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Developpeur back-end senior\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modification — remplacement des competences",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres/{{id_offre}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres",
+                "{{id_offre}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"competences\": [\n    {\n      \"id_competence\": 2,\n      \"niveau_requis\": \"expert\",\n      \"importance\": \"essentielle\"\n    }\n  ]\n}"
+            },
+            "description": "Cle presente : remplacement complet. Cle absente : pivot inchange."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Une seule competence requise\", function () {",
+                  "    pm.expect(pm.response.json().offre.competences).to.have.lengthOf(1);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Fermeture de l'offre (RG18)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres/{{id_offre}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres",
+                "{{id_offre}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"fermee\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"N'accepte plus de candidatures\", function () {",
+                  "    pm.expect(pm.response.json().offre.accepte_candidatures).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Offre d'un autre recruteur (403)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Detournee\"\n}"
+            },
+            "description": "A rejouer connecte en recruteur2@airs.ma sur une offre de TechnoMaroc."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Suppression de l'offre (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recruteur/offres/{{id_offre}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "recruteur",
+                "offres",
+                "{{id_offre}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Statut 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }
