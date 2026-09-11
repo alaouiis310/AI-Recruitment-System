@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OffreEmploi extends Model
 {
@@ -75,7 +76,11 @@ class OffreEmploi extends Model
         )->withPivot('niveau_requis', 'importance');
     }
 
-    // Les candidatures reçues (RG30) seront exposées ici avec le module 5.
+    /** RG30 — une offre peut recevoir plusieurs candidatures. */
+    public function candidatures(): HasMany
+    {
+        return $this->hasMany(Candidature::class, 'id_offre');
+    }
 
     /** RG17/RG18 — une offre est visible des candidats si elle est ouverte et non expirée. */
     public function scopePubliable(Builder $query): Builder

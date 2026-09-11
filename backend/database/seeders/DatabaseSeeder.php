@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             OffreEmploiSeeder::class,
             // Dépend du référentiel de compétences.
             ProfilCandidatSeeder::class,
+            // Dépend des offres et des profils candidats.
+            CandidatureSeeder::class,
         ]);
     }
 }
