@@ -37,6 +37,7 @@ Route::pattern('departement', '[0-9]+');
 Route::pattern('offre', '[0-9]+');
 Route::pattern('candidature', '[0-9]+');
 Route::pattern('competence', '[0-9]+');
+Route::pattern('notification', '[0-9]+');
 
 Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
 
