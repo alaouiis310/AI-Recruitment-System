@@ -7,9 +7,12 @@
   >
     <!-- Header Actions -->
     <template #header-actions>
-      <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
-        + Exporter
-      </button>
+     <button 
+       @click="exportApplications"
+       class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md"
+     >
+    + Exporter
+     </button>
     </template>
 
     <!-- Statistiques -->
@@ -152,5 +155,52 @@ const getStatusBadge = (status) => {
     'Refusée': 'bg-red-100 text-red-700'
   }
   return badges[status] || 'bg-gray-100 text-gray-700'
+}
+
+// FONCTION D'EXPORTATION CSV
+const exportApplications = () => {
+  // Récupère les données filtrées actuelles
+  const dataToExport = filteredApplications.value
+  
+  if (dataToExport.length === 0) {
+    alert('⚠️ Aucune candidature à exporter.')
+    return
+  }
+
+  // En-têtes du fichier CSV
+  const headers = ['Candidat', 'Email', 'Offre', 'Score IA', 'Statut', 'Date']
+  
+  // Construction des lignes CSV
+  const csvRows = [headers.join(',')]
+  
+  for (const row of dataToExport) {
+    const values = [
+      `"${row.candidate}"`,
+      `"${row.email}"`,
+      `"${row.job}"`,
+      `"${row.score}%"`,
+      `"${row.status}"`,
+      `"${row.date}"`
+    ]
+    csvRows.push(values.join(','))
+  }
+  
+  const csvString = csvRows.join('\n')
+
+  // Création et téléchargement du fichier
+  // \uFEFF = BOM UTF-8 pour que Excel affiche correctement les accents
+  const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute('download', `candidatures_export_${new Date().toISOString().split('T')[0]}.csv`)
+  link.style.visibility = 'hidden'
+  
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  
+  console.log(`✅ ${dataToExport.length} candidature(s) exportée(s) avec succès !`)
 }
 </script>
