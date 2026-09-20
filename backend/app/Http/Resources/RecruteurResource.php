@@ -14,6 +14,9 @@ class RecruteurResource extends JsonResource
             'telephone'    => $this->telephone,
             'poste'        => $this->poste,
             'entreprise'   => new EntrepriseResource($this->whenLoaded('entreprise')),
+            'utilisateur'  => new UserResource($this->whenLoaded('user')),
+            'nombre_offres' => $this->whenCounted('offres'),
+            'offres'        => OffreEmploiResource::collection($this->whenLoaded('offres')),
         ];
     }
 }

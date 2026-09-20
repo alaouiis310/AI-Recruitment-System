@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Candidature extends Model
@@ -58,8 +59,17 @@ class Candidature extends Model
         return $this->hasOne(AnalyseIa::class, 'id_candidature');
     }
 
-    // Les entretiens liés (RG34) seront exposés ici lorsque le module
-    // correspondant sera développé.
+    /** RG45 — tests techniques envoyés au candidat pour cette candidature. */
+    public function resultatsTests(): HasMany
+    {
+        return $this->hasMany(ResultatTest::class, 'id_candidature');
+    }
+
+    /** RG34 — une candidature peut compter zéro, un ou plusieurs entretiens. */
+    public function entretiens(): HasMany
+    {
+        return $this->hasMany(Entretien::class, 'id_candidature');
+    }
 
     /**
      * RG14 — restreint aux candidatures portant sur les offres publiées par

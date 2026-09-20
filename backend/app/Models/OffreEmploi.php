@@ -82,6 +82,12 @@ class OffreEmploi extends Model
         return $this->hasMany(Candidature::class, 'id_offre');
     }
 
+    /** RG45 — tests techniques rattachés à l'offre, via le pivot proposer. */
+    public function tests(): BelongsToMany
+    {
+        return $this->belongsToMany(TestTechnique::class, 'proposer', 'id_offre', 'id_test');
+    }
+
     /** RG17/RG18 — une offre est visible des candidats si elle est ouverte et non expirée. */
     public function scopePubliable(Builder $query): Builder
     {

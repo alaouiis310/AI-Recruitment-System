@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\CategorieCompetence;
+use App\Models\Candidat;
 use App\Models\Competence;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -187,6 +188,22 @@ class CompetenceTest extends TestCase
             ->assertNoContent();
 
         $this->assertDatabaseMissing('competences', ['id_competence' => $competence->id_competence]);
+    }
+
+    public function test_une_competence_declaree_ne_peut_pas_etre_supprimee(): void
+    {
+        $competence = Competence::factory()->create();
+        $candidat = Candidat::factory()->create();
+        $candidat->competences()->attach($competence, [
+            'niveau' => 'intermediaire',
+            'annees_experience' => 2,
+        ]);
+
+        $this->actingAs(User::factory()->administrateur()->create(), 'sanctum')
+            ->deleteJson("/api/competences/{$competence->id_competence}")
+            ->assertStatus(409);
+
+        $this->assertDatabaseHas('competences', ['id_competence' => $competence->id_competence]);
     }
 
     public function test_un_recruteur_ne_peut_pas_supprimer_une_competence(): void

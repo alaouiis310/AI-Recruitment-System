@@ -39,9 +39,9 @@ class CandidatureResource extends JsonResource
             'offre'    => new OffreEmploiResource($this->whenLoaded('offre')),
             'candidat' => new CandidatResource($this->whenLoaded('candidat')),
 
-            // L'analyse IA (RG37, RG38) sera exposée ici avec le module 6.
-            // Les entretiens liés (RG34) le seront lorsque le module
-            // correspondant sera développé.
+            'analyse'          => new AnalyseIaResource($this->whenLoaded('analyse')),
+            'entretiens'      => EntretienResource::collection($this->whenLoaded('entretiens')),
+            'resultats_tests' => ResultatTestResource::collection($this->whenLoaded('resultatsTests')),
         ];
     }
 }

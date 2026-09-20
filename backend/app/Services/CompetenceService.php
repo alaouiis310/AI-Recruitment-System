@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\SuppressionImpossibleException;
 use App\Models\Competence;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,8 +41,16 @@ class CompetenceService
 
     public function supprimer(Competence $competence): void
     {
-        // RG19/RG24 — lorsque les pivots requerir et posseder existeront, la
-        // suppression d'une compétence encore référencée devra être refusée.
+        $nombreOffres = $competence->offres()->count();
+        $nombreCandidats = $competence->candidats()->count();
+
+        if ($nombreOffres > 0 || $nombreCandidats > 0) {
+            throw new SuppressionImpossibleException(
+                "Cette compétence ne peut pas être supprimée : elle est utilisée par {$nombreOffres} offre(s) et {$nombreCandidats} candidat(s).",
+                ['competence' => ['Retirez cette compétence des offres et profils au préalable.']],
+            );
+        }
+
         $competence->delete();
     }
 

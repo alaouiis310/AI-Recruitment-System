@@ -42,8 +42,8 @@ class OffreEmploiResource extends JsonResource
 
             // RG19/RG21 — compétences requises et attributs du pivot requerir.
             'competences' => CompetenceRequiseResource::collection($this->whenLoaded('competences')),
-
-            // Les candidatures reçues (RG30) seront exposées ici avec le module 5.
+            'tests'       => TestTechniqueResource::collection($this->whenLoaded('tests')),
+            'nombre_candidatures' => $this->whenCounted('candidatures'),
         ];
     }
 }

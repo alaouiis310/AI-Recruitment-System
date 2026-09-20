@@ -25,8 +25,12 @@ class DatabaseSeeder extends Seeder
             ProfilCandidatSeeder::class,
             // Dépend des offres et des profils candidats.
             CandidatureSeeder::class,
+            // Dépendent des candidatures et complètent les règles RG34 à RG36.
+            EntretienSeeder::class,
             // Calcule les scores des candidatures déjà déposées (RG40, RG43).
             AnalyseIaSeeder::class,
+            // Catalogue de tests et notifications de démonstration (RG44/RG45).
+            TestTechniqueSeeder::class,
         ]);
     }
 }
