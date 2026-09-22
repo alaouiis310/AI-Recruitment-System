@@ -17,8 +17,11 @@ import RecruiterMessages from '../views/RecruiterMessages.vue'
 import RecruiterProfile from '../views/RecruiterProfile.vue'
 import CandidateAIHelper from '../views/CandidateAIHelper.vue'
 import AdminRecruiters from '../views/AdminRecruiters.vue'
+import AdminAddRecruiter from '../views/AdminAddRecruiter.vue'
 import AdminCandidates from '../views/AdminCandidates.vue'
+import AdminAddCandidate from '../views/AdminAddCandidate.vue'
 import AdminJobs from '../views/AdminJobs.vue'
+import AdminAddJob from '../views/AdminAddJob.vue'
 import AdminApplications from '../views/AdminApplications.vue'
 import AdminAnalytics from '../views/AdminAnalytics.vue'
 import AdminSettings from '../views/AdminSettings.vue'
@@ -141,15 +144,33 @@ const router = createRouter({
   meta: { requiresAuth: true, role: 'admin' }
 },
 {
+  path: '/admin/recruiters/add',
+  name: 'admin-add-recruiter',
+  component: AdminAddRecruiter,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
   path: '/admin/candidates',
   name: 'admin-candidates',
   component: AdminCandidates,
   meta: { requiresAuth: true, role: 'admin' }
 },
 {
+  path: '/admin/candidates/add',
+  name: 'admin-add-candidate',
+  component: AdminAddCandidate,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
   path: '/admin/jobs',
   name: 'admin-jobs',
   component: AdminJobs,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/jobs/add',
+  name: 'admin-add-job',
+  component: AdminAddJob,
   meta: { requiresAuth: true, role: 'admin' }
 },
 {
