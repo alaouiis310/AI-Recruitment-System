@@ -5,136 +5,284 @@
     page-title="Candidats" 
     page-subtitle="Gérez tous vos candidats"
   >
-    <!-- Menu -->
     <template #menu>
       <SidebarItem to="/recruiter" icon="🏠" label="Accueil" />
       <SidebarItem to="/recruiter/jobs" icon="💼" label="Mes offres" :badge="myJobsCount" />
-      <SidebarItem to="/recruiter/candidates" icon="🧑‍💻" label="Candidats" :badge="candidatesCount" active />
+      <SidebarItem to="/recruiter/candidates" icon="🧑‍💻" label="Candidats" :badge="candidatesCount" />
       <SidebarItem to="/recruiter/search" icon="🔍" label="Rechercher" />
       <SidebarItem to="/recruiter/ai-helper" icon="🤖" label="AI Helper" />
       <SidebarItem to="/recruiter/messages" icon="💬" label="Messages" :badge="messagesCount" />
     </template>
 
-    <!-- Header Actions -->
     <template #header-actions>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-all">
-          Exporter CSV
-        </button>
-        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
-          + Ajouter un candidat
-        </button>
-      </div>
+      <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-all">
+        Exporter CSV
+      </button>
     </template>
 
-    <!-- Barre de recherche -->
-    <div class="flex flex-col sm:flex-row gap-4 mb-6">
-      <div class="flex-1 relative">
-        <input 
-          v-model="searchQuery" 
-          type="text" 
-          placeholder="Rechercher un candidat..." 
-          class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-        >
-        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+    <!-- Loading -->
+    <div v-if="loading" class="flex items-center justify-center py-20">
+      <div class="text-center">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <p class="text-gray-500 mt-4 text-sm">Chargement des candidatures...</p>
       </div>
-      <select v-model="selectedStatus" class="px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white text-gray-700 text-sm">
-        <option value="">Tous les statuts</option>
-        <option value="Nouveau">Nouveau</option>
-        <option value="En cours">En cours</option>
-        <option value="Entretien">Entretien</option>
-        <option value="Présélectionné">Présélectionné</option>
-        <option value="Accepté">Accepté</option>
-        <option value="Refusé">Refusé</option>
-      </select>
     </div>
 
-    <!-- Liste des candidats -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="bg-gray-50 border-b border-gray-100 text-left">
-              <th class="px-6 py-3 font-medium text-gray-500">Candidat</th>
-              <th class="px-6 py-3 font-medium text-gray-500">Poste</th>
-              <th class="px-6 py-3 font-medium text-gray-500">Score IA</th>
-              <th class="px-6 py-3 font-medium text-gray-500">Statut</th>
-              <th class="px-6 py-3 font-medium text-gray-500">Date</th>
-              <th class="px-6 py-3 font-medium text-gray-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="candidate in filteredCandidates" :key="candidate.name" class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <img :src="candidate.avatar" alt="Avatar" class="w-9 h-9 rounded-full border-2 border-blue-100 object-cover">
-                  <div>
-                    <p class="font-medium text-gray-800">{{ candidate.name }}</p>
-                    <p class="text-xs text-gray-500">{{ candidate.email }}</p>
+    <!-- Erreur -->
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+      <p class="text-4xl mb-2">⚠️</p>
+      <p class="text-red-700 font-medium">{{ error }}</p>
+      <button @click="fetchCandidates" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">
+        Réessayer
+      </button>
+    </div>
+
+    <div v-else>
+      <!-- Barre de recherche -->
+      <div class="flex flex-col sm:flex-row gap-4 mb-6">
+        <div class="flex-1 relative">
+          <input 
+            v-model="searchQuery" 
+            @input="debouncedSearch"
+            type="text" 
+            placeholder="Rechercher un candidat..." 
+            class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+          >
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+        </div>
+        <select 
+          v-model="selectedStatus"
+          @change="fetchCandidates"
+          class="px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white text-gray-700 text-sm"
+        >
+          <option value="">Tous les statuts</option>
+          <option value="en_attente">En attente</option>
+          <option value="en_cours">En cours</option>
+          <option value="preselectionnee">Présélectionnée</option>
+          <option value="entretien">Entretien</option>
+          <option value="acceptee">Acceptée</option>
+          <option value="refusee">Refusée</option>
+        </select>
+      </div>
+
+      <!-- Liste des candidats -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100 text-left">
+                <th class="px-6 py-3 font-medium text-gray-500">Candidat</th>
+                <th class="px-6 py-3 font-medium text-gray-500">Poste</th>
+                <th class="px-6 py-3 font-medium text-gray-500">Score IA</th>
+                <th class="px-6 py-3 font-medium text-gray-500">Statut</th>
+                <th class="px-6 py-3 font-medium text-gray-500">Date</th>
+                <th class="px-6 py-3 font-medium text-gray-500">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr 
+                v-for="app in applications" 
+                :key="app.id" 
+                class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+              >
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <img 
+                      :src="getAvatar(app)" 
+                      alt="Avatar" 
+                      class="w-9 h-9 rounded-full border-2 border-blue-100 object-cover"
+                    >
+                    <div>
+                      <p class="font-medium text-gray-800">
+                        {{ app.candidat?.prenom }} {{ app.candidat?.nom }}
+                      </p>
+                      <p class="text-xs text-gray-500">{{ app.candidat?.user?.email }}</p>
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 text-gray-600">{{ candidate.job }}</td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <div class="w-16 bg-gray-200 rounded-full h-1.5">
-                    <div class="h-1.5 rounded-full" :style="{ width: candidate.score + '%', background: getScoreColor(candidate.score) }"></div>
+                </td>
+                <td class="px-6 py-4 text-gray-600">
+                  {{ app.offre?.titre || 'N/A' }}
+                </td>
+                <td class="px-6 py-4">
+                  <div v-if="app.analyse_ia?.score_matching" class="flex items-center gap-2">
+                    <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                      <div 
+                        class="h-1.5 rounded-full" 
+                        :style="{ 
+                          width: app.analyse_ia.score_matching + '%', 
+                          background: getScoreColor(app.analyse_ia.score_matching) 
+                        }"
+                      ></div>
+                    </div>
+                    <span 
+                      class="text-xs font-medium" 
+                      :class="getScoreTextColor(app.analyse_ia.score_matching)"
+                    >
+                      {{ Math.round(app.analyse_ia.score_matching) }}%
+                    </span>
                   </div>
-                  <span class="text-xs font-medium" :class="getScoreTextColor(candidate.score)">{{ candidate.score }}%</span>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <span :class="['text-xs font-medium px-2.5 py-1 rounded-full', getStatusBadge(candidate.status)]">
-                  {{ candidate.status }}
-                </span>
-              </td>
-              <td class="px-6 py-4 text-gray-500">{{ candidate.date }}</td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
-                  <span class="text-gray-300">|</span>
-                  <button class="text-gray-500 hover:text-gray-700 text-sm">💬</button>
-                  <span class="text-gray-300">|</span>
-                  <button class="text-gray-500 hover:text-gray-700 text-sm">⭐</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                  <span v-else class="text-xs text-gray-400">Non analysé</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span :class="['text-xs font-medium px-2.5 py-1 rounded-full', getStatusBadge(app.statut)]">
+                    {{ formatStatus(app.statut) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-gray-500">
+                  {{ formatDate(app.date_candidature) }}
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <button 
+                      @click="advanceStatus(app)"
+                      class="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
+                      Avancer
+                    </button>
+                    <span class="text-gray-300">|</span>
+                    <router-link 
+                      to="/recruiter/messages"
+                      class="text-gray-500 hover:text-gray-700 text-sm"
+                    >
+                      💬
+                    </router-link>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="applications.length === 0">
+                <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                  Aucune candidature
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </DashboardLayout>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
 import SidebarItem from '../components/SidebarItem.vue'
+import api from '../services/api'
+import { useAuthStore } from '../stores/auth'
 
-const userName = ref('Sophie Martin')
-const myJobsCount = ref(12)
-const candidatesCount = ref(86)
-const messagesCount = ref(4)
+const authStore = useAuthStore()
 
+const userName = computed(() => {
+  const user = authStore.user
+  return user?.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : 'Recruteur'
+})
+
+const loading = ref(true)
+const error = ref('')
+const applications = ref([])
 const searchQuery = ref('')
 const selectedStatus = ref('')
 
-const candidates = ref([
-  { name: 'Thomas Leroy', email: 'thomas@email.com', job: 'Dev Full Stack', score: 92, status: 'Entretien', date: '20/05/2024', avatar: 'https://ui-avatars.com/api/?name=Thomas+Leroy&background=2563eb&color=fff&size=36' },
-  { name: 'Camille Dubois', email: 'camille@email.com', job: 'UX Designer', score: 85, status: 'En cours', date: '18/05/2024', avatar: 'https://ui-avatars.com/api/?name=Camille+Dubois&background=7c3aed&color=fff&size=36' },
-  { name: 'Mehdi Amine', email: 'mehdi@email.com', job: 'Data Analyst', score: 78, status: 'Nouveau', date: '15/05/2024', avatar: 'https://ui-avatars.com/api/?name=Mehdi+Amine&background=059669&color=fff&size=36' },
-  { name: 'Lucas Bernard', email: 'lucas@email.com', job: 'Dev Full Stack', score: 71, status: 'Présélectionné', date: '12/05/2024', avatar: 'https://ui-avatars.com/api/?name=Lucas+Bernard&background=d97706&color=fff&size=36' },
-  { name: 'Marie Petit', email: 'marie@email.com', job: 'Product Owner', score: 88, status: 'Accepté', date: '10/05/2024', avatar: 'https://ui-avatars.com/api/?name=Marie+Petit&background=dc2626&color=fff&size=36' },
-])
+const myJobsCount = ref(0)
+const candidatesCount = computed(() => applications.value.length)
+const messagesCount = ref(0)
 
-const filteredCandidates = computed(() => {
-  return candidates.value.filter(c => {
-    const matchSearch = c.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                        c.job.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchStatus = !selectedStatus.value || c.status === selectedStatus.value
-    return matchSearch && matchStatus
-  })
-})
+let searchTimeout = null
+const debouncedSearch = () => {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => fetchCandidates(), 400)
+}
+
+const getAvatar = (app) => {
+  const name = `${app.candidat?.prenom || ''}+${app.candidat?.nom || ''}`.trim() || 'User'
+  return `https://ui-avatars.com/api/?name=${name}&background=2563eb&color=fff&size=36`
+}
+
+const fetchCandidates = async () => {
+  loading.value = true
+  error.value = ''
+
+  try {
+    const params = {}
+    if (searchQuery.value) params.recherche = searchQuery.value
+    if (selectedStatus.value) params.statut = selectedStatus.value
+
+    const response = await api.get('/recruteur/candidatures', { params })
+    applications.value = response.data.data || response.data.candidatures || response.data || []
+  } catch (err) {
+    console.error('Erreur candidatures:', err)
+    if (err.response?.status === 401) {
+      error.value = 'Session expirée.'
+    } else if (err.code === 'ERR_NETWORK') {
+      error.value = 'Impossible de contacter le serveur.'
+    } else {
+      error.value = err.response?.data?.message || 'Erreur lors du chargement.'
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const advanceStatus = async (app) => {
+  const nextStatus = {
+    'en_attente': 'en_cours',
+    'en_cours': 'preselectionnee',
+    'preselectionnee': 'entretien',
+    'entretien': 'acceptee',
+  }
+
+  const newStatus = nextStatus[app.statut]
+  if (!newStatus) {
+    alert('Ce dossier est déjà finalisé.')
+    return
+  }
+
+  if (!confirm(`Faire passer le statut à "${formatStatus(newStatus)}" ?`)) return
+
+  try {
+    await api.patch(`/recruteur/candidatures/${app.id}/statut`, {
+      statut: newStatus,
+      commentaire: 'Statut mis à jour par le recruteur'
+    })
+    app.statut = newStatus
+  } catch (err) {
+    alert('❌ Erreur lors de la mise à jour.')
+  }
+}
+
+const formatStatus = (status) => {
+  const labels = {
+    'en_attente': 'En attente',
+    'en_cours': 'En cours',
+    'preselectionnee': 'Présélectionnée',
+    'entretien': 'Entretien',
+    'acceptee': 'Acceptée',
+    'refusee': 'Refusée',
+  }
+  return labels[status] || status || 'N/A'
+}
+
+const formatDate = (date) => {
+  if (!date) return 'N/A'
+  try {
+    return new Date(date).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
+  } catch { return date }
+}
+
+const getStatusBadge = (status) => {
+  const badges = {
+    'en_attente': 'bg-blue-100 text-blue-700',
+    'en_cours': 'bg-amber-100 text-amber-700',
+    'preselectionnee': 'bg-indigo-100 text-indigo-700',
+    'entretien': 'bg-purple-100 text-purple-700',
+    'acceptee': 'bg-green-100 text-green-700',
+    'refusee': 'bg-red-100 text-red-700',
+  }
+  return badges[status] || 'bg-gray-100 text-gray-700'
+}
 
 const getScoreColor = (score) => {
   if (score >= 80) return '#10b981'
@@ -148,15 +296,7 @@ const getScoreTextColor = (score) => {
   return 'text-red-600'
 }
 
-const getStatusBadge = (status) => {
-  const badges = {
-    'Nouveau': 'bg-blue-100 text-blue-700',
-    'En cours': 'bg-amber-100 text-amber-700',
-    'Entretien': 'bg-purple-100 text-purple-700',
-    'Présélectionné': 'bg-indigo-100 text-indigo-700',
-    'Accepté': 'bg-green-100 text-green-700',
-    'Refusé': 'bg-red-100 text-red-700'
-  }
-  return badges[status] || 'bg-gray-100 text-gray-700'
-}
+onMounted(() => {
+  fetchCandidates()
+})
 </script>

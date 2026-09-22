@@ -96,6 +96,27 @@ class CandidatureService
             ->withQueryString();
     }
 
+    /** Vue globale de l'administrateur, sans restriction RG14. */
+    public function listerToutes(array $filtres): LengthAwarePaginator
+    {
+        return $this->filtrer(Candidature::query(), $filtres)
+            ->with(['candidat.user', 'offre.departement.entreprise', 'offre.recruteur.entreprise'])
+            ->when($filtres['id_offre'] ?? null, fn (Builder $q, $v) => $q->where('id_offre', $v))
+            ->when($filtres['recherche'] ?? null, function (Builder $q, string $terme) {
+                $motif = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $terme).'%';
+                $q->where(function (Builder $sous) use ($motif) {
+                    $sous->whereHas('candidat.user', fn (Builder $user) => $user
+                        ->where('name', 'like', $motif)
+                        ->orWhere('prenom', 'like', $motif)
+                        ->orWhere('email', 'like', $motif))
+                        ->orWhereHas('offre', fn (Builder $offre) => $offre->where('titre', 'like', $motif));
+                });
+            })
+            ->classeeParScore()
+            ->paginate(perPage: $filtres['per_page'] ?? 15)
+            ->withQueryString();
+    }
+
     /**
      * RG32 — avancement du dossier. La transition demandée doit suivre le
      * cycle de vie ; une candidature acceptée ou refusée est définitive.

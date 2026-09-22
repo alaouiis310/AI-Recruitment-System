@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\EtatCompte;
 use App\Enums\RoleUtilisateur;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -46,6 +47,12 @@ class User extends Authenticatable
     public function recruteur(): HasOne
     {
         return $this->hasOne(Recruteur::class, 'id_user');
+    }
+
+    /** RG44 — un utilisateur peut recevoir plusieurs notifications. */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(NotificationApp::class, 'id_user');
     }
 
     public function estCandidat(): bool

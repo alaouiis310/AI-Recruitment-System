@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\StatutResultatTest;
+use App\Exceptions\SuppressionImpossibleException;
 use App\Models\Candidature;
 use App\Models\OffreEmploi;
 use App\Models\ResultatTest;
@@ -41,6 +42,15 @@ class TestTechniqueService
 
     public function supprimer(TestTechnique $test): void
     {
+        $nombreResultats = $test->resultats()->count();
+
+        if ($nombreResultats > 0) {
+            throw new SuppressionImpossibleException(
+                "Ce test ne peut pas être supprimé : il possède {$nombreResultats} résultat(s).",
+                ['test' => ['Conservez le test pour préserver l’historique des résultats.']],
+            );
+        }
+
         $test->delete();
     }
 

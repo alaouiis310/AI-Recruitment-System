@@ -6,6 +6,8 @@ use App\Enums\ImportanceCompetence;
 use App\Enums\NiveauCompetence;
 use App\Enums\StatutOffre;
 use App\Enums\TypeContrat;
+use App\Models\Candidat;
+use App\Models\Candidature;
 use App\Models\Competence;
 use App\Models\Departement;
 use App\Models\Entreprise;
@@ -285,6 +287,19 @@ class OffreEmploiTest extends TestCase
             ->assertNoContent();
 
         $this->assertDatabaseMissing('offres_emploi', ['id_offre' => $offre->id_offre]);
+    }
+
+    public function test_une_offre_avec_candidatures_ne_peut_pas_etre_supprimee(): void
+    {
+        $offre = OffreEmploi::factory()->publieePar($this->recruteur, $this->departement)->create();
+        $candidat = Candidat::factory()->create();
+        Candidature::factory()->pour($candidat, $offre)->create();
+
+        $this->actingAs($this->utilisateurRecruteur, 'sanctum')
+            ->deleteJson("/api/recruteur/offres/{$offre->id_offre}")
+            ->assertStatus(409);
+
+        $this->assertDatabaseHas('offres_emploi', ['id_offre' => $offre->id_offre]);
     }
 
     public function test_un_recruteur_ne_peut_pas_supprimer_l_offre_d_un_autre(): void

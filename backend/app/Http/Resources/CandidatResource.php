@@ -22,8 +22,18 @@ class CandidatResource extends JsonResource
             'linkedin'          => $this->linkedin,
             'experience_totale' => (float) $this->experience_totale,
 
+            'utilisateur'             => new UserResource($this->whenLoaded('user')),
+            'nombre_candidatures'     => $this->whenCounted('candidatures'),
+            'score_moyen'             => $this->when(
+                array_key_exists('candidatures_avg_score_final', $this->getAttributes()),
+                fn () => $this->candidatures_avg_score_final !== null
+                    ? round((float) $this->candidatures_avg_score_final, 2)
+                    : null,
+            ),
+
             // RG24/RG26 — compétences déclarées via le pivot posseder.
             'competences' => CompetenceDeclareeResource::collection($this->whenLoaded('competences')),
+            'candidatures' => CandidatureResource::collection($this->whenLoaded('candidatures')),
         ];
     }
 }

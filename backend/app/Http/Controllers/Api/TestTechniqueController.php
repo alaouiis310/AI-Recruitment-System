@@ -6,7 +6,10 @@ use App\Http\Concerns\ReponsePaginee;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TestTechnique\CreerTestRequest;
 use App\Http\Requests\TestTechnique\ModifierTestRequest;
+use App\Http\Requests\TestTechnique\SynchroniserTestsOffreRequest;
+use App\Http\Resources\OffreEmploiResource;
 use App\Http\Resources\TestTechniqueResource;
+use App\Models\OffreEmploi;
 use App\Models\TestTechnique;
 use App\Services\TestTechniqueService;
 use Illuminate\Http\JsonResponse;
@@ -69,5 +72,20 @@ class TestTechniqueController extends Controller
         $this->tests->supprimer($test);
 
         return response()->json([], 204);
+    }
+
+    /** RG45 — remplace la liste des tests techniques proposés pour une offre. */
+    public function synchroniserOffre(
+        SynchroniserTestsOffreRequest $request,
+        OffreEmploi $offre,
+    ): JsonResponse {
+        $this->authorize('update', $offre);
+
+        return response()->json([
+            'message' => "Tests techniques de l'offre mis à jour.",
+            'offre' => new OffreEmploiResource(
+                $this->tests->rattacherAOffre($offre, $request->validated()['tests'])
+            ),
+        ]);
     }
 }

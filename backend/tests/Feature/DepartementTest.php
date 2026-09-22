@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Departement;
 use App\Models\Entreprise;
+use App\Models\OffreEmploi;
 use App\Models\Recruteur;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,6 +13,20 @@ use Tests\TestCase;
 class DepartementTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_un_departement_portant_des_offres_ne_peut_pas_etre_supprime(): void
+    {
+        $entreprise = Entreprise::factory()->create();
+        $departement = Departement::factory()->pour($entreprise)->create();
+        $utilisateur = $this->recruteurDe($entreprise);
+        OffreEmploi::factory()->publieePar($utilisateur->recruteur, $departement)->create();
+
+        $this->actingAs(User::factory()->administrateur()->create(), 'sanctum')
+            ->deleteJson("/api/departements/{$departement->id_departement}")
+            ->assertStatus(409);
+
+        $this->assertDatabaseHas('departements', ['id_departement' => $departement->id_departement]);
+    }
 
     /** Crée un recruteur rattaché à l'entreprise donnée. */
     private function recruteurDe(Entreprise $entreprise): User
