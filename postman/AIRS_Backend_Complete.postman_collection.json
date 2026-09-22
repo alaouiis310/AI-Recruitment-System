@@ -1,0 +1,137 @@
+{
+  "info": {
+    "name": "AIRS - Backend complet (complément)",
+    "description": "Endpoints ajoutés pour les dashboards, l'administration, les entretiens, les tests techniques et les notifications. Définir base_url et token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "event": [{
+    "listen": "test",
+    "script": {
+      "type": "text/javascript",
+      "exec": [
+        "pm.test('Réponse sans erreur serveur', () => pm.expect(pm.response.code).to.be.below(500));"
+      ]
+    }
+  }],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api" },
+    { "key": "token", "value": "" },
+    { "key": "candidature_id", "value": "1" },
+    { "key": "entretien_id", "value": "1" },
+    { "key": "offre_id", "value": "1" },
+    { "key": "test_id", "value": "1" },
+    { "key": "resultat_id", "value": "1" },
+    { "key": "notification_id", "value": "1" },
+    { "key": "utilisateur_id", "value": "2" }
+  ],
+  "item": [
+    {
+      "name": "Tableaux de bord",
+      "item": [
+        { "name": "Candidat", "request": { "method": "GET", "url": "{{base_url}}/candidat/tableau-de-bord" } },
+        { "name": "Recruteur", "request": { "method": "GET", "url": "{{base_url}}/recruteur/tableau-de-bord" } },
+        { "name": "Administrateur", "request": { "method": "GET", "url": "{{base_url}}/admin/tableau-de-bord" } }
+      ]
+    },
+    {
+      "name": "Entretiens",
+      "item": [
+        { "name": "Liste recruteur", "request": { "method": "GET", "url": "{{base_url}}/recruteur/entretiens?a_venir=1" } },
+        { "name": "Détail", "request": { "method": "GET", "url": "{{base_url}}/recruteur/entretiens/{{entretien_id}}" } },
+        {
+          "name": "Planifier",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-10-15\",\n  \"heure\": \"14:30\",\n  \"mode\": \"visio\",\n  \"lien_si_online\": \"https://meet.example.ma/abc\",\n  \"commentaire\": \"Entretien technique\"\n}"
+            },
+            "url": "{{base_url}}/recruteur/candidatures/{{candidature_id}}/entretiens"
+          }
+        },
+        { "name": "Entretiens d'une candidature recruteur", "request": { "method": "GET", "url": "{{base_url}}/recruteur/candidatures/{{candidature_id}}/entretiens" } },
+        { "name": "Entretiens d'une candidature candidat", "request": { "method": "GET", "url": "{{base_url}}/candidat/candidatures/{{candidature_id}}/entretiens" } },
+        {
+          "name": "Renseigner l'issue",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"resultat\": \"favorable\",\n  \"commentaire\": \"Candidat convaincant.\"\n}" },
+            "url": "{{base_url}}/recruteur/entretiens/{{entretien_id}}"
+          }
+        },
+        { "name": "Annuler", "request": { "method": "DELETE", "url": "{{base_url}}/recruteur/entretiens/{{entretien_id}}" } }
+      ]
+    },
+    {
+      "name": "Tests techniques",
+      "item": [
+        { "name": "Catalogue", "request": { "method": "GET", "url": "{{base_url}}/tests" } },
+        {
+          "name": "Créer (admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"titre\": \"Algorithmique\",\n  \"description\": \"Structures de données\",\n  \"duree\": 60,\n  \"score_max\": 100\n}" },
+            "url": "{{base_url}}/tests"
+          }
+        },
+        {
+          "name": "Rattacher à une offre",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"tests\": [{{test_id}}]\n}" },
+            "url": "{{base_url}}/recruteur/offres/{{offre_id}}/tests"
+          }
+        },
+        { "name": "Envoyer au candidat", "request": { "method": "POST", "url": "{{base_url}}/recruteur/candidatures/{{candidature_id}}/tests/{{test_id}}" } },
+        { "name": "Résultats recruteur", "request": { "method": "GET", "url": "{{base_url}}/recruteur/resultats-tests" } },
+        { "name": "Tests candidature candidat", "request": { "method": "GET", "url": "{{base_url}}/candidat/candidatures/{{candidature_id}}/tests" } },
+        {
+          "name": "Enregistrer un score",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"score_obtenu\": 82,\n  \"commentaire\": \"Bon niveau algorithmique.\"\n}" },
+            "url": "{{base_url}}/recruteur/resultats-tests/{{resultat_id}}/score"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        { "name": "Liste", "request": { "method": "GET", "url": "{{base_url}}/notifications" } },
+        { "name": "Non lues", "request": { "method": "GET", "url": "{{base_url}}/notifications?non_lues=1" } },
+        { "name": "Marquer lue", "request": { "method": "PATCH", "url": "{{base_url}}/notifications/{{notification_id}}/lue" } },
+        { "name": "Tout marquer lu", "request": { "method": "POST", "url": "{{base_url}}/notifications/toutes-lues" } }
+      ]
+    },
+    {
+      "name": "Administration",
+      "item": [
+        { "name": "Liste candidats", "request": { "method": "GET", "url": "{{base_url}}/admin/candidats?recherche=&etat_compte=actif" } },
+        { "name": "Liste recruteurs", "request": { "method": "GET", "url": "{{base_url}}/admin/recruteurs" } },
+        {
+          "name": "Changer état d'un compte",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"etat_compte\": \"suspendu\"\n}" },
+            "url": "{{base_url}}/admin/utilisateurs/{{utilisateur_id}}/etat"
+          }
+        },
+        { "name": "Toutes les offres", "request": { "method": "GET", "url": "{{base_url}}/admin/offres" } },
+        { "name": "Toutes les candidatures", "request": { "method": "GET", "url": "{{base_url}}/admin/candidatures" } },
+        { "name": "Exporter candidatures CSV", "request": { "method": "GET", "url": "{{base_url}}/admin/candidatures/export" } },
+        { "name": "Analytiques", "request": { "method": "GET", "url": "{{base_url}}/admin/analytiques" } }
+      ]
+    }
+  ]
+}

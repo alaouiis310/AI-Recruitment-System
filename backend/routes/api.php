@@ -1,16 +1,21 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AnalyseIaController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CandidatCandidatureController;
 use App\Http\Controllers\Api\CompetenceController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DepartementController;
 use App\Http\Controllers\Api\EntrepriseController;
+use App\Http\Controllers\Api\EntretienController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OffreEmploiController;
 use App\Http\Controllers\Api\ProfilCandidatController;
 use App\Http\Controllers\Api\RecruteurCandidatureController;
 use App\Http\Controllers\Api\RecruteurOffreController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\ResultatTestController;
+use App\Http\Controllers\Api\TestTechniqueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', fn () => response()->json([
@@ -33,11 +38,17 @@ Route::prefix('auth')->group(function () {
 // Les clés primaires sont numériques : /entreprises/abc renvoie 404 sans
 // interroger la base.
 Route::pattern('entreprise', '[0-9]+');
+Route::pattern('candidat', '[0-9]+');
 Route::pattern('departement', '[0-9]+');
+Route::pattern('entretien', '[0-9]+');
 Route::pattern('offre', '[0-9]+');
+Route::pattern('recruteur', '[0-9]+');
 Route::pattern('candidature', '[0-9]+');
 Route::pattern('competence', '[0-9]+');
 Route::pattern('notification', '[0-9]+');
+Route::pattern('resultat', '[0-9]+');
+Route::pattern('test', '[0-9]+');
+Route::pattern('utilisateur', '[0-9]+');
 
 Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
 
@@ -50,10 +61,7 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
     });
 
     Route::middleware('role:candidat')->prefix('candidat')->group(function () {
-        Route::get('/tableau-de-bord', fn (Request $r) => response()->json([
-            'message' => 'Espace candidat',
-            'role'    => $r->user()->role->value,
-        ]));
+        Route::get('/tableau-de-bord', [DashboardController::class, 'candidat']);
 
         // RG22/RG23 — le candidat dépose et remplace son CV à tout moment.
         Route::post('/cv', [ProfilCandidatController::class, 'televerserCv']);
@@ -74,13 +82,17 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::get('/candidatures/{candidature}', [CandidatCandidatureController::class, 'show']);
         Route::delete('/candidatures/{candidature}', [CandidatCandidatureController::class, 'destroy']);
         Route::get('/candidatures/{candidature}/analyse', [AnalyseIaController::class, 'show']);
+
+        // RG45 — le candidat consulte les tests reçus sur sa candidature.
+        Route::get('/candidatures/{candidature}/tests', [ResultatTestController::class, 'parCandidature']);
+
+        // RG34 — le candidat consulte les entretiens de sa candidature sans
+        // pouvoir les modifier.
+        Route::get('/candidatures/{candidature}/entretiens', [EntretienController::class, 'parCandidature']);
     });
 
     Route::middleware('role:recruteur')->prefix('recruteur')->group(function () {
-        Route::get('/tableau-de-bord', fn (Request $r) => response()->json([
-            'message'    => 'Espace recruteur',
-            'entreprise' => $r->user()->recruteur?->entreprise?->nom,
-        ]));
+        Route::get('/tableau-de-bord', [DashboardController::class, 'recruteur']);
 
         // RG12/RG13 — le recruteur ne gère que les offres qu'il a publiées ;
         // la propriété de l'enregistrement est vérifiée par OffreEmploiPolicy.
@@ -88,6 +100,7 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::post('/offres', [RecruteurOffreController::class, 'store']);
         Route::patch('/offres/{offre}', [RecruteurOffreController::class, 'update']);
         Route::delete('/offres/{offre}', [RecruteurOffreController::class, 'destroy']);
+        Route::put('/offres/{offre}/tests', [TestTechniqueController::class, 'synchroniserOffre']);
 
         // RG14 — le recruteur ne voit que les candidatures portant sur
         // les offres qu'il a publiées ; la restriction est appliquée par
@@ -100,12 +113,49 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         // du profil du candidat.
         Route::get('/candidatures/{candidature}/analyse', [AnalyseIaController::class, 'show']);
         Route::post('/candidatures/{candidature}/analyse', [AnalyseIaController::class, 'relancer']);
+
+        // RG45 — envoi d'un test au candidat et saisie de son score. La
+        // propriété de la candidature gouverne l'accès (RG14).
+        Route::get('/resultats-tests', [ResultatTestController::class, 'index']);
+        Route::post('/candidatures/{candidature}/tests/{test}', [ResultatTestController::class, 'envoyer']);
+        Route::get('/candidatures/{candidature}/tests', [ResultatTestController::class, 'parCandidature']);
+        Route::patch('/resultats-tests/{resultat}/score', [ResultatTestController::class, 'enregistrerScore']);
+
+        // RG34/RG35/RG36 — les entretiens relèvent de la candidature, donc de
+        // l'offre publiée par le recruteur (RG14).
+        Route::get('/entretiens', [EntretienController::class, 'index']);
+        Route::get('/entretiens/{entretien}', [EntretienController::class, 'show']);
+        Route::post('/candidatures/{candidature}/entretiens', [EntretienController::class, 'store']);
+        Route::get('/candidatures/{candidature}/entretiens', [EntretienController::class, 'parCandidature']);
+        Route::patch('/entretiens/{entretien}', [EntretienController::class, 'update']);
+        Route::delete('/entretiens/{entretien}', [EntretienController::class, 'destroy']);
     });
 
     Route::middleware('role:administrateur')->prefix('admin')->group(function () {
-        Route::get('/tableau-de-bord', fn () => response()->json([
-            'message' => 'Espace administrateur',
-        ]));
+        Route::get('/tableau-de-bord', [AdminController::class, 'tableauDeBord']);
+        Route::get('/analytiques', [AdminController::class, 'tableauDeBord']);
+
+        Route::get('/candidats', [AdminController::class, 'candidats']);
+        Route::post('/candidats', [AdminController::class, 'storeCandidat']);
+        Route::get('/candidats/{candidat}', [AdminController::class, 'showCandidat']);
+
+        Route::get('/recruteurs', [AdminController::class, 'recruteurs']);
+        Route::post('/recruteurs', [AdminController::class, 'storeRecruteur']);
+        Route::get('/recruteurs/{recruteur}', [AdminController::class, 'showRecruteur']);
+
+        Route::patch('/utilisateurs/{utilisateur}/etat', [AdminController::class, 'changerEtat']);
+
+        Route::get('/offres', [AdminController::class, 'offres']);
+        Route::post('/offres', [AdminController::class, 'storeOffre']);
+        Route::get('/offres/{offre}', [AdminController::class, 'showOffre']);
+        Route::patch('/offres/{offre}', [AdminController::class, 'updateOffre']);
+        Route::delete('/offres/{offre}', [AdminController::class, 'destroyOffre']);
+
+        Route::get('/candidatures/export', [AdminController::class, 'exporterCandidatures']);
+        Route::get('/candidatures', [AdminController::class, 'candidatures']);
+        Route::get('/candidatures/{candidature}', [AdminController::class, 'showCandidature']);
+        Route::patch('/candidatures/{candidature}/statut', [AdminController::class, 'changerStatutCandidature']);
+        Route::delete('/candidatures/{candidature}', [AdminController::class, 'destroyCandidature']);
     });
 
     Route::get('/entreprises', [EntrepriseController::class, 'index']);
@@ -138,6 +188,32 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::post('/competences', [CompetenceController::class, 'store']);
         Route::patch('/competences/{competence}', [CompetenceController::class, 'update']);
         Route::delete('/competences/{competence}', [CompetenceController::class, 'destroy']);
+    });
+
+    /*
+     |--------------------------------------------------------------------------
+     | Notifications — RG44
+     |--------------------------------------------------------------------------
+     | Toujours celles du compte authentifié : aucun identifiant d'utilisateur
+     | ne figure dans les URL.
+     */
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::patch('/notifications/{notification}/lue', [NotificationController::class, 'marquerLue']);
+    Route::post('/notifications/toutes-lues', [NotificationController::class, 'marquerToutesLues']);
+
+    /*
+     |--------------------------------------------------------------------------
+     | Tests techniques — RG45
+     |--------------------------------------------------------------------------
+     | Catalogue consultable par les recruteurs, maintenu par l'administrateur.
+     */
+    Route::get('/tests', [TestTechniqueController::class, 'index']);
+    Route::get('/tests/{test}', [TestTechniqueController::class, 'show']);
+
+    Route::middleware('role:administrateur')->group(function () {
+        Route::post('/tests', [TestTechniqueController::class, 'store']);
+        Route::patch('/tests/{test}', [TestTechniqueController::class, 'update']);
+        Route::delete('/tests/{test}', [TestTechniqueController::class, 'destroy']);
     });
 
     /*

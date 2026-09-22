@@ -107,6 +107,56 @@ class TestTechniqueTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_un_recruteur_rattache_des_tests_a_son_offre(): void
+    {
+        $autreTest = TestTechnique::factory()->create();
+        $offre = $this->candidature->offre;
+
+        $this->actingAs($this->utilisateurRecruteur, 'sanctum')
+            ->putJson("/api/recruteur/offres/{$offre->id_offre}/tests", [
+                'tests' => [$this->test->id_test, $autreTest->id_test],
+            ])
+            ->assertOk()
+            ->assertJsonCount(2, 'offre.tests');
+
+        $this->assertDatabaseCount('proposer', 2);
+    }
+
+    public function test_un_recruteur_ne_rattache_pas_de_tests_a_l_offre_d_un_autre(): void
+    {
+        $offre = $this->candidature->offre;
+
+        $this->actingAs($this->autreRecruteur(), 'sanctum')
+            ->putJson("/api/recruteur/offres/{$offre->id_offre}/tests", [
+                'tests' => [$this->test->id_test],
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_la_liste_vide_retire_les_tests_d_une_offre(): void
+    {
+        $offre = $this->candidature->offre;
+        $offre->tests()->attach($this->test);
+
+        $this->actingAs($this->utilisateurRecruteur, 'sanctum')
+            ->putJson("/api/recruteur/offres/{$offre->id_offre}/tests", ['tests' => []])
+            ->assertOk()
+            ->assertJsonCount(0, 'offre.tests');
+
+        $this->assertDatabaseCount('proposer', 0);
+    }
+
+    public function test_un_test_avec_resultats_ne_peut_pas_etre_supprime(): void
+    {
+        ResultatTest::factory()->pour($this->candidature, $this->test)->create();
+
+        $this->actingAs(User::factory()->administrateur()->create(), 'sanctum')
+            ->deleteJson("/api/tests/{$this->test->id_test}")
+            ->assertStatus(409);
+
+        $this->assertDatabaseHas('tests_techniques', ['id_test' => $this->test->id_test]);
+    }
+
     public function test_la_creation_exige_un_titre_et_une_duree(): void
     {
         $this->actingAs(User::factory()->administrateur()->create(), 'sanctum')

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\SuppressionImpossibleException;
 use App\Models\Departement;
 use App\Models\Entreprise;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -48,9 +49,15 @@ class DepartementService
     /** Suppression d'un département. */
     public function supprimer(Departement $departement): void
     {
-        // RG10/RG11 — lorsque la table offres_emploi existera, sa clé étrangère
-        // id_departement devra interdire la suppression d'un département
-        // portant des offres : la garde correspondante viendra ici.
+        $nombreOffres = $departement->offres()->count();
+
+        if ($nombreOffres > 0) {
+            throw new SuppressionImpossibleException(
+                "Ce département ne peut pas être supprimé : il porte encore {$nombreOffres} offre(s).",
+                ['departement' => ['Supprimez ou déplacez les offres au préalable.']],
+            );
+        }
+
         $departement->delete();
     }
 

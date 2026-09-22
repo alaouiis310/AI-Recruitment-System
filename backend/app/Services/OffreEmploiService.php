@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\SuppressionImpossibleException;
 use App\Models\OffreEmploi;
 use App\Models\Recruteur;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -27,6 +28,12 @@ class OffreEmploiService
     public function listerDuRecruteur(Recruteur $recruteur, array $filtres): LengthAwarePaginator
     {
         return $this->appliquerFiltres($recruteur->offres()->getQuery(), $filtres);
+    }
+
+    /** Vue globale de l'administrateur, tous recruteurs et statuts confondus. */
+    public function listerToutes(array $filtres): LengthAwarePaginator
+    {
+        return $this->appliquerFiltres(OffreEmploi::query(), $filtres);
     }
 
     /**
@@ -79,8 +86,15 @@ class OffreEmploiService
     /** Suppression d'une offre et, en cascade, de ses compétences requises. */
     public function supprimer(OffreEmploi $offre): void
     {
-        // RG30 — lorsque la table candidatures existera, la suppression d'une
-        // offre ayant reçu des candidatures devra être refusée.
+        $nombreCandidatures = $offre->candidatures()->count();
+
+        if ($nombreCandidatures > 0) {
+            throw new SuppressionImpossibleException(
+                "Cette offre ne peut pas être supprimée : elle a reçu {$nombreCandidatures} candidature(s).",
+                ['offre' => ['Fermez l’offre pour préserver l’historique des candidatures.']],
+            );
+        }
+
         $offre->delete();
     }
 
@@ -103,7 +117,8 @@ class OffreEmploiService
     private function appliquerFiltres(Builder $requete, array $filtres): LengthAwarePaginator
     {
         return $requete
-            ->with(['departement.entreprise', 'competences'])
+            ->with(['departement.entreprise', 'recruteur.entreprise', 'competences'])
+            ->withCount('candidatures')
             ->when($filtres['mots_cles'] ?? null, function (Builder $q, string $termes) {
                 $motif = '%'.$this->echapper($termes).'%';
                 $q->where(fn (Builder $sous) => $sous->where('titre', 'like', $motif)
