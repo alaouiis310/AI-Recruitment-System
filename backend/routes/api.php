@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiRecruitmentController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AnalyseIaController;
 use App\Http\Controllers\Api\AuthController;
@@ -58,6 +59,7 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::patch('/mot-de-passe', [AuthController::class, 'changerMotDePasse']);
         Route::post('/deconnexion', [AuthController::class, 'deconnexion']);
         Route::post('/deconnexion-globale', [AuthController::class, 'deconnexionGlobale']);
+        Route::post('/desactivation', [AuthController::class, 'desactiverCompte']);
     });
 
     Route::middleware('role:candidat')->prefix('candidat')->group(function () {
@@ -229,4 +231,25 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
      */
     Route::get('/offres', [OffreEmploiController::class, 'index']);
     Route::get('/offres/{offre}', [OffreEmploiController::class, 'show']);
+
+    /*
+     |--------------------------------------------------------------------------
+     | Assistant et évaluation de CV par IA — module de Nilam (Gemini)
+     |--------------------------------------------------------------------------
+     | Outils d'aide : rien n'est enregistré, et le score d'une candidature
+     | reste celui de ScoringService (RG40). L'évaluation de CV déposés à la
+     | volée est réservée aux recruteurs et administrateurs ; l'assistant est
+     | ouvert à tout compte.
+     */
+    Route::prefix('ia')->group(function () {
+        Route::post('/assistant', [AiRecruitmentController::class, 'chat'])
+            ->middleware('throttle:20,1');
+
+        Route::middleware('role:recruteur,administrateur')->group(function () {
+            Route::post('/evaluer-cv', [AiRecruitmentController::class, 'evaluate'])
+                ->middleware('throttle:10,1');
+            Route::post('/classer-cvs', [AiRecruitmentController::class, 'rank'])
+                ->middleware('throttle:5,1');
+        });
+    });
 });

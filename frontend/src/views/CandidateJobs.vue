@@ -69,7 +69,7 @@
     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
       <div 
         v-for="job in jobs" 
-        :key="job.id" 
+        :key="job.id_offre" 
         class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200"
       >
         <div class="flex items-start justify-between mb-3">
@@ -95,13 +95,18 @@
         <div class="flex items-center gap-2">
           <button 
             @click="applyToJob(job)"
-            :disabled="applying === job.id"
+            :disabled="applying === job.id_offre"
             class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-all"
           >
-            {{ applying === job.id ? 'Envoi...' : 'Postuler' }}
+            {{ applying === job.id_offre ? 'Envoi...' : 'Postuler' }}
           </button>
-          <button class="px-4 py-2 border border-gray-200 hover:bg-gray-50 rounded-xl transition-all text-gray-500">
-            ⭐
+          <button
+            @click="basculerSauvegarde(job)"
+            :aria-pressed="sauvegardees.includes(job.id_offre)"
+            :aria-label="sauvegardees.includes(job.id_offre) ? 'Retirer des offres sauvegardées' : 'Sauvegarder l’offre'"
+            :class="['px-4 py-2 border rounded-xl transition-all', sauvegardees.includes(job.id_offre) ? 'border-amber-300 bg-amber-50 text-amber-500' : 'border-gray-200 hover:bg-gray-50 text-gray-400']"
+          >
+            {{ sauvegardees.includes(job.id_offre) ? '★' : '☆' }}
           </button>
         </div>
       </div>
@@ -122,6 +127,7 @@ import DashboardLayout from '../layouts/DashboardLayout.vue'
 import SidebarItem from '../components/SidebarItem.vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
+import { offresSauvegardees } from '../services/offresSauvegardees'
 
 const authStore = useAuthStore()
 
@@ -136,6 +142,13 @@ const jobs = ref([])
 const searchQuery = ref('')
 const selectedContract = ref('')
 const applying = ref(null)
+
+// Offres sauvegardées (conservées dans le navigateur, voir offresSauvegardees).
+const sauvegardees = ref(offresSauvegardees.lire())
+const basculerSauvegarde = (job) => {
+  offresSauvegardees.basculer(job.id_offre)
+  sauvegardees.value = offresSauvegardees.lire()
+}
 
 const applicationsCount = ref(0)
 const jobsCount = computed(() => jobs.value.length)
@@ -170,9 +183,9 @@ const fetchJobs = async () => {
 const applyToJob = async (job) => {
   if (!confirm(`Postuler pour "${job.titre}" ?`)) return
 
-  applying.value = job.id
+  applying.value = job.id_offre
   try {
-    await api.post('/candidat/candidatures', { id_offre: job.id })
+    await api.post('/candidat/candidatures', { id_offre: job.id_offre })
     alert('✅ Candidature envoyée avec succès !')
   } catch (err) {
     if (err.response?.status === 422) {
