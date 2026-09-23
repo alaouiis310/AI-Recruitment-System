@@ -24,6 +24,9 @@ class ListerCandidaturesRequest extends FormRequest
             // RG14 — n'a de sens que sur la liste du recruteur : restreindre
             // ses candidatures reçues à une de ses offres.
             'id_offre' => ['sometimes', 'integer', 'exists:offres_emploi,id_offre'],
+
+            // Recherche par nom ou prénom du candidat (liste du recruteur).
+            'recherche' => ['sometimes', 'string', 'max:100'],
         ];
     }
 
