@@ -73,22 +73,59 @@ class GeminiService
     }
 
     /**
-     * Chatbot endpoint for candidates and recruiters.
+     * Assistant conversationnel des pages « Assistant IA » (candidat et recruteur).
+     *
+     * Il répond aux questions d'usage de la plateforme ; il ne calcule aucun
+     * score. Le score d'une candidature reste celui de ScoringService (RG40).
+     *
+     * @throws RuntimeException si l'API est injoignable ou la réponse vide
      */
-    public function chat(string $userMessage): array
+    public function chat(string $userMessage, ?string $role = null): string
     {
+        $contexte = match ($role) {
+            'candidat' => "L'utilisateur est un candidat : aide-le à trouver des offres, préparer son CV et suivre ses candidatures.",
+            'recruteur' => "L'utilisateur est un recruteur : aide-le à publier des offres et à examiner les candidatures reçues.",
+            default => "L'utilisateur administre la plateforme.",
+        };
+
         $response = $this->client()->post($this->endpoint(), [
+            'system_instruction' => [
+                'parts' => [['text' => implode("\n", [
+                    "Tu es l'assistant de la plateforme de recrutement AIRS. Réponds en français, brièvement et concrètement.",
+                    $contexte,
+                    "Ne promets jamais de décision d'embauche et n'attribue pas de note à un candidat.",
+                ])]],
+            ],
             'contents' => [
-                [
-                    'role' => 'user',
-                    'parts' => [
-                        ['text' => 'You are an AI support assistant for an AI recruitment platform. Help the user concisely: '.$userMessage],
-                    ],
-                ],
+                ['role' => 'user', 'parts' => [['text' => $userMessage]]],
             ],
         ]);
 
-        return $response->json() ?? [];
+        if ($response->failed()) {
+            throw new RuntimeException(sprintf(
+                'Gemini API error (%d): %s',
+                $response->status(),
+                $response->json('error.message', 'no details provided')
+            ));
+        }
+
+        $texte = collect(data_get($response->json(), 'candidates.0.content.parts', []))
+            ->reject(fn ($part) => ! empty($part['thought']))
+            ->pluck('text')
+            ->filter()
+            ->implode('');
+
+        if (trim($texte) === '') {
+            throw new RuntimeException('Gemini returned an empty answer.');
+        }
+
+        return trim($texte);
+    }
+
+    /** Le service est-il configuré ? Sans clé, aucun appel n'est tenté. */
+    public function estConfigure(): bool
+    {
+        return filled(config('services.gemini.key'));
     }
 
     private function client(): PendingRequest
