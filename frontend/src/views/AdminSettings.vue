@@ -64,7 +64,7 @@
           <div v-else class="space-y-3">
             <div 
               v-for="u in currentUsers" 
-              :key="u.id"
+              :key="u.utilisateur?.id_user"
               class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all"
             >
               <div class="flex items-center gap-4">
@@ -74,10 +74,10 @@
                   class="w-11 h-11 rounded-full border-2 border-blue-100 object-cover"
                 >
                 <div>
-                  <p class="font-medium text-gray-800">{{ u.prenom }} {{ u.nom }}</p>
-                  <p class="text-xs text-gray-500">{{ u.user?.email }}</p>
-                  <span :class="['text-xs font-medium px-2 py-0.5 rounded-full mt-1 inline-block', getStatusBadge(u.user?.etat_compte)]">
-                    {{ formatStatus(u.user?.etat_compte) }}
+                  <p class="font-medium text-gray-800">{{ u.utilisateur?.prenom }} {{ u.utilisateur?.nom }}</p>
+                  <p class="text-xs text-gray-500">{{ u.utilisateur?.email }}</p>
+                  <span :class="['text-xs font-medium px-2 py-0.5 rounded-full mt-1 inline-block', getStatusBadge(u.utilisateur?.etat_compte)]">
+                    {{ formatStatus(u.utilisateur?.etat_compte) }}
                   </span>
                 </div>
               </div>
@@ -85,11 +85,11 @@
                 <button 
                   @click="toggleUserStatus(u)"
                   class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
-                  :class="u.user?.etat_compte === 'actif' 
+                  :class="u.utilisateur?.etat_compte === 'actif' 
                     ? 'text-amber-600 hover:bg-amber-50' 
                     : 'text-green-600 hover:bg-green-50'"
                 >
-                  {{ u.user?.etat_compte === 'actif' ? '⏸️ Suspendre' : '▶️ Activer' }}
+                  {{ u.utilisateur?.etat_compte === 'actif' ? '⏸️ Suspendre' : '▶️ Activer' }}
                 </button>
               </div>
             </div>
@@ -100,31 +100,13 @@
         </div>
 
         <!-- Général -->
-        <div v-if="activeTab === 'general'">
-          <h3 class="font-semibold text-gray-800 mb-4">⚙️ Paramètres généraux</h3>
-          <form @submit.prevent="saveGeneral" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Nom de la plateforme</label>
-              <input type="text" v-model="general.platformName" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">URL</label>
-              <input type="text" v-model="general.platformUrl" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Email de contact</label>
-              <input type="email" v-model="general.contactEmail" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all">
-            </div>
-            <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all">
-              Enregistrer
-            </button>
-          </form>
-        </div>
-
-        <!-- Sécurité -->
         <div v-if="activeTab === 'security'">
           <h3 class="font-semibold text-gray-800 mb-4">🔒 Sécurité</h3>
           <form @submit.prevent="saveSecurity" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe actuel</label>
+              <input type="password" v-model="security.ancien" autocomplete="current-password" placeholder="Mot de passe actuel" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all">
+            </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Nouveau mot de passe</label>
               <input type="password" v-model="security.password" placeholder="Nouveau mot de passe" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all">
@@ -163,20 +145,14 @@ const loadingUsers = ref(true)
 const candidats = ref([])
 const recruteurs = ref([])
 
-const general = reactive({
-  platformName: 'AI Recruitment System',
-  platformUrl: 'https://ai-recruitment-system.com',
-  contactEmail: 'contact@ai-recruitment-system.com'
-})
-
 const security = reactive({
+  ancien: '',
   password: '',
   passwordConfirm: ''
 })
 
 const tabs = ref([
   { key: 'users', icon: '👥', label: 'Utilisateurs' },
-  { key: 'general', icon: '⚙️', label: 'Général' },
   { key: 'security', icon: '🔒', label: 'Sécurité' },
 ])
 
@@ -185,7 +161,7 @@ const currentUsers = computed(() => {
 })
 
 const getAvatar = (u) => {
-  const name = `${u.prenom || ''}+${u.nom || ''}`.trim() || 'User'
+  const name = `${u.utilisateur?.prenom || ''}+${u.utilisateur?.nom || ''}`.trim() || 'User'
   return `https://ui-avatars.com/api/?name=${name}&background=2563eb&color=fff&size=44`
 }
 
@@ -206,12 +182,12 @@ const fetchUsers = async () => {
 }
 
 const toggleUserStatus = async (u) => {
-  const newStatus = u.user?.etat_compte === 'actif' ? 'suspendu' : 'actif'
+  const newStatus = u.utilisateur?.etat_compte === 'actif' ? 'suspendu' : 'actif'
   if (!confirm(`Changer le statut à "${formatStatus(newStatus)}" ?`)) return
 
   try {
-    await api.patch(`/admin/utilisateurs/${u.user.id}/etat`, { etat_compte: newStatus })
-    u.user.etat_compte = newStatus
+    await api.patch(`/admin/utilisateurs/${u.utilisateur.id_user}/etat`, { etat_compte: newStatus })
+    u.utilisateur.etat_compte = newStatus
   } catch (err) {
     alert('❌ Erreur lors de la mise à jour.')
   }
@@ -231,14 +207,25 @@ const getStatusBadge = (status) => {
   return badges[status] || 'bg-gray-100 text-gray-700'
 }
 
-const saveGeneral = () => alert('✅ Paramètres généraux enregistrés !')
 
-const saveSecurity = () => {
-  if (security.password && security.password !== security.passwordConfirm) {
+const saveSecurity = async () => {
+  if (security.password !== security.passwordConfirm) {
     alert('❌ Les mots de passe ne correspondent pas !')
     return
   }
-  alert('✅ Paramètres de sécurité enregistrés !')
+  try {
+    await api.patch('/auth/mot-de-passe', {
+      ancien_password: security.ancien,
+      password: security.password,
+      password_confirmation: security.passwordConfirm,
+    })
+    Object.assign(security, { ancien: '', password: '', passwordConfirm: '' })
+    alert('✅ Mot de passe modifié. Vos autres sessions ont été déconnectées.')
+  } catch (err) {
+    const erreurs = err.response?.data?.errors
+    const premier = erreurs ? Object.values(erreurs)[0]?.[0] : null
+    alert('❌ ' + (premier || err.response?.data?.message || 'Le changement a échoué.'))
+  }
 }
 
 onMounted(() => {

@@ -58,14 +58,15 @@
         <!-- Menu Candidat -->
         <template v-if="userRole === 'Candidat'">
           <SidebarItem to="/candidate" icon="🏠" label="Accueil" />
-          <SidebarItem to="/candidate/applications" icon="📝" label="Mes candidatures" :badge="12" />
-          <SidebarItem to="/candidate/jobs" icon="💼" label="Offres d'emploi" :badge="24" />
-          <SidebarItem to="/candidate/interviews" icon="🗓️" label="Mes entretiens" :badge="2" />
-          <SidebarItem to="/candidate/saved" icon="⭐" label="Offres sauvegardées" :badge="5" />
+          <SidebarItem to="/candidate/applications" icon="📝" label="Mes candidatures" :badge="badges.candidatures" />
+          <SidebarItem to="/candidate/jobs" icon="💼" label="Offres d'emploi" :badge="badges.offres" />
+          <SidebarItem to="/candidate/interviews" icon="🗓️" label="Mes entretiens" :badge="badges.entretiens" />
+          <SidebarItem to="/candidate/saved" icon="⭐" label="Offres sauvegardées" :badge="badges.sauvegardees" />
           
           <div class="border-t border-gray-100 my-3"></div>
           
           <SidebarItem to="/candidate/ai-helper" icon="🤖" label="AI Helper" />
+          <SidebarItem to="/candidate/notifications" icon="🔔" label="Notifications" :badge="badges.notifications" />
           
           <div class="border-t border-gray-100 my-3"></div>
           
@@ -76,14 +77,14 @@
         <!-- Menu Recruteur -->
         <template v-if="userRole === 'Recruteur'">
           <SidebarItem to="/recruiter" icon="🏠" label="Accueil" />
-          <SidebarItem to="/recruiter/jobs" icon="💼" label="Mes offres" :badge="12" />
-          <SidebarItem to="/recruiter/candidates" icon="🧑‍💻" label="Candidats" :badge="86" />
+          <SidebarItem to="/recruiter/jobs" icon="💼" label="Mes offres" :badge="badges.offres" />
+          <SidebarItem to="/recruiter/candidates" icon="🧑‍💻" label="Candidats" :badge="badges.candidatures" />
           
           <div class="border-t border-gray-100 my-3"></div>
           
           <SidebarItem to="/recruiter/search" icon="🔍" label="Rechercher" />
           <SidebarItem to="/recruiter/ai-helper" icon="🤖" label="AI Helper" />
-          <SidebarItem to="/recruiter/messages" icon="💬" label="Messages" :badge="4" />
+          <SidebarItem to="/recruiter/notifications" icon="🔔" label="Notifications" :badge="badges.notifications" />
           
           <div class="border-t border-gray-100 my-3"></div>
           
@@ -93,10 +94,10 @@
         <!-- Menu Admin -->
         <template v-if="userRole === 'Administrateur'">
           <SidebarItem to="/admin" icon="🏠" label="Accueil" />
-          <SidebarItem to="/admin/recruiters" icon="👤" label="Recruteurs" :badge="86" />
-          <SidebarItem to="/admin/candidates" icon="🧑‍💻" label="Candidats" :badge="1248" />
-          <SidebarItem to="/admin/jobs" icon="💼" label="Offres d'emploi" :badge="47" />
-          <SidebarItem to="/admin/applications" icon="📝" label="Candidatures" :badge="5426" />
+          <SidebarItem to="/admin/recruiters" icon="👤" label="Recruteurs" :badge="badges.recruteurs" />
+          <SidebarItem to="/admin/candidates" icon="🧑‍💻" label="Candidats" :badge="badges.candidats" />
+          <SidebarItem to="/admin/jobs" icon="💼" label="Offres d'emploi" :badge="badges.offres" />
+          <SidebarItem to="/admin/applications" icon="📝" label="Candidatures" :badge="badges.candidatures" />
           
           <div class="border-t border-gray-100 my-3"></div>
           
@@ -156,10 +157,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import SidebarItem from '../components/SidebarItem.vue'
 import { useAuthStore } from '../stores/auth'
+import api from '../services/api'
+import { offresSauvegardees } from '../services/offresSauvegardees'
 
 const props = defineProps({
   userName: {
@@ -183,6 +186,41 @@ const props = defineProps({
 const router = useRouter()
 const auth = useAuthStore()
 const isSidebarOpen = ref(false)
+
+// Compteurs réels du menu, lus une fois par page depuis le tableau de bord du rôle.
+const badges = reactive({})
+
+onMounted(async () => {
+  try {
+    const role = auth.utilisateur?.role
+    if (role === 'candidat') {
+      const [tableau, offres] = await Promise.all([
+        api.get('/candidat/tableau-de-bord'),
+        api.get('/offres', { params: { per_page: 1 } }),
+      ])
+      const stats = tableau.data.statistiques || {}
+      badges.candidatures = stats.candidatures
+      badges.entretiens = stats.entretiens_a_venir
+      badges.offres = offres.data.pagination?.total
+      badges.sauvegardees = offresSauvegardees.lire().length
+      badges.notifications = stats.notifications_non_lues
+    } else if (role === 'recruteur') {
+      const stats = (await api.get('/recruteur/tableau-de-bord')).data.statistiques || {}
+      badges.offres = stats.offres
+      badges.candidatures = stats.candidatures
+      badges.notifications = stats.notifications_non_lues
+    } else if (role === 'administrateur') {
+      const stats = (await api.get('/admin/tableau-de-bord')).data.statistiques || {}
+      badges.recruteurs = stats.utilisateurs?.recruteurs
+      badges.candidats = stats.utilisateurs?.candidats
+      badges.offres = stats.offres?.total
+      badges.candidatures = stats.candidatures?.total
+    }
+  } catch (err) {
+    // Les compteurs sont un confort : leur échec ne doit pas bloquer la page.
+    console.error('Erreur compteurs du menu:', err)
+  }
+})
 
 const userAvatar = ref('')
 

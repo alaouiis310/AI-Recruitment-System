@@ -90,7 +90,7 @@
             <tbody>
               <tr 
                 v-for="r in recruiters" 
-                :key="r.id" 
+                :key="r.id_recruteur" 
                 class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
               >
                 <td class="px-6 py-4">
@@ -101,27 +101,27 @@
                       class="w-9 h-9 rounded-full border-2 border-blue-100 object-cover"
                     >
                     <div>
-                      <p class="font-medium text-gray-800">{{ r.prenom }} {{ r.nom }}</p>
-                      <p class="text-xs text-gray-500">{{ r.user?.email }}</p>
+                      <p class="font-medium text-gray-800">{{ r.utilisateur?.prenom }} {{ r.utilisateur?.nom }}</p>
+                      <p class="text-xs text-gray-500">{{ r.utilisateur?.email }}</p>
                     </div>
                   </div>
                 </td>
                 <td class="px-6 py-4 text-gray-600">{{ r.entreprise?.nom || 'N/A' }}</td>
-                <td class="px-6 py-4 text-gray-600">{{ r.offres_count || 0 }}</td>
+                <td class="px-6 py-4 text-gray-600">{{ r.nombre_offres || 0 }}</td>
                 <td class="px-6 py-4">
-                  <span :class="['text-xs font-medium px-2.5 py-1 rounded-full', getStatusBadge(r.user?.etat_compte)]">
-                    {{ formatStatus(r.user?.etat_compte) }}
+                  <span :class="['text-xs font-medium px-2.5 py-1 rounded-full', getStatusBadge(r.utilisateur?.etat_compte)]">
+                    {{ formatStatus(r.utilisateur?.etat_compte) }}
                   </span>
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
-                    <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
+                    <button @click="fiche = construireFiche(r)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
                     <span class="text-gray-300">|</span>
                     <button 
                       @click="toggleStatus(r)"
                       class="text-amber-600 hover:text-amber-700 text-sm"
                     >
-                      {{ r.user?.etat_compte === 'actif' ? 'Suspendre' : 'Activer' }}
+                      {{ r.utilisateur?.etat_compte === 'actif' ? 'Suspendre' : 'Activer' }}
                     </button>
                   </div>
                 </td>
@@ -136,16 +136,20 @@
         </div>
       </div>
     </div>
+    <FicheDetail :ouvert="!!fiche" :titre="fiche?.titre" :lignes="fiche?.lignes || []" @fermer="fiche = null" />
   </DashboardLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
+import FicheDetail from '../components/FicheDetail.vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 const userName = computed(() => {
   const user = authStore.user
@@ -166,11 +170,11 @@ const debouncedSearch = () => {
 }
 
 const countByStatus = (status) => {
-  return recruiters.value.filter(r => r.user?.etat_compte === status).length
+  return recruiters.value.filter(r => r.utilisateur?.etat_compte === status).length
 }
 
 const getAvatar = (r) => {
-  const name = `${r.prenom || ''}+${r.nom || ''}`.trim() || 'User'
+  const name = `${r.utilisateur?.prenom || ''}+${r.utilisateur?.nom || ''}`.trim() || 'User'
   return `https://ui-avatars.com/api/?name=${name}&background=2563eb&color=fff&size=36`
 }
 
@@ -201,18 +205,20 @@ const fetchRecruiters = async () => {
 }
 
 const toggleStatus = async (r) => {
-  const newStatus = r.user?.etat_compte === 'actif' ? 'suspendu' : 'actif'
-  if (!confirm(`Changer le statut de ${r.prenom} à "${formatStatus(newStatus)}" ?`)) return
+  const newStatus = r.utilisateur?.etat_compte === 'actif' ? 'suspendu' : 'actif'
+  if (!confirm(`Changer le statut de ${r.utilisateur?.prenom} à "${formatStatus(newStatus)}" ?`)) return
 
   try {
-    await api.patch(`/admin/utilisateurs/${r.user.id}/etat`, { etat_compte: newStatus })
-    r.user.etat_compte = newStatus
+    await api.patch(`/admin/utilisateurs/${r.utilisateur.id_user}/etat`, { etat_compte: newStatus })
+    r.utilisateur.etat_compte = newStatus
   } catch (err) {
     alert('❌ Erreur lors de la mise à jour.')
   }
 }
 
-
+const openCreateModal = () => {
+  router.push('/admin/recruiters/add')
+}
 
 const formatStatus = (status) => {
   const labels = { 'actif': 'Actif', 'suspendu': 'Suspendu', 'desactive': 'Désactivé' }
@@ -230,5 +236,21 @@ const getStatusBadge = (status) => {
 
 onMounted(() => {
   fetchRecruiters()
+})
+
+// Fiche détaillée ouverte par le bouton « Voir ».
+const fiche = ref(null)
+const dateFr = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '')
+const construireFiche = (r) => ({
+  titre: r.utilisateur?.nom_complet || 'Recruteur',
+  lignes: [
+    { label: 'Email', valeur: r.utilisateur?.email },
+    { label: 'Téléphone', valeur: r.telephone },
+    { label: 'Poste', valeur: r.poste },
+    { label: 'Entreprise', valeur: r.entreprise?.nom },
+    { label: 'Ville', valeur: r.entreprise?.ville },
+    { label: 'Offres publiées', valeur: r.nombre_offres },
+    { label: 'État du compte', valeur: r.utilisateur?.etat_compte },
+  ],
 })
 </script>
