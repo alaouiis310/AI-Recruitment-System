@@ -230,3 +230,8 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
     Route::get('/offres', [OffreEmploiController::class, 'index']);
     Route::get('/offres/{offre}', [OffreEmploiController::class, 'show']);
 });
+
+// Module d'évaluation de CV de Nilam, repris tel quel à la fusion.
+Route::post('/evaluate-cv', [\App\Http\Controllers\AiRecruitmentController::class, 'evaluate']);
+Route::post('/rank-cvs', [\App\Http\Controllers\AiRecruitmentController::class, 'rank']);
+Route::post('/chat', [\App\Http\Controllers\AiRecruitmentController::class, 'chat']);
