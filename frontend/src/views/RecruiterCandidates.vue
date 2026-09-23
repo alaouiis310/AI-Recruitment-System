@@ -15,7 +15,7 @@
     </template>
 
     <template #header-actions>
-      <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-all">
+      <button @click="exporterCsv" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-all">
         Exporter CSV
       </button>
     </template>
@@ -59,7 +59,6 @@
           <option value="en_attente">En attente</option>
           <option value="en_cours">En cours</option>
           <option value="preselectionnee">Présélectionnée</option>
-          <option value="entretien">Entretien</option>
           <option value="acceptee">Acceptée</option>
           <option value="refusee">Refusée</option>
         </select>
@@ -82,7 +81,7 @@
             <tbody>
               <tr 
                 v-for="app in applications" 
-                :key="app.id" 
+                :key="app.id_candidature" 
                 class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
               >
                 <td class="px-6 py-4">
@@ -94,9 +93,9 @@
                     >
                     <div>
                       <p class="font-medium text-gray-800">
-                        {{ app.candidat?.prenom }} {{ app.candidat?.nom }}
+                        {{ app.candidat?.utilisateur?.prenom }} {{ app.candidat?.utilisateur?.nom }}
                       </p>
-                      <p class="text-xs text-gray-500">{{ app.candidat?.user?.email }}</p>
+                      <p class="text-xs text-gray-500">{{ app.candidat?.utilisateur?.email }}</p>
                     </div>
                   </div>
                 </td>
@@ -104,21 +103,21 @@
                   {{ app.offre?.titre || 'N/A' }}
                 </td>
                 <td class="px-6 py-4">
-                  <div v-if="app.analyse_ia?.score_matching" class="flex items-center gap-2">
+                  <div v-if="app.score_final != null" class="flex items-center gap-2">
                     <div class="w-16 bg-gray-200 rounded-full h-1.5">
                       <div 
                         class="h-1.5 rounded-full" 
                         :style="{ 
-                          width: app.analyse_ia.score_matching + '%', 
-                          background: getScoreColor(app.analyse_ia.score_matching) 
+                          width: app.score_final + '%', 
+                          background: getScoreColor(app.score_final) 
                         }"
                       ></div>
                     </div>
                     <span 
                       class="text-xs font-medium" 
-                      :class="getScoreTextColor(app.analyse_ia.score_matching)"
+                      :class="getScoreTextColor(app.score_final)"
                     >
-                      {{ Math.round(app.analyse_ia.score_matching) }}%
+                      {{ Math.round(app.score_final) }}%
                     </span>
                   </div>
                   <span v-else class="text-xs text-gray-400">Non analysé</span>
@@ -134,18 +133,21 @@
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
                     <button 
+                      v-if="prochainStatut(app)"
                       @click="advanceStatus(app)"
                       class="text-blue-600 hover:text-blue-700 text-sm font-medium"
                     >
                       Avancer
                     </button>
-                    <span class="text-gray-300">|</span>
-                    <router-link 
-                      to="/recruiter/messages"
-                      class="text-gray-500 hover:text-gray-700 text-sm"
+                    <button
+                      v-if="peutRefuser(app)"
+                      @click="refuser(app)"
+                      class="text-red-500 hover:text-red-700 text-sm font-medium"
                     >
-                      💬
-                    </router-link>
+                      Refuser
+                    </button>
+                    <span v-if="app.statut_definitif" class="text-xs text-gray-400">Décision prise</span>
+
                   </div>
                 </td>
               </tr>
@@ -164,12 +166,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
 import SidebarItem from '../components/SidebarItem.vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()
+const route = useRoute()
 
 const userName = computed(() => {
   const user = authStore.user
@@ -193,7 +197,7 @@ const debouncedSearch = () => {
 }
 
 const getAvatar = (app) => {
-  const name = `${app.candidat?.prenom || ''}+${app.candidat?.nom || ''}`.trim() || 'User'
+  const name = `${app.candidat?.utilisateur?.prenom || ''}+${app.candidat?.utilisateur?.nom || ''}`.trim() || 'User'
   return `https://ui-avatars.com/api/?name=${name}&background=2563eb&color=fff&size=36`
 }
 
@@ -205,6 +209,7 @@ const fetchCandidates = async () => {
     const params = {}
     if (searchQuery.value) params.recherche = searchQuery.value
     if (selectedStatus.value) params.statut = selectedStatus.value
+    if (route.query.offre) params.id_offre = route.query.offre
 
     const response = await api.get('/recruteur/candidatures', { params })
     applications.value = response.data.data || response.data.candidatures || response.data || []
@@ -222,32 +227,38 @@ const fetchCandidates = async () => {
   }
 }
 
-const advanceStatus = async (app) => {
-  const nextStatus = {
-    'en_attente': 'en_cours',
-    'en_cours': 'preselectionnee',
-    'preselectionnee': 'entretien',
-    'entretien': 'acceptee',
-  }
+// RG32 : les transitions autorisées viennent de l'API (statuts_possibles),
+// le cycle de vie n'est pas réimplémenté ici.
+const prochainStatut = (app) =>
+  (app.statuts_possibles || []).find(s => s.valeur !== 'refusee')?.valeur
 
-  const newStatus = nextStatus[app.statut]
+const peutRefuser = (app) =>
+  (app.statuts_possibles || []).some(s => s.valeur === 'refusee')
+
+const changerStatut = async (app, newStatus) => {
+  if (!confirm(`Faire passer le statut à "${formatStatus(newStatus)}" ?`)) return
+
+  try {
+    const response = await api.patch(`/recruteur/candidatures/${app.id_candidature}/statut`, {
+      statut: newStatus,
+    })
+    // La réponse porte le nouveau statut et les transitions encore possibles.
+    Object.assign(app, response.data.candidature)
+  } catch (err) {
+    alert('❌ ' + (err.response?.data?.message || 'Erreur lors de la mise à jour.'))
+  }
+}
+
+const advanceStatus = (app) => {
+  const newStatus = prochainStatut(app)
   if (!newStatus) {
     alert('Ce dossier est déjà finalisé.')
     return
   }
-
-  if (!confirm(`Faire passer le statut à "${formatStatus(newStatus)}" ?`)) return
-
-  try {
-    await api.patch(`/recruteur/candidatures/${app.id}/statut`, {
-      statut: newStatus,
-      commentaire: 'Statut mis à jour par le recruteur'
-    })
-    app.statut = newStatus
-  } catch (err) {
-    alert('❌ Erreur lors de la mise à jour.')
-  }
+  changerStatut(app, newStatus)
 }
+
+const refuser = (app) => changerStatut(app, 'refusee')
 
 const formatStatus = (status) => {
   const labels = {
@@ -299,4 +310,26 @@ const getScoreTextColor = (score) => {
 onMounted(() => {
   fetchCandidates()
 })
+
+// Export CSV des candidatures affichées (séparateur « ; » pour Excel en français).
+const exporterCsv = () => {
+  const echapper = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const lignes = [
+    ['Candidat', 'Email', 'Offre', 'Score IA', 'Statut', 'Date'],
+    ...applications.value.map(a => [
+      a.candidat?.utilisateur?.nom_complet,
+      a.candidat?.utilisateur?.email,
+      a.offre?.titre,
+      a.score_final ?? '',
+      a.statut_libelle,
+      a.date_candidature,
+    ]),
+  ].map(l => l.map(echapper).join(';'))
+  const blob = new Blob(['\ufeff' + lignes.join('\r\n')], { type: 'text/csv;charset=utf-8' })
+  const lien = document.createElement('a')
+  lien.href = URL.createObjectURL(blob)
+  lien.download = 'candidatures.csv'
+  lien.click()
+  URL.revokeObjectURL(lien.href)
+}
 </script>

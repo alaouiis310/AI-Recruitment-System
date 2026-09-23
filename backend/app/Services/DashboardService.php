@@ -24,6 +24,7 @@ class DashboardService
                     'preselectionnee',
                 ])->count(),
                 'acceptees' => (clone $candidatures)->where('statut', 'acceptee')->count(),
+                'refusees' => (clone $candidatures)->where('statut', 'refusee')->count(),
                 'entretiens_a_venir' => Entretien::whereHas(
                     'candidature',
                     fn (Builder $q) => $q->where('id_candidat', $candidat->id_candidat),
@@ -63,7 +64,9 @@ class DashboardService
                 'offres' => (clone $offres)->count(),
                 'offres_ouvertes' => (clone $offres)->where('statut', 'ouverte')->count(),
                 'candidatures' => (clone $candidatures)->count(),
+                'en_attente' => (clone $candidatures)->where('statut', 'en_attente')->count(),
                 'preselectionnees' => (clone $candidatures)->where('statut', 'preselectionnee')->count(),
+                'acceptees' => (clone $candidatures)->where('statut', 'acceptee')->count(),
                 'entretiens_a_venir' => Entretien::query()
                     ->duRecruteur($recruteur->id_recruteur)
                     ->whereDate('date', '>=', now()->toDateString())

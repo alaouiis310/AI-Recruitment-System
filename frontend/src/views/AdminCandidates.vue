@@ -6,7 +6,7 @@
     page-subtitle="Gérez tous les candidats de la plateforme"
   >
     <template #header-actions>
-      <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
+      <button @click="router.push('/admin/candidates/add')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
         + Ajouter un candidat
       </button>
     </template>
@@ -86,7 +86,7 @@
             <tbody>
               <tr 
                 v-for="c in candidates" 
-                :key="c.id" 
+                :key="c.id_candidat" 
                 class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
               >
                 <td class="px-6 py-4">
@@ -97,27 +97,27 @@
                       class="w-9 h-9 rounded-full border-2 border-blue-100 object-cover"
                     >
                     <div>
-                      <p class="font-medium text-gray-800">{{ c.prenom }} {{ c.nom }}</p>
-                      <p class="text-xs text-gray-500">{{ c.user?.email }}</p>
+                      <p class="font-medium text-gray-800">{{ c.utilisateur?.prenom }} {{ c.utilisateur?.nom }}</p>
+                      <p class="text-xs text-gray-500">{{ c.utilisateur?.email }}</p>
                     </div>
                   </div>
                 </td>
                 <td class="px-6 py-4 text-gray-600">{{ c.experience_totale || 0 }} ans</td>
-                <td class="px-6 py-4 text-gray-600">{{ c.candidatures_count || 0 }}</td>
+                <td class="px-6 py-4 text-gray-600">{{ c.nombre_candidatures || 0 }}</td>
                 <td class="px-6 py-4">
-                  <span :class="['text-xs font-medium px-2.5 py-1 rounded-full', getStatusBadge(c.user?.etat_compte)]">
-                    {{ formatStatus(c.user?.etat_compte) }}
+                  <span :class="['text-xs font-medium px-2.5 py-1 rounded-full', getStatusBadge(c.utilisateur?.etat_compte)]">
+                    {{ formatStatus(c.utilisateur?.etat_compte) }}
                   </span>
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
-                    <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
+                    <button @click="fiche = construireFiche(c)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
                     <span class="text-gray-300">|</span>
                     <button 
                       @click="toggleStatus(c)"
                       class="text-amber-600 hover:text-amber-700 text-sm"
                     >
-                      {{ c.user?.etat_compte === 'actif' ? 'Suspendre' : 'Activer' }}
+                      {{ c.utilisateur?.etat_compte === 'actif' ? 'Suspendre' : 'Activer' }}
                     </button>
                   </div>
                 </td>
@@ -132,16 +132,20 @@
         </div>
       </div>
     </div>
+    <FicheDetail :ouvert="!!fiche" :titre="fiche?.titre" :lignes="fiche?.lignes || []" @fermer="fiche = null" />
   </DashboardLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
+import FicheDetail from '../components/FicheDetail.vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 const userName = computed(() => {
   const user = authStore.user
@@ -162,11 +166,11 @@ const debouncedSearch = () => {
 }
 
 const countByStatus = (status) => {
-  return candidates.value.filter(c => c.user?.etat_compte === status).length
+  return candidates.value.filter(c => c.utilisateur?.etat_compte === status).length
 }
 
 const getAvatar = (c) => {
-  const name = `${c.prenom || ''}+${c.nom || ''}`.trim() || 'User'
+  const name = `${c.utilisateur?.prenom || ''}+${c.utilisateur?.nom || ''}`.trim() || 'User'
   return `https://ui-avatars.com/api/?name=${name}&background=2563eb&color=fff&size=36`
 }
 
@@ -197,12 +201,12 @@ const fetchCandidates = async () => {
 }
 
 const toggleStatus = async (c) => {
-  const newStatus = c.user?.etat_compte === 'actif' ? 'suspendu' : 'actif'
-  if (!confirm(`Changer le statut de ${c.prenom} à "${formatStatus(newStatus)}" ?`)) return
+  const newStatus = c.utilisateur?.etat_compte === 'actif' ? 'suspendu' : 'actif'
+  if (!confirm(`Changer le statut de ${c.utilisateur?.prenom} à "${formatStatus(newStatus)}" ?`)) return
 
   try {
-    await api.patch(`/admin/utilisateurs/${c.user.id}/etat`, { etat_compte: newStatus })
-    c.user.etat_compte = newStatus
+    await api.patch(`/admin/utilisateurs/${c.utilisateur.id_user}/etat`, { etat_compte: newStatus })
+    c.utilisateur.etat_compte = newStatus
   } catch (err) {
     alert('❌ Erreur lors de la mise à jour.')
   }
@@ -224,5 +228,24 @@ const getStatusBadge = (status) => {
 
 onMounted(() => {
   fetchCandidates()
+})
+
+// Fiche détaillée ouverte par le bouton « Voir ».
+const fiche = ref(null)
+const dateFr = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '')
+const construireFiche = (c) => ({
+  titre: c.utilisateur?.nom_complet || 'Candidat',
+  lignes: [
+    { label: 'Email', valeur: c.utilisateur?.email },
+    { label: 'Téléphone', valeur: c.telephone },
+    { label: 'Adresse', valeur: c.adresse },
+    { label: 'Diplôme', valeur: c.diplome },
+    { label: 'Expérience', valeur: `${c.experience_totale ?? 0} an(s)` },
+    { label: 'Compétences', valeur: (c.competences || []).map(x => x.nom).join(', ') },
+    { label: 'Candidatures', valeur: c.nombre_candidatures },
+    { label: 'Score moyen', valeur: c.score_moyen != null ? `${c.score_moyen}/100` : '' },
+    { label: 'État du compte', valeur: c.utilisateur?.etat_compte },
+    { label: 'CV', valeur: c.cv_pdf ? 'Déposé' : 'Non déposé' },
+  ],
 })
 </script>
