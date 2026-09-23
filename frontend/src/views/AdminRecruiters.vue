@@ -5,14 +5,15 @@
     page-title="Gestion des recruteurs" 
     page-subtitle="Gérez tous les recruteurs de la plateforme"
   >
+
     <template #header-actions>
-      <button 
-        @click="openCreateModal"
-        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md"
-      >
-        + Ajouter un recruteur
-      </button>
-    </template>
+  <button 
+    @click="$router.push('/admin/recruiters/add')"
+    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md"
+  >
+    + Ajouter un recruteur
+  </button>
+  </template>
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-20">
@@ -211,9 +212,7 @@ const toggleStatus = async (r) => {
   }
 }
 
-const openCreateModal = () => {
-  alert('Fonctionnalité à venir : création de recruteur')
-}
+
 
 const formatStatus = (status) => {
   const labels = { 'actif': 'Actif', 'suspendu': 'Suspendu', 'desactive': 'Désactivé' }
