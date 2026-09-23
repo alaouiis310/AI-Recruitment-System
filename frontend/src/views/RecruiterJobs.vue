@@ -77,7 +77,7 @@
             <tbody>
               <tr 
                 v-for="job in jobs" 
-                :key="job.id" 
+                :key="job.id_offre" 
                 class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
               >
                 <td class="px-6 py-4">
@@ -89,7 +89,7 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 text-gray-600">
-                  {{ job.candidatures_count || 0 }}
+                  {{ job.nombre_candidatures || 0 }}
                 </td>
                 <td class="px-6 py-4 text-gray-500">
                   {{ formatDate(job.date_publication) }}
@@ -101,9 +101,9 @@
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
-                    <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
+                    <button @click="router.push({ path: '/recruiter/candidates', query: { offre: job.id_offre } })" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
                     <span class="text-gray-300">|</span>
-                    <button class="text-gray-500 hover:text-gray-700 text-sm">✎</button>
+                    <button @click="router.push(`/recruiter/jobs/${job.id_offre}/edit`)" class="text-gray-500 hover:text-gray-700 text-sm" aria-label="Modifier l'offre">✎</button>
                     <span class="text-gray-300">|</span>
                     <button 
                       @click="deleteJob(job)"
@@ -129,12 +129,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
 import SidebarItem from '../components/SidebarItem.vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 const userName = computed(() => {
   const user = authStore.user
@@ -177,15 +179,15 @@ const fetchJobs = async () => {
 const deleteJob = async (job) => {
   if (!confirm(`Supprimer l'offre "${job.titre}" ?`)) return
   try {
-    await api.delete(`/recruteur/offres/${job.id}`)
-    jobs.value = jobs.value.filter(j => j.id !== job.id)
+    await api.delete(`/recruteur/offres/${job.id_offre}`)
+    jobs.value = jobs.value.filter(j => j.id_offre !== job.id_offre)
   } catch (err) {
-    alert('❌ Erreur lors de la suppression.')
+    alert('❌ ' + (err.response?.data?.message || 'Erreur lors de la suppression.'))
   }
 }
 
 const openCreateModal = () => {
-  alert('Fonctionnalité à venir : création d\'offre')
+  router.push('/recruiter/jobs/add')
 }
 
 const formatDate = (date) => {

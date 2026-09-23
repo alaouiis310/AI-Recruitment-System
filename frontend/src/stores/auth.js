@@ -15,6 +15,8 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     estConnecte: (state) => Boolean(state.token),
+    // Alias lu par les vues : l'API nomme l'objet « utilisateur ».
+    user: (state) => state.utilisateur,
   },
 
   actions: {
