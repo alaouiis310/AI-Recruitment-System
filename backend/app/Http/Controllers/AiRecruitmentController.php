@@ -2,26 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Ia\ClasserCvsRequest;
+use App\Http\Requests\Ia\ConverserRequest;
+use App\Http\Requests\Ia\EvaluerCvRequest;
 use App\Services\GeminiService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use RuntimeException;
 
+/**
+ * Module d'évaluation de CV par Gemini (Nilam).
+ *
+ * Outil d'aide au recruteur : il évalue des CV déposés à la volée face à une
+ * description de poste, sans rien enregistrer. Il ne remplace pas le score
+ * d'une candidature, qui reste calculé par ScoringService (RG40, CLAUDE.md §8).
+ */
 class AiRecruitmentController extends Controller
 {
     public function __construct(protected GeminiService $gemini) {}
 
-    /**
-     * POST /api/evaluate-cv   (ONE cv)
-     * Form-Data: cv_file (PDF), job_description (text), job_title (optional text)
-     */
-    public function evaluate(Request $request): JsonResponse
+    /** POST /api/ia/evaluer-cv — un CV face à une offre. */
+    public function evaluate(EvaluerCvRequest $request): JsonResponse
     {
-        $request->validate([
-            'cv_file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
-            'job_description' => ['required', 'string'],
-            'job_title' => ['nullable', 'string', 'max:255'],
-        ]);
+        if ($reponse = $this->indisponible()) {
+            return $reponse;
+        }
 
         try {
             $result = $this->gemini->evaluateCv(
@@ -32,30 +36,20 @@ class AiRecruitmentController extends Controller
         } catch (RuntimeException $e) {
             report($e);
 
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 502);
+            return $this->echecAmont();
         }
 
         return response()->json(['status' => 'success', 'data' => $result]);
     }
 
-    /**
-     * POST /api/rank-cvs   (MANY cvs -> ranked top list)
-     * Form-Data: cv_files[] (PDFs, max 20), job_description (text),
-     *            job_title (optional), top (optional: only return the best N, default = everyone)
-     *
-     * Nothing is saved: the backend stores the returned JSON however it wants.
-     */
-    public function rank(Request $request): JsonResponse
+    /** POST /api/ia/classer-cvs — plusieurs CV classés du meilleur au moins bon. */
+    public function rank(ClasserCvsRequest $request): JsonResponse
     {
-        $request->validate([
-            'cv_files' => ['required', 'array', 'min:1', 'max:20'],
-            'cv_files.*' => ['file', 'mimes:pdf', 'max:10240'],
-            'job_description' => ['required', 'string'],
-            'job_title' => ['nullable', 'string', 'max:255'],
-            'top' => ['nullable', 'integer', 'min:1', 'max:20'],
-        ]);
+        if ($reponse = $this->indisponible()) {
+            return $reponse;
+        }
 
-        set_time_limit(300); // each CV takes a few seconds
+        set_time_limit(300); // chaque CV prend quelques secondes
 
         $evaluated = [];
         $failed = [];
@@ -72,11 +66,11 @@ class AiRecruitmentController extends Controller
                 $evaluated[] = ['cv_file' => $name] + $result;
             } catch (RuntimeException $e) {
                 report($e);
-                $failed[] = ['cv_file' => $name, 'error' => $e->getMessage()];
+                $failed[] = ['cv_file' => $name, 'error' => "L'évaluation de ce CV a échoué."];
             }
         }
 
-        // Best first (PHP's sort is stable, so ties keep upload order).
+        // Meilleur en premier (le tri de PHP est stable : les ex æquo gardent l'ordre de dépôt).
         usort($evaluated, fn ($a, $b) => $b['match_score'] <=> $a['match_score']);
 
         $top = (int) $request->input('top', count($evaluated));
@@ -95,17 +89,46 @@ class AiRecruitmentController extends Controller
         ]);
     }
 
-    /**
-     * POST /api/chat
-     * JSON Payload: { "message": "How do I apply?" }
-     */
-    public function chat(Request $request): JsonResponse
+    /** POST /api/ia/assistant — assistant des pages « Assistant IA ». */
+    public function chat(ConverserRequest $request): JsonResponse
     {
-        $request->validate(['message' => ['required', 'string']]);
+        if ($reponse = $this->indisponible()) {
+            return $reponse;
+        }
+
+        try {
+            $texte = $this->gemini->chat(
+                $request->input('message'),
+                $request->user()->role->value,
+            );
+        } catch (RuntimeException $e) {
+            report($e);
+
+            return $this->echecAmont();
+        }
+
+        return response()->json(['status' => 'success', 'data' => ['reponse' => $texte]]);
+    }
+
+    /** Sans clé API, aucun appel n'est tenté : 503 explicite plutôt qu'une erreur opaque. */
+    private function indisponible(): ?JsonResponse
+    {
+        if ($this->gemini->estConfigure()) {
+            return null;
+        }
 
         return response()->json([
-            'status' => 'success',
-            'data' => $this->gemini->chat($request->input('message')),
-        ]);
+            'status' => 'error',
+            'message' => "L'assistant IA n'est pas configuré sur ce serveur (GEMINI_API_KEY absente).",
+        ], 503);
+    }
+
+    /** Le détail technique part dans les journaux, pas vers le client. */
+    private function echecAmont(): JsonResponse
+    {
+        return response()->json([
+            'status' => 'error',
+            'message' => "Le service d'IA n'a pas pu répondre. Réessayez dans un instant.",
+        ], 502);
     }
 }

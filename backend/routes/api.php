@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiRecruitmentController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AnalyseIaController;
 use App\Http\Controllers\Api\AuthController;
@@ -229,9 +230,25 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
      */
     Route::get('/offres', [OffreEmploiController::class, 'index']);
     Route::get('/offres/{offre}', [OffreEmploiController::class, 'show']);
-});
 
-// Module d'évaluation de CV de Nilam, repris tel quel à la fusion.
-Route::post('/evaluate-cv', [\App\Http\Controllers\AiRecruitmentController::class, 'evaluate']);
-Route::post('/rank-cvs', [\App\Http\Controllers\AiRecruitmentController::class, 'rank']);
-Route::post('/chat', [\App\Http\Controllers\AiRecruitmentController::class, 'chat']);
+    /*
+     |--------------------------------------------------------------------------
+     | Assistant et évaluation de CV par IA — module de Nilam (Gemini)
+     |--------------------------------------------------------------------------
+     | Outils d'aide : rien n'est enregistré, et le score d'une candidature
+     | reste celui de ScoringService (RG40). L'évaluation de CV déposés à la
+     | volée est réservée aux recruteurs et administrateurs ; l'assistant est
+     | ouvert à tout compte.
+     */
+    Route::prefix('ia')->group(function () {
+        Route::post('/assistant', [AiRecruitmentController::class, 'chat'])
+            ->middleware('throttle:20,1');
+
+        Route::middleware('role:recruteur,administrateur')->group(function () {
+            Route::post('/evaluer-cv', [AiRecruitmentController::class, 'evaluate'])
+                ->middleware('throttle:10,1');
+            Route::post('/classer-cvs', [AiRecruitmentController::class, 'rank'])
+                ->middleware('throttle:5,1');
+        });
+    });
+});
