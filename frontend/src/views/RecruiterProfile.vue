@@ -54,9 +54,6 @@
             alt="Avatar" 
             class="w-28 h-28 rounded-full border-4 border-blue-100 object-cover mx-auto"
           >
-          <button class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors text-sm">
-            📷
-          </button>
         </div>
         <h3 class="font-semibold text-gray-800 mt-4">{{ profile.prenom }} {{ profile.nom }}</h3>
         <p class="text-sm text-blue-600 font-medium">Recruteur</p>
@@ -176,15 +173,16 @@ const fetchProfile = async () => {
 
   try {
     const response = await api.get('/auth/moi')
-    const data = response.data.user || response.data
+    // L'API renvoie l'utilisateur sous la clé « utilisateur ».
+    const data = response.data.utilisateur || {}
 
     profile.value = {
       prenom: data.prenom || '',
       nom: data.nom || '',
       email: data.email || '',
-      telephone: data.recruteur?.telephone || '',
-      poste: data.recruteur?.poste || '',
-      entreprise: data.recruteur?.entreprise?.nom || '',
+      telephone: data.profil_recruteur?.telephone || '',
+      poste: data.profil_recruteur?.poste || '',
+      entreprise: data.profil_recruteur?.entreprise?.nom || '',
     }
   } catch (err) {
     console.error('Erreur profil:', err)

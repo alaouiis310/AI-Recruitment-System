@@ -10,10 +10,12 @@ import CandidateProfile from '../views/CandidateProfile.vue'
 import CandidateCV from '../views/CandidateCV.vue'
 import CandidateSavedJobs from '../views/CandidateSavedJobs.vue'
 import RecruiterJobs from '../views/RecruiterJobs.vue'
+import RecruiterAddJob from '../views/RecruiterAddJob.vue'
+import RecruiterEditJob from '../views/RecruiterEditJob.vue'
 import RecruiterCandidates from '../views/RecruiterCandidates.vue'
 import RecruiterSearch from '../views/RecruiterSearch.vue'
 import RecruiterAIHelper from '../views/RecruiterAIHelper.vue'
-import RecruiterMessages from '../views/RecruiterMessages.vue'
+import NotificationsView from '../views/NotificationsView.vue'
 import RecruiterProfile from '../views/RecruiterProfile.vue'
 import CandidateAIHelper from '../views/CandidateAIHelper.vue'
 import AdminRecruiters from '../views/AdminRecruiters.vue'
@@ -22,6 +24,7 @@ import AdminCandidates from '../views/AdminCandidates.vue'
 import AdminAddCandidate from '../views/AdminAddCandidate.vue'
 import AdminJobs from '../views/AdminJobs.vue'
 import AdminAddJob from '../views/AdminAddJob.vue'
+import AdminEditJob from '../views/AdminEditJob.vue'
 import AdminApplications from '../views/AdminApplications.vue'
 import AdminAnalytics from '../views/AdminAnalytics.vue'
 import AdminSettings from '../views/AdminSettings.vue'
@@ -102,6 +105,18 @@ const router = createRouter({
   meta: { requiresAuth: true, role: 'recruiter' }
 },
 {
+  path: '/recruiter/jobs/add',
+  name: 'recruiter-add-job',
+  component: RecruiterAddJob,
+  meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
+  path: '/recruiter/jobs/:id/edit',
+  name: 'recruiter-edit-job',
+  component: RecruiterEditJob,
+  meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
   path: '/recruiter/candidates',
   name: 'recruiter-candidates',
   component: RecruiterCandidates,
@@ -120,10 +135,21 @@ const router = createRouter({
   meta: { requiresAuth: true, role: 'recruiter' }
 },
 {
-  path: '/recruiter/messages',
-  name: 'recruiter-messages',
-  component: RecruiterMessages,
+  path: '/recruiter/notifications',
+  name: 'recruiter-notifications',
+  component: NotificationsView,
   meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
+  // Le MLD ne prévoit pas de messagerie : l'ancienne page mène aux notifications (RG44).
+  path: '/recruiter/messages',
+  redirect: '/recruiter/notifications'
+},
+{
+  path: '/candidate/notifications',
+  name: 'candidate-notifications',
+  component: NotificationsView,
+  meta: { requiresAuth: true, role: 'candidate' }
 },
 {
   path: '/recruiter/profile',
@@ -171,6 +197,12 @@ const router = createRouter({
   path: '/admin/jobs/add',
   name: 'admin-add-job',
   component: AdminAddJob,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/jobs/:id/edit',
+  name: 'admin-edit-job',
+  component: AdminEditJob,
   meta: { requiresAuth: true, role: 'admin' }
 },
 {

@@ -70,7 +70,13 @@
             'rounded-2xl px-4 py-2.5 max-w-[80%]',
             msg.sender === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-gray-100 text-gray-700 rounded-tl-none'
           ]">
-            <p class="text-sm">{{ msg.text }}</p>
+            <p class="text-sm whitespace-pre-line">{{ msg.text }}</p>
+          </div>
+        </div>
+        <div v-if="enAttente" class="flex items-start gap-3" aria-live="polite">
+          <span class="text-xl shrink-0">🤖</span>
+          <div class="rounded-2xl rounded-tl-none px-4 py-2.5 bg-gray-100 text-gray-500">
+            <p class="text-sm italic">L'assistant rédige sa réponse…</p>
           </div>
         </div>
       </div>
@@ -84,7 +90,7 @@
           class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm"
           @keydown.enter="sendMessage"
         >
-        <button @click="sendMessage" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
+        <button @click="sendMessage" :disabled="enAttente" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
           Envoyer
         </button>
       </div>
@@ -93,32 +99,57 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
 import SidebarItem from '../components/SidebarItem.vue'
+import api from '../services/api'
+import { useAuthStore } from '../stores/auth'
 
-const userName = ref('Sophie Martin')
-const myJobsCount = ref(12)
-const candidatesCount = ref(86)
-const messagesCount = ref(4)
+const authStore = useAuthStore()
+const userName = computed(() => {
+  const user = authStore.user
+  return user?.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : 'Recruteur'
+})
+const myJobsCount = ref(0)
+const candidatesCount = ref(0)
+const messagesCount = ref(0)
+
+onMounted(async () => {
+  try {
+    const response = await api.get('/recruteur/tableau-de-bord')
+    const stats = response.data.statistiques || {}
+    myJobsCount.value = stats.offres || 0
+    candidatesCount.value = stats.candidatures || 0
+  } catch (err) {
+    console.error('Erreur statistiques:', err)
+  }
+})
 
 const userMessage = ref('')
 const messages = ref([])
 
-const sendMessage = () => {
-  if (!userMessage.value.trim()) return
+// Assistant IA réel (module de Nilam) : POST /api/ia/assistant.
+const enAttente = ref(false)
 
-  // Ajouter le message de l'utilisateur
-  messages.value.push({ sender: 'user', text: userMessage.value })
+const sendMessage = async () => {
+  const texte = userMessage.value.trim()
+  if (!texte || enAttente.value) return
 
-  // Simuler une réponse IA
-  setTimeout(() => {
-    messages.value.push({ 
-      sender: 'ai', 
-      text: "Je vais analyser votre demande... C'est une excellente question ! Je vous recommande de consulter les candidats avec un score IA supérieur à 80%."
-    })
-  }, 500)
-
+  messages.value.push({ sender: 'user', text: texte })
   userMessage.value = ''
+  enAttente.value = true
+
+  try {
+    const response = await api.post('/ia/assistant', { message: texte })
+    messages.value.push({ sender: 'ai', text: response.data.data.reponse })
+  } catch (err) {
+    // 503 : pas de clé Gemini sur ce serveur ; 502 : Gemini injoignable.
+    messages.value.push({
+      sender: 'ai',
+      text: err.response?.data?.message || "L'assistant est momentanément indisponible.",
+    })
+  } finally {
+    enAttente.value = false
+  }
 }
 </script>
