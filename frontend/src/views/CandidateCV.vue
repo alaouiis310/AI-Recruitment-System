@@ -83,7 +83,7 @@
         <div v-else class="flex flex-wrap gap-2 mb-4">
           <span 
             v-for="skill in skills" 
-            :key="skill.id" 
+            :key="skill.id_competence" 
             class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm"
           >
             {{ skill.nom || skill.competence?.nom }}
@@ -105,10 +105,14 @@
           <input 
             type="text" 
             v-model="newSkill" 
+            list="referentiel-competences"
             placeholder="Ajouter une compétence..."
             @keydown.enter="addSkill"
             class="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm"
           >
+          <datalist id="referentiel-competences">
+            <option v-for="c in referentiel" :key="c.id_competence" :value="c.nom" />
+          </datalist>
           <select 
             v-model="newSkillLevel"
             class="px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white text-sm"
@@ -164,12 +168,12 @@ const fetchData = async () => {
   try {
     // Récupérer le profil avec le CV
     const profileResponse = await api.get('/auth/moi')
-    const user = profileResponse.data.user || profileResponse.data
+    // L'API renvoie déjà l'URL complète du fichier.
+    const profil = profileResponse.data.utilisateur?.profil_candidat
 
-    if (user.candidat?.cv_pdf) {
-      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/api$/, '')
-      cvUrl.value = `${baseUrl}/storage/${user.candidat.cv_pdf}`
-      cvFileName.value = user.candidat.cv_pdf.split('/').pop()
+    if (profil?.cv_pdf) {
+      cvUrl.value = profil.cv_pdf
+      cvFileName.value = profil.cv_pdf.split('/').pop()
     }
 
     // Récupérer les compétences
@@ -212,8 +216,8 @@ const uploadCV = async (event) => {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
 
-    const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/api$/, '')
-    cvUrl.value = `${baseUrl}/storage/${response.data.cv_pdf || response.data.data?.cv_pdf}`
+    // L'API renvoie déjà l'URL complète du fichier.
+    cvUrl.value = response.data.candidat?.cv_pdf || ''
     cvFileName.value = file.name
     alert('✅ CV téléchargé avec succès !')
   } catch (err) {
@@ -236,12 +240,31 @@ const deleteCV = async () => {
   }
 }
 
+// RG24/RG25 — le candidat choisit dans le référentiel partagé : le nom saisi
+// est résolu en identifiant avant l'envoi.
+const referentiel = ref([])
+
+const fetchReferentiel = async () => {
+  try {
+    const response = await api.get('/competences', { params: { per_page: 100 } })
+    referentiel.value = response.data.competences || []
+  } catch (err) {
+    console.error('Erreur référentiel:', err)
+  }
+}
+
 const addSkill = async () => {
   if (!newSkill.value.trim()) return
+  const saisie = newSkill.value.trim().toLowerCase()
+  const competence = referentiel.value.find(c => c.nom.toLowerCase() === saisie)
+  if (!competence) {
+    alert('❌ Cette compétence ne figure pas dans le référentiel. Choisissez-la dans la liste proposée.')
+    return
+  }
 
   try {
     await api.post('/candidat/competences', {
-      nom: newSkill.value.trim(),
+      id_competence: competence.id_competence,
       niveau: newSkillLevel.value,
     })
     newSkill.value = ''
@@ -254,7 +277,7 @@ const addSkill = async () => {
 const removeSkill = async (skill) => {
   if (!confirm('Retirer cette compétence ?')) return
   try {
-    await api.delete(`/candidat/competences/${skill.id}`)
+    await api.delete(`/candidat/competences/${skill.id_competence}`)
     await fetchSkills()
   } catch (err) {
     alert('❌ Erreur lors de la suppression.')
@@ -263,5 +286,6 @@ const removeSkill = async (skill) => {
 
 onMounted(() => {
   fetchData()
+  fetchReferentiel()
 })
 </script>

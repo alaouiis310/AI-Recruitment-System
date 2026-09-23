@@ -20,7 +20,7 @@
     <template #header-actions>
       <div class="flex items-center gap-3">
         <span class="text-sm text-gray-500">{{ savedCount }} offres sauvegardées</span>
-        <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-all">
+        <button @click="exporter" :disabled="savedJobs.length === 0" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-700 text-sm font-medium rounded-xl transition-all">
           Exporter
         </button>
       </div>
@@ -72,10 +72,10 @@
 
           <!-- Actions -->
           <div class="flex items-center gap-2 shrink-0">
-            <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
-              Postuler
+            <button @click="postuler(job)" :disabled="applying === job.id" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
+              {{ applying === job.id ? 'Envoi...' : 'Postuler' }}
             </button>
-            <button class="px-3 py-2 border border-gray-200 hover:bg-gray-50 rounded-xl transition-all text-gray-500">
+            <button @click="copier(job)" aria-label="Copier l'offre" class="px-3 py-2 border border-gray-200 hover:bg-gray-50 rounded-xl transition-all text-gray-500">
               <span class="text-sm">📋</span>
             </button>
             <button @click="removeSaved(job.id)" class="px-3 py-2 border border-red-200 hover:bg-red-50 rounded-xl transition-all text-red-400 hover:text-red-500">
@@ -99,46 +99,114 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
 import SidebarItem from '../components/SidebarItem.vue'
+import api from '../services/api'
+import { useAuthStore } from '../stores/auth'
+import { offresSauvegardees } from '../services/offresSauvegardees'
 
-const userName = ref('Yassine')
-const applicationsCount = ref(12)
-const jobsCount = ref(24)
-const interviewsCount = ref(2)
-const savedCount = ref(5)
+const authStore = useAuthStore()
+const userName = computed(() => {
+  const user = authStore.user
+  return user?.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : 'Candidat'
+})
+const applicationsCount = ref(0)
+const jobsCount = ref(0)
+const interviewsCount = ref(0)
+const savedCount = computed(() => savedJobs.value.length)
 
 const activeFilter = ref('all')
+const savedJobs = ref([])
+const applying = ref(null)
 
-const filters = ref([
-  { label: 'Toutes', value: 'all', count: 5 },
-  { label: 'CDI', value: 'CDI', count: 2 },
-  { label: 'CDD', value: 'CDD', count: 1 },
-  { label: 'Stage', value: 'Stage', count: 1 },
-  { label: 'Freelance', value: 'Freelance', count: 1 },
-])
-
-const savedJobs = ref([
-  { id: 1, title: 'Développeur Full Stack', company: 'TechNova', location: 'Paris', salary: '45-55K€', contract: 'CDI', savedAt: '2j' },
-  { id: 2, title: 'Data Scientist', company: 'DataMind', location: 'Lyon', salary: '50-60K€', contract: 'CDI', savedAt: '3j' },
-  { id: 3, title: 'UX/UI Designer', company: 'DesignLab', location: 'Bordeaux', salary: '35-42K€', contract: 'CDD', savedAt: '5j' },
-  { id: 4, title: 'DevOps Engineer', company: 'CloudSys', location: 'Toulouse', salary: '55-65K€', contract: 'Freelance', savedAt: '1j' },
-  { id: 5, title: 'Product Owner', company: 'Innovatech', location: 'Paris', salary: '48-58K€', contract: 'CDI', savedAt: '4j' },
-])
+const filters = computed(() => {
+  const types = [...new Set(savedJobs.value.map(j => j.contract))]
+  return [
+    { label: 'Toutes', value: 'all', count: savedJobs.value.length },
+    ...types.map(t => ({ label: t, value: t, count: savedJobs.value.filter(j => j.contract === t).length })),
+  ]
+})
 
 const filteredSavedJobs = computed(() => {
   if (activeFilter.value === 'all') return savedJobs.value
   return savedJobs.value.filter(job => job.contract === activeFilter.value)
 })
 
-const removeSaved = (id) => {
-  if (confirm('Supprimer cette offre des sauvegardes ?')) {
-    const index = savedJobs.value.findIndex(job => job.id === id)
-    if (index !== -1) {
-      savedJobs.value.splice(index, 1)
-      savedCount.value = savedJobs.value.length
-    }
+const ilYA = (iso) => {
+  const jours = Math.max(0, Math.floor((Date.now() - new Date(iso)) / 86400000))
+  return jours === 0 ? "aujourd'hui" : `${jours}j`
+}
+
+// Les offres sont lues depuis l'API : une offre fermée ou expirée n'y figure
+// plus (RG17, RG18) et disparaît donc des sauvegardes.
+const chargerSauvegardes = async () => {
+  const ids = offresSauvegardees.lire()
+  if (ids.length === 0) {
+    savedJobs.value = []
+    return
+  }
+  try {
+    const response = await api.get('/offres', { params: { per_page: 100 } })
+    savedJobs.value = (response.data.offres || [])
+      .filter(o => ids.includes(o.id_offre))
+      .map(o => ({
+        id: o.id_offre,
+        title: o.titre,
+        company: o.departement?.entreprise?.nom || '',
+        location: o.localisation,
+        salary: o.salaire ? `${new Intl.NumberFormat('fr-FR').format(o.salaire)} DH` : 'Non précisé',
+        contract: o.type_contrat_libelle,
+        savedAt: ilYA(offresSauvegardees.dateDe(o.id_offre)),
+      }))
+  } catch (err) {
+    console.error('Erreur offres sauvegardées:', err)
   }
 }
+
+const removeSaved = (id) => {
+  if (!confirm('Supprimer cette offre des sauvegardes ?')) return
+  offresSauvegardees.retirer(id)
+  savedJobs.value = savedJobs.value.filter(job => job.id !== id)
+}
+
+const postuler = async (job) => {
+  if (!confirm(`Postuler pour "${job.title}" ?`)) return
+  applying.value = job.id
+  try {
+    await api.post('/candidat/candidatures', { id_offre: job.id })
+    alert('✅ Candidature envoyée avec succès !')
+  } catch (err) {
+    alert('❌ ' + (err.response?.data?.message || "Erreur lors de l'envoi de la candidature."))
+  } finally {
+    applying.value = null
+  }
+}
+
+const copier = async (job) => {
+  const texte = `${job.title} — ${job.company} — ${job.location} (${job.contract})`
+  try {
+    await navigator.clipboard.writeText(texte)
+    alert('📋 Offre copiée dans le presse-papiers.')
+  } catch {
+    alert(texte)
+  }
+}
+
+// Export CSV des offres sauvegardées (séparateur « ; » pour Excel en français).
+const exporter = () => {
+  const echapper = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const lignes = [
+    ['Offre', 'Entreprise', 'Localisation', 'Contrat', 'Salaire'],
+    ...savedJobs.value.map(j => [j.title, j.company, j.location, j.contract, j.salary]),
+  ].map(l => l.map(echapper).join(';'))
+  const blob = new Blob(['\ufeff' + lignes.join('\r\n')], { type: 'text/csv;charset=utf-8' })
+  const lien = document.createElement('a')
+  lien.href = URL.createObjectURL(blob)
+  lien.download = 'offres-sauvegardees.csv'
+  lien.click()
+  URL.revokeObjectURL(lien.href)
+}
+
+onMounted(chargerSauvegardes)
 </script>
