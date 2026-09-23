@@ -43,45 +43,41 @@
       </div>
     </div>
 
-    <!-- Section Analyse de CV -->
+    <!-- Compatibilité réelle (RG40) et compétences manquantes (RG41) -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 class="font-semibold text-gray-800 mb-3">📊 Score de votre CV</h3>
-        <div class="text-center">
-          <div class="relative inline-block">
-            <svg class="w-32 h-32" viewBox="0 0 36 36">
-              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" stroke-width="3"/>
-              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="75 100"/>
-            </svg>
-            <span class="absolute inset-0 flex items-center justify-center text-3xl font-bold text-gray-800">75%</span>
+        <h3 class="font-semibold text-gray-800 mb-3">📊 Votre meilleure compatibilité</h3>
+        <template v-if="meilleure">
+          <div class="text-center">
+            <div class="relative inline-block">
+              <svg class="w-32 h-32" viewBox="0 0 36 36">
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" stroke-width="3"/>
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" :stroke="couleur(meilleure.analyse.score_matching)" stroke-width="3" :stroke-dasharray="`${meilleure.analyse.score_matching} 100`"/>
+              </svg>
+              <span class="absolute inset-0 flex items-center justify-center text-3xl font-bold text-gray-800">{{ Math.round(meilleure.analyse.score_matching) }}</span>
+            </div>
+            <p class="mt-2 text-sm text-gray-600">{{ meilleure.offre?.titre }}</p>
+            <p class="text-xs text-gray-400">{{ meilleure.analyse.recommandation_libelle }}</p>
           </div>
-        </div>
-        <div class="space-y-2 mt-4">
-          <div class="flex items-center justify-between text-sm">
-            <span class="text-gray-600">Contenu</span>
-            <span class="font-medium text-green-600">82%</span>
+          <div class="space-y-2 mt-4">
+            <div v-for="volet in volets(meilleure.analyse)" :key="volet.label">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">{{ volet.label }}</span>
+                <span class="font-medium" :style="{ color: couleur(volet.score) }">{{ Math.round(volet.score) }}/100</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full" :style="{ width: volet.score + '%', background: couleur(volet.score) }"></div>
+              </div>
+            </div>
           </div>
-          <div class="w-full bg-gray-200 rounded-full h-1.5">
-            <div class="h-1.5 rounded-full bg-green-500" style="width: 82%"></div>
-          </div>
-          <div class="flex items-center justify-between text-sm">
-            <span class="text-gray-600">Format</span>
-            <span class="font-medium text-amber-600">68%</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-1.5">
-            <div class="h-1.5 rounded-full bg-amber-500" style="width: 68%"></div>
-          </div>
-          <div class="flex items-center justify-between text-sm">
-            <span class="text-gray-600">Mots-clés</span>
-            <span class="font-medium text-green-600">78%</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-1.5">
-            <div class="h-1.5 rounded-full bg-green-500" style="width: 78%"></div>
-          </div>
-        </div>
-        <button class="w-full mt-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-all">
-          🔄 Analyser avec l'IA
-        </button>
+        </template>
+        <p v-else-if="!chargementAnalyses" class="text-sm text-gray-500 py-6 text-center">
+          Postulez à une offre : son analyse vous donnera un score de compatibilité.
+        </p>
+        <p v-else class="text-sm text-gray-400 py-6 text-center">Chargement...</p>
+        <router-link to="/candidate/applications" class="block w-full mt-4 py-2 text-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-all">
+          Voir mes candidatures
+        </router-link>
       </div>
 
       <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -93,8 +89,11 @@
               <p class="text-sm font-medium text-gray-800">{{ suggestion.title }}</p>
               <p class="text-xs text-gray-500">{{ suggestion.description }}</p>
             </div>
-            <button class="ml-auto shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700">Appliquer</button>
+            <router-link :to="suggestion.lien" class="ml-auto shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700">{{ suggestion.action }}</router-link>
           </div>
+          <p v-if="!chargementAnalyses && suggestions.length === 0" class="text-sm text-gray-500 py-4 text-center">
+            Aucune lacune détectée sur vos candidatures actuelles.
+          </p>
         </div>
       </div>
     </div>
@@ -130,7 +129,13 @@
             'rounded-2xl px-4 py-2.5 max-w-[80%]',
             msg.sender === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-gray-100 text-gray-700 rounded-tl-none'
           ]">
-            <p class="text-sm">{{ msg.text }}</p>
+            <p class="text-sm whitespace-pre-line">{{ msg.text }}</p>
+          </div>
+        </div>
+        <div v-if="enAttente" class="flex items-start gap-3" aria-live="polite">
+          <span class="text-xl shrink-0">🤖</span>
+          <div class="rounded-2xl rounded-tl-none px-4 py-2.5 bg-gray-100 text-gray-500">
+            <p class="text-sm italic">L'assistant rédige sa réponse…</p>
           </div>
         </div>
       </div>
@@ -144,7 +149,7 @@
           class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm"
           @keydown.enter="sendMessage"
         >
-        <button @click="sendMessage" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
+        <button @click="sendMessage" :disabled="enAttente" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
           Envoyer
         </button>
       </div>
@@ -153,37 +158,127 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
 import SidebarItem from '../components/SidebarItem.vue'
+import api from '../services/api'
+import { useAuthStore } from '../stores/auth'
 
-const userName = ref('Yassine')
-const applicationsCount = ref(12)
-const jobsCount = ref(24)
-const interviewsCount = ref(2)
-const savedCount = ref(5)
+const authStore = useAuthStore()
+const userName = computed(() => {
+  const user = authStore.user
+  return user?.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : 'Candidat'
+})
+const applicationsCount = ref(0)
+const jobsCount = ref(0)
+const interviewsCount = ref(0)
+const savedCount = ref(0)
 
 const userMessage = ref('')
 const messages = ref([])
 
-const suggestions = ref([
-  { id: 1, icon: '📝', title: 'Ajoutez plus de mots-clés', description: 'Ajoutez "Laravel" et "Docker" pour correspondre aux offres' },
-  { id: 2, icon: '📊', title: 'Quantifiez vos résultats', description: 'Utilisez des chiffres pour vos réalisations' },
-  { id: 3, icon: '🎯', title: 'Personnalisez votre objectif', description: 'Adaptez votre profil aux offres cibles' },
-])
+// Analyses réelles des candidatures du candidat (RG37 à RG41).
+const analyses = ref([])
+const chargementAnalyses = ref(true)
 
-const sendMessage = () => {
-  if (!userMessage.value.trim()) return
+const meilleure = computed(() =>
+  analyses.value.reduce((best, a) => (!best || a.analyse.score_matching > best.analyse.score_matching ? a : best), null)
+)
 
-  messages.value.push({ sender: 'user', text: userMessage.value })
+// Les trois volets du score calculé par ScoringService (RG40).
+const volets = (a) => [
+  { label: 'Compétences', score: a.score_competence },
+  { label: 'Expérience', score: a.score_experience },
+  { label: 'Diplôme', score: a.score_diplome },
+]
 
-  setTimeout(() => {
-    messages.value.push({ 
-      sender: 'ai', 
-      text: "Je vais analyser votre demande. Pour améliorer votre CV, je vous recommande d'ajouter des mots-clés spécifiques comme 'Laravel', 'Vue.js' et 'Docker'."
+const couleur = (score) => (score >= 70 ? '#059669' : score >= 45 ? '#d97706' : '#dc2626')
+
+const POIDS = { essentielle: 3, importante: 2, souhaitee: 1 }
+const NIVEAUX = { debutant: 'Débutant', intermediaire: 'Intermédiaire', avance: 'Avancé', expert: 'Expert' }
+
+// RG41 : compétences exigées par les offres visées que le candidat ne déclare
+// pas au niveau requis. Une compétence exigée par plusieurs offres n'apparaît
+// qu'une fois, avec sa plus forte importance.
+const suggestions = computed(() => {
+  const parCompetence = new Map()
+  for (const { offre, analyse } of analyses.value) {
+    for (const m of analyse.competences_manquantes || []) {
+      const actuelle = parCompetence.get(m.id_competence)
+      if (!actuelle || POIDS[m.importance] > POIDS[actuelle.importance]) {
+        parCompetence.set(m.id_competence, { ...m, offre: offre?.titre })
+      }
+    }
+  }
+  const lacunes = [...parCompetence.values()]
+    .sort((a, b) => POIDS[b.importance] - POIDS[a.importance])
+    .slice(0, 5)
+    .map(m => ({
+      id: 'c' + m.id_competence,
+      icon: m.importance === 'essentielle' ? '🎯' : '📝',
+      title: m.niveau_actuel ? `Progressez en ${m.nom}` : `Ajoutez ${m.nom} à vos compétences`,
+      description: `Niveau ${NIVEAUX[m.niveau_requis] || m.niveau_requis} requis (${m.importance}) par « ${m.offre} »`
+        + (m.niveau_actuel ? ` — vous déclarez ${NIVEAUX[m.niveau_actuel] || m.niveau_actuel}.` : '.'),
+      action: 'Déclarer',
+      lien: '/candidate/cv',
+    }))
+
+  const profil = authStore.user?.profil_candidat
+  if (profil && !profil.cv_pdf) {
+    lacunes.unshift({
+      id: 'cv', icon: '📄', title: 'Déposez votre CV',
+      description: "L'analyse de vos candidatures s'appuie sur votre CV (RG22).",
+      action: 'Déposer', lien: '/candidate/cv',
     })
-  }, 500)
+  }
+  return lacunes
+})
 
+const chargerAnalyses = async () => {
+  try {
+    const response = await api.get('/candidat/candidatures')
+    const candidatures = response.data.candidatures || []
+    applicationsCount.value = candidatures.length
+
+    const resultats = await Promise.allSettled(
+      candidatures.map(c => api.get(`/candidat/candidatures/${c.id_candidature}/analyse`))
+    )
+    analyses.value = resultats
+      .map((r, i) => (r.status === 'fulfilled' && r.value.data.analyse
+        ? { offre: candidatures[i].offre, analyse: r.value.data.analyse }
+        : null))
+      .filter(Boolean)
+  } catch (err) {
+    console.error('Erreur analyses:', err)
+  } finally {
+    chargementAnalyses.value = false
+  }
+}
+
+onMounted(chargerAnalyses)
+
+// Assistant IA réel (module de Nilam) : POST /api/ia/assistant.
+const enAttente = ref(false)
+
+const sendMessage = async () => {
+  const texte = userMessage.value.trim()
+  if (!texte || enAttente.value) return
+
+  messages.value.push({ sender: 'user', text: texte })
   userMessage.value = ''
+  enAttente.value = true
+
+  try {
+    const response = await api.post('/ia/assistant', { message: texte })
+    messages.value.push({ sender: 'ai', text: response.data.data.reponse })
+  } catch (err) {
+    // 503 : pas de clé Gemini sur ce serveur ; 502 : Gemini injoignable.
+    messages.value.push({
+      sender: 'ai',
+      text: err.response?.data?.message || "L'assistant est momentanément indisponible.",
+    })
+  } finally {
+    enAttente.value = false
+  }
 }
 </script>
