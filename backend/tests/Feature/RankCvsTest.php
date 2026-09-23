@@ -2,16 +2,23 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class RankCvsTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
         config(['services.gemini.key' => 'test-key']);
+
+        // Le classement est réservé aux recruteurs et administrateurs.
+        $this->actingAs(User::factory()->recruteur()->create(), 'sanctum');
     }
 
     private function reply(string $name, int $score): array
@@ -39,7 +46,7 @@ class RankCvsTest extends TestCase
             ->push($this->reply('Bob', 95))
             ->push($this->reply('Carol', 75))]);
 
-        $response = $this->post('/api/rank-cvs', [
+        $response = $this->post('/api/ia/classer-cvs', [
             'job_description' => 'Laravel developer, 3+ years',
             'top' => 2,
             'cv_files' => [$this->pdf('a.pdf'), $this->pdf('b.pdf'), $this->pdf('c.pdf')],
@@ -66,7 +73,7 @@ class RankCvsTest extends TestCase
             ->push(['error' => ['message' => 'bad request']], 400)
             ->push($this->reply('Bob', 80))]);
 
-        $this->post('/api/rank-cvs', [
+        $this->post('/api/ia/classer-cvs', [
             'job_description' => 'Laravel developer',
             'cv_files' => [$this->pdf('bad.pdf'), $this->pdf('good.pdf')],
         ], ['Accept' => 'application/json'])
@@ -81,7 +88,7 @@ class RankCvsTest extends TestCase
             ->push($this->reply('Alice', 60))
             ->push($this->reply('Bob', 90))]);
 
-        $this->post('/api/rank-cvs', [
+        $this->post('/api/ia/classer-cvs', [
             'job_description' => 'Laravel developer',
             'cv_files' => [$this->pdf('a.pdf'), $this->pdf('b.pdf')],
         ], ['Accept' => 'application/json'])
@@ -93,7 +100,7 @@ class RankCvsTest extends TestCase
 
     public function test_non_pdf_is_rejected(): void
     {
-        $this->post('/api/rank-cvs', [
+        $this->post('/api/ia/classer-cvs', [
             'job_description' => 'x',
             'cv_files' => [UploadedFile::fake()->create('cv.txt', 5, 'text/plain')],
         ], ['Accept' => 'application/json'])->assertStatus(422);
