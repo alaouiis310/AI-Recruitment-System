@@ -42,7 +42,7 @@
         class="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white text-gray-700 text-sm"
       >
         <option value="">Toutes les offres</option>
-        <option v-for="job in myJobs" :key="job.id" :value="job.id">
+        <option v-for="job in myJobs" :key="job.id_offre" :value="job.id_offre">
           {{ job.titre }}
         </option>
       </select>
@@ -55,7 +55,6 @@
         <option value="en_attente">En attente</option>
         <option value="en_cours">En cours</option>
         <option value="preselectionnee">Présélectionnée</option>
-        <option value="entretien">Entretien</option>
         <option value="acceptee">Acceptée</option>
         <option value="refusee">Refusée</option>
       </select>
@@ -80,7 +79,7 @@
     <div v-else class="space-y-3">
       <div 
         v-for="app in results" 
-        :key="app.id" 
+        :key="app.id_candidature" 
         class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all"
       >
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -93,13 +92,13 @@
               >
               <div>
                 <h4 class="font-semibold text-gray-800">
-                  {{ app.candidat?.prenom }} {{ app.candidat?.nom }}
+                  {{ app.candidat?.utilisateur?.prenom }} {{ app.candidat?.utilisateur?.nom }}
                 </h4>
                 <p class="text-sm text-gray-500">{{ app.candidat?.diplome || 'Candidat' }}</p>
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-400">
-              <span>📍 {{ app.candidat?.ville || 'N/A' }}</span>
+              <span>📍 {{ app.candidat?.adresse || 'N/A' }}</span>
               <span>•</span>
               <span>⏳ {{ app.candidat?.experience_totale || 0 }} ans d'exp.</span>
               <span>•</span>
@@ -107,21 +106,22 @@
             </div>
           </div>
           <div class="flex items-center gap-3 shrink-0">
-            <div v-if="app.analyse_ia?.score_matching" class="text-center">
-              <p class="text-lg font-bold" :class="getScoreTextColor(app.analyse_ia.score_matching)">
-                {{ Math.round(app.analyse_ia.score_matching) }}%
+            <div v-if="app.score_final != null" class="text-center">
+              <p class="text-lg font-bold" :class="getScoreTextColor(app.score_final)">
+                {{ Math.round(app.score_final) }}%
               </p>
               <p class="text-xs text-gray-400">Match</p>
             </div>
             <span :class="['text-xs font-medium px-3 py-1 rounded-full', getStatusBadge(app.statut)]">
               {{ formatStatus(app.statut) }}
             </span>
-            <router-link 
-              to="/recruiter/messages"
+            <a
+              v-if="app.candidat?.utilisateur?.email"
+              :href="`mailto:${app.candidat.utilisateur.email}?subject=${encodeURIComponent('Votre candidature : ' + (app.offre?.titre || ''))}`"
               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all"
             >
               Contacter
-            </router-link>
+            </a>
           </div>
         </div>
       </div>
@@ -163,7 +163,7 @@ const candidatesCount = ref(0)
 const messagesCount = ref(0)
 
 const getAvatar = (app) => {
-  const name = `${app.candidat?.prenom || ''}+${app.candidat?.nom || ''}`.trim() || 'User'
+  const name = `${app.candidat?.utilisateur?.prenom || ''}+${app.candidat?.utilisateur?.nom || ''}`.trim() || 'User'
   return `https://ui-avatars.com/api/?name=${name}&background=2563eb&color=fff&size=48`
 }
 
@@ -189,9 +189,9 @@ const search = async () => {
 const sortResults = () => {
   const sorted = [...results.value]
   if (sortBy.value === 'score_desc') {
-    sorted.sort((a, b) => (b.analyse_ia?.score_matching || 0) - (a.analyse_ia?.score_matching || 0))
+    sorted.sort((a, b) => (b.score_final || 0) - (a.score_final || 0))
   } else if (sortBy.value === 'score_asc') {
-    sorted.sort((a, b) => (a.analyse_ia?.score_matching || 0) - (b.analyse_ia?.score_matching || 0))
+    sorted.sort((a, b) => (a.score_final || 0) - (b.score_final || 0))
   } else if (sortBy.value === 'date_desc') {
     sorted.sort((a, b) => new Date(b.date_candidature) - new Date(a.date_candidature))
   } else if (sortBy.value === 'date_asc') {

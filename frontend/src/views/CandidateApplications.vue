@@ -78,14 +78,14 @@
             <tbody>
               <tr 
                 v-for="app in filteredApplications" 
-                :key="app.id" 
+                :key="app.id_candidature" 
                 class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
               >
                 <td class="px-6 py-4 font-medium text-gray-800">
                   {{ app.offre?.titre || 'N/A' }}
                 </td>
                 <td class="px-6 py-4 text-gray-600">
-                  {{ app.offre?.entreprise?.nom || 'N/A' }}
+                  {{ app.offre?.departement?.entreprise?.nom || 'N/A' }}
                 </td>
                 <td class="px-6 py-4">
                   <span :class="['text-xs font-medium px-2.5 py-1 rounded-full', getStatusColor(app.statut)]">
@@ -96,27 +96,27 @@
                   {{ formatDate(app.date_candidature) }}
                 </td>
                 <td class="px-6 py-4">
-                  <div v-if="app.analyse_ia?.score_matching" class="flex items-center gap-2">
+                  <div v-if="app.score_final != null" class="flex items-center gap-2">
                     <div class="w-16 bg-gray-200 rounded-full h-1.5">
                       <div 
                         class="h-1.5 rounded-full" 
                         :style="{ 
-                          width: app.analyse_ia.score_matching + '%', 
-                          background: getScoreColor(app.analyse_ia.score_matching) 
+                          width: app.score_final + '%', 
+                          background: getScoreColor(app.score_final) 
                         }"
                       ></div>
                     </div>
                     <span 
                       class="text-xs font-medium" 
-                      :class="getScoreTextColor(app.analyse_ia.score_matching)"
+                      :class="getScoreTextColor(app.score_final)"
                     >
-                      {{ Math.round(app.analyse_ia.score_matching) }}%
+                      {{ Math.round(app.score_final) }}%
                     </span>
                   </div>
                   <span v-else class="text-xs text-gray-400">Non analysé</span>
                 </td>
                 <td class="px-6 py-4">
-                  <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                  <button @click="fiche = construireFiche(app)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
                     Voir →
                   </button>
                 </td>
@@ -138,12 +138,14 @@
         </div>
       </div>
     </div>
+    <FicheDetail :ouvert="!!fiche" :titre="fiche?.titre" :lignes="fiche?.lignes || []" @fermer="fiche = null" />
   </DashboardLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
+import FicheDetail from '../components/FicheDetail.vue'
 import SidebarItem from '../components/SidebarItem.vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
@@ -163,7 +165,7 @@ const activeFilter = ref('all')
 const applicationsCount = computed(() => applications.value.length)
 const jobsCount = ref(0)
 const interviewsCount = computed(() => 
-  applications.value.filter(a => a.statut === 'entretien').length
+  applications.value.filter(a => a.statut === 'preselectionnee').length
 )
 const savedCount = ref(0)
 
@@ -171,7 +173,7 @@ const filters = computed(() => [
   { label: 'Toutes', value: 'all', count: applications.value.length },
   { label: 'En attente', value: 'en_attente', count: applications.value.filter(a => a.statut === 'en_attente').length },
   { label: 'En cours', value: 'en_cours', count: applications.value.filter(a => a.statut === 'en_cours').length },
-  { label: 'Entretien', value: 'entretien', count: applications.value.filter(a => a.statut === 'entretien').length },
+  { label: 'Présélectionnée', value: 'preselectionnee', count: applications.value.filter(a => a.statut === 'preselectionnee').length },
   { label: 'Acceptée', value: 'acceptee', count: applications.value.filter(a => a.statut === 'acceptee').length },
   { label: 'Refusée', value: 'refusee', count: applications.value.filter(a => a.statut === 'refusee').length },
 ])
@@ -251,5 +253,23 @@ const getScoreTextColor = (score) => {
 
 onMounted(() => {
   fetchApplications()
+})
+
+// Fiche détaillée ouverte par le bouton « Voir ».
+const fiche = ref(null)
+const dateFr = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '')
+const construireFiche = (app) => ({
+  titre: app.offre?.titre || 'Ma candidature',
+  lignes: [
+    { label: 'Entreprise', valeur: app.offre?.departement?.entreprise?.nom },
+    { label: 'Localisation', valeur: app.offre?.localisation },
+    { label: 'Contrat', valeur: app.offre?.type_contrat_libelle },
+    { label: 'Statut', valeur: app.statut_libelle },
+    { label: 'Score IA', valeur: app.score_final != null ? `${app.score_final}/100` : 'Analyse en attente' },
+    { label: 'Déposée le', valeur: dateFr(app.date_candidature) },
+    { label: 'Décision le', valeur: dateFr(app.date_decision) },
+    { label: 'Commentaire du recruteur', valeur: app.commentaire_recruteur },
+    { label: 'Ma lettre', valeur: app.lettre_motivation },
+  ],
 })
 </script>

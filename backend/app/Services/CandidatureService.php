@@ -91,6 +91,11 @@ class CandidatureService
         return $requete
             ->with(['candidat.user', 'offre.departement'])
             ->when($filtres['id_offre'] ?? null, fn (Builder $q, $v) => $q->where('id_offre', $v))
+            ->when($filtres['recherche'] ?? null, function (Builder $q, string $terme) {
+                $motif = '%'.str_replace(['%', '_'], ['\%', '\_'], $terme).'%';
+                $q->whereHas('candidat.user', fn (Builder $u) => $u->where('name', 'like', $motif)
+                    ->orWhere('prenom', 'like', $motif));
+            })
             ->classeeParScore()
             ->paginate(perPage: $filtres['per_page'] ?? 15)
             ->withQueryString();
