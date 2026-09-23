@@ -1,8 +1,8 @@
 # AI CV evaluation module (Gemini)
 
 ## What it does
-- `POST /api/evaluate-cv`  one CV vs a job offer -> score 1-100 + details
-- `POST /api/rank-cvs`     many CVs vs a job offer -> ranked top list
+- `POST /api/ia/evaluer-cv`  one CV vs a job offer -> score 1-100 + details
+- `POST /api/ia/classer-cvs`     many CVs vs a job offer -> ranked top list
 - Nothing is saved. Store the returned JSON in your own tables.
 
 ## Files to integrate
@@ -16,7 +16,7 @@
 2. php.ini: raise `upload_max_filesize` and `post_max_size` (default 8M is too small for many CVs).
 3. Run tests: `php artisan test`
 
-## POST /api/rank-cvs  (multipart/form-data)
+## POST /api/ia/classer-cvs  (multipart/form-data)
 | field | notes |
 |---|---|
 | `cv_files[]` | 1-20 PDFs, max 10 MB each |
@@ -55,3 +55,12 @@ The final 1-100 score is computed in PHP (`CvScoring::WEIGHTS`), so weights are 
 - Endpoints are public. Put them behind `auth:sanctum`.
 - CVs are sent to Google. Use a paid-tier Gemini key for real candidate data (check Google's data terms).
 - The AI is a shortlisting aid, keep a human making the hiring decision.
+
+## Intégration au backend (septembre 2026)
+
+- Les routes sont authentifiées (Sanctum) : `/api/ia/assistant` pour tout compte (20/min),
+  `/api/ia/evaluer-cv` et `/api/ia/classer-cvs` pour recruteurs et administrateurs (10/min, 5/min).
+- Sans `GEMINI_API_KEY`, le service répond `503` sans appeler Gemini ; une panne de Gemini donne `502`.
+- `/api/ia/assistant` renvoie `{ "status": "success", "data": { "reponse": "..." } }`.
+- La limite de requête est de 64 Mo (nginx et PHP) pour le classement de plusieurs CV.
+- Ce module est un outil d'aide : le score d'une candidature reste celui de `ScoringService` (RG40).
