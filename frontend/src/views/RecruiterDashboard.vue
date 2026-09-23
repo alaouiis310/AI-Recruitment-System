@@ -40,7 +40,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
         <StatCard 
           label="Nouvelles candidatures" 
-          :value="stats.nouvelles_candidatures || 0" 
+          :value="stats.en_attente || 0" 
           icon="📥" 
           icon-bg="bg-blue-50" 
           trend="+5" 
@@ -56,7 +56,7 @@
         />
         <StatCard 
           label="Shortlist" 
-          :value="stats.shortlist || 0" 
+          :value="stats.preselectionnees || 0" 
           icon="⭐" 
           icon-bg="bg-amber-50" 
           trend="+3" 
@@ -64,7 +64,7 @@
         />
         <StatCard 
           label="Embauchés" 
-          :value="stats.embauches || 0" 
+          :value="stats.acceptees || 0" 
           icon="🎯" 
           icon-bg="bg-green-50" 
           trend="+1" 
@@ -94,20 +94,20 @@
           <div class="space-y-3">
             <div 
               v-for="app in recentApplications" 
-              :key="app.id" 
+              :key="app.id_candidature" 
               class="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
             >
               <div>
                 <p class="text-sm font-medium text-gray-800">
-                  {{ app.candidat?.prenom }} {{ app.candidat?.nom }}
+                  {{ app.candidat?.utilisateur?.prenom }} {{ app.candidat?.utilisateur?.nom }}
                 </p>
                 <p class="text-xs text-gray-500">{{ app.offre?.titre }}</p>
               </div>
               <span 
-                v-if="app.analyse_ia?.score_matching"
+                v-if="app.score_final != null"
                 class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg"
               >
-                {{ Math.round(app.analyse_ia.score_matching) }}%
+                {{ Math.round(app.score_final) }}%
               </span>
             </div>
             <p v-if="recentApplications.length === 0" class="text-center text-sm text-gray-400 py-3">
@@ -128,14 +128,14 @@
           <div class="space-y-3">
             <div 
               v-for="job in recentJobs" 
-              :key="job.id" 
+              :key="job.id_offre" 
               class="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
             >
               <div>
                 <p class="text-sm font-medium text-gray-800">{{ job.titre }}</p>
                 <p class="text-xs text-gray-500">{{ job.localisation }}</p>
               </div>
-              <span class="text-xs font-medium text-gray-500">{{ job.candidatures_count || 0 }} cand.</span>
+              <span class="text-xs font-medium text-gray-500">{{ job.nombre_candidatures || 0 }} cand.</span>
             </div>
             <p v-if="recentJobs.length === 0" class="text-center text-sm text-gray-400 py-3">
               Aucune offre publiée
@@ -152,7 +152,7 @@
           <div class="space-y-3">
             <div 
               v-for="interview in upcomingInterviews" 
-              :key="interview.id" 
+              :key="interview.id_entretien" 
               class="flex items-start gap-3 p-3 bg-gray-50 rounded-xl"
             >
               <div class="text-center shrink-0">
@@ -165,7 +165,7 @@
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-800 truncate">
-                  {{ interview.offre?.titre || 'Entretien' }}
+                  {{ interview.candidature?.offre?.titre || 'Entretien' }}
                 </p>
                 <p class="text-xs text-gray-500">
                   {{ interview.heure }} • {{ formatMode(interview.mode) }}
@@ -234,8 +234,8 @@ const fetchDashboard = async () => {
     recentJobs.value = data.offres_recentes || []
     upcomingInterviews.value = data.entretiens_a_venir || []
 
-    myJobsCount.value = stats.value.total_offres || recentJobs.value.length
-    candidatesCount.value = stats.value.total_candidatures || recentApplications.value.length
+    myJobsCount.value = stats.value.offres || recentJobs.value.length
+    candidatesCount.value = stats.value.candidatures || recentApplications.value.length
 
   } catch (err) {
     console.error('Erreur dashboard:', err)

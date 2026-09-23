@@ -42,9 +42,10 @@
             alt="Avatar" 
             class="w-28 h-28 rounded-full border-4 border-blue-100 object-cover mx-auto"
           >
-          <button class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors text-sm">
+          <button @click="champPhoto.click()" :disabled="envoiPhoto" aria-label="Changer la photo" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-60 transition-colors text-sm">
             📷
           </button>
+          <input ref="champPhoto" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" @change="televerserPhoto">
         </div>
         <h3 class="font-semibold text-gray-800 mt-4">{{ profile.prenom }} {{ profile.nom }}</h3>
         <p class="text-sm text-gray-500">Candidat</p>
@@ -52,9 +53,19 @@
           <p>📧 {{ profile.email }}</p>
           <p v-if="profile.telephone" class="mt-1">📱 {{ profile.telephone }}</p>
         </div>
-        <button class="w-full mt-4 py-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-xl text-sm font-medium transition-all">
-          Supprimer mon compte
+        <button v-if="!desactivation.ouvert" @click="desactivation.ouvert = true" class="w-full mt-4 py-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-xl text-sm font-medium transition-all">
+          Désactiver mon compte
         </button>
+        <!-- Désactivation plutôt que suppression : les candidatures restent cohérentes. -->
+        <form v-else @submit.prevent="desactiverCompte" class="mt-4 p-3 border border-red-200 rounded-xl text-left space-y-2">
+          <p class="text-xs text-gray-600">Votre compte sera désactivé et toutes vos sessions fermées. Confirmez avec votre mot de passe.</p>
+          <input type="password" v-model="desactivation.password" autocomplete="current-password" placeholder="Mot de passe" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-red-400">
+          <p v-if="desactivation.erreur" class="text-xs text-red-600">{{ desactivation.erreur }}</p>
+          <div class="flex gap-2">
+            <button type="button" @click="Object.assign(desactivation, { ouvert: false, password: '', erreur: '' })" class="flex-1 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">Annuler</button>
+            <button type="submit" class="flex-1 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg">Désactiver</button>
+          </div>
+        </form>
       </div>
 
       <!-- Informations -->
@@ -132,22 +143,67 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
 import SidebarItem from '../components/SidebarItem.vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 const userName = computed(() => {
   const user = authStore.user
   return user?.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : 'Candidat'
 })
 
+// Photo réelle si le candidat en a déposé une, initiales sinon.
+const photoUrl = ref('')
 const avatarUrl = computed(() => {
-  const name = `${profile.prenom || ''}+${profile.nom || ''}`.trim() || 'Candidat'
+  if (photoUrl.value) return photoUrl.value
+  const name = `${profile.value.prenom || ''}+${profile.value.nom || ''}`.trim() || 'Candidat'
   return `https://ui-avatars.com/api/?name=${name}&background=2563eb&color=fff&size=120`
 })
+
+const champPhoto = ref(null)
+const envoiPhoto = ref(false)
+
+const televerserPhoto = async (event) => {
+  const fichier = event.target.files[0]
+  if (!fichier) return
+  if (fichier.size > 2 * 1024 * 1024) {
+    alert('❌ La photo ne doit pas dépasser 2 Mo.')
+    return
+  }
+  const donnees = new FormData()
+  donnees.append('photo', fichier)
+  envoiPhoto.value = true
+  try {
+    const response = await api.post('/candidat/photo', donnees)
+    photoUrl.value = response.data.candidat?.photo || ''
+  } catch (err) {
+    alert('❌ ' + (err.response?.data?.errors?.photo?.[0] || err.response?.data?.message || "Erreur lors de l'envoi de la photo."))
+  } finally {
+    envoiPhoto.value = false
+    event.target.value = ''
+  }
+}
+
+// RG3 : le candidat gère son propre compte.
+const desactivation = ref({ ouvert: false, password: '', erreur: '' })
+
+const desactiverCompte = async () => {
+  desactivation.value.erreur = ''
+  try {
+    await api.post('/auth/desactivation', { password: desactivation.value.password })
+    authStore.effacerSession()
+    router.push('/')
+  } catch (err) {
+    desactivation.value.erreur = err.response?.data?.errors?.password?.[0]
+      || err.response?.data?.message
+      || 'La désactivation a échoué.'
+  }
+}
 
 const loading = ref(true)
 const saving = ref(false)
@@ -174,16 +230,18 @@ const fetchProfile = async () => {
 
   try {
     const response = await api.get('/auth/moi')
-    const data = response.data.user || response.data
+    // L'API renvoie l'utilisateur sous la clé « utilisateur ».
+    const data = response.data.utilisateur || {}
 
     profile.value = {
       prenom: data.prenom || '',
       nom: data.nom || '',
       email: data.email || '',
-      telephone: data.candidat?.telephone || '',
-      adresse: data.candidat?.adresse || '',
-      experience_totale: data.candidat?.experience_totale || 0,
+      telephone: data.profil_candidat?.telephone || '',
+      adresse: data.profil_candidat?.adresse || '',
+      experience_totale: data.profil_candidat?.experience_totale || 0,
     }
+    photoUrl.value = data.profil_candidat?.photo || ''
   } catch (err) {
     console.error('Erreur profil:', err)
     if (err.response?.status === 401) {

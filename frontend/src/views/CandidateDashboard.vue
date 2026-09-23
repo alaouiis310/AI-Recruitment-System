@@ -63,8 +63,8 @@
           icon-bg="bg-purple-50" 
         />
         <StatCard 
-          label="Offres reçues" 
-          :value="stats.offres_recues || 0" 
+          label="Acceptées" 
+          :value="stats.acceptees || 0" 
           icon="🎯" 
           icon-bg="bg-green-50" 
         />
@@ -91,9 +91,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="app in recentApplications" :key="app.id" class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+              <tr v-for="app in recentApplications" :key="app.id_candidature" class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                 <td class="py-3 font-medium text-gray-800">{{ app.offre?.titre || app.job || 'N/A' }}</td>
-                <td class="py-3 text-gray-600">{{ app.offre?.entreprise?.nom || app.company || 'N/A' }}</td>
+                <td class="py-3 text-gray-600">{{ app.offre?.departement?.entreprise?.nom || app.company || 'N/A' }}</td>
                 <td class="py-3">
                   <span :class="['text-xs font-medium px-2.5 py-1 rounded-full', getStatusColor(app.statut || app.status)]">
                     {{ formatStatus(app.statut || app.status) }}
@@ -123,8 +123,8 @@
           <h3 class="text-sm font-semibold text-gray-800 mb-3">🗓️ Prochain entretien</h3>
           
           <div v-if="nextInterview" class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4">
-            <p class="font-semibold text-gray-800">{{ nextInterview.offre?.titre || 'Entretien' }}</p>
-            <p class="text-sm text-gray-600">{{ nextInterview.offre?.entreprise?.nom || '' }}</p>
+            <p class="font-semibold text-gray-800">{{ nextInterview.candidature?.offre?.titre || 'Entretien' }}</p>
+            <p class="text-sm text-gray-600">{{ nextInterview.candidature?.offre?.departement?.entreprise?.nom || '' }}</p>
             <div class="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-600">
               <span>📅 {{ formatDate(nextInterview.date) }} à {{ nextInterview.heure }}</span>
               <span>📍 {{ formatMode(nextInterview.mode) }}</span>
@@ -147,7 +147,7 @@
           <div class="space-y-3">
             <div 
               v-for="job in recommendedJobs" 
-              :key="job.id" 
+              :key="job.id_offre" 
               class="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all"
             >
               <div>
@@ -244,7 +244,7 @@ const recentApplications = ref([])
 const recommendedJobs = ref([])
 const nextInterview = ref(null)
 const recentActivities = ref([])
-const profileCompletion = ref(80)
+const profileCompletion = ref(0)
 
 // ✅ Compteurs pour les badges du menu
 const applicationsCount = ref(0)
@@ -263,24 +263,27 @@ const fetchDashboard = async () => {
 
     // Statistiques
     stats.value = data.statistiques || data.stats || {}
-    applicationsCount.value = stats.value.total_candidatures || 0
-    interviewsCount.value = stats.value.entretiens || 0
+    applicationsCount.value = stats.value.candidatures || 0
+    interviewsCount.value = stats.value.entretiens_a_venir || 0
 
     // Candidatures récentes
     recentApplications.value = data.candidatures_recentes || data.candidatures || []
 
     // Offres recommandées
-    recommendedJobs.value = data.offres_recommandees || []
+    recommendedJobs.value = data.offres_recentes || []
 
     // Prochain entretien
-    nextInterview.value = data.prochain_entretien || null
+    nextInterview.value = data.entretiens_a_venir?.[0] || null
 
     // Activité récente
     recentActivities.value = data.activite_recente || []
 
     // Complétion du profil
-    if (data.profil?.completion) {
-      profileCompletion.value = data.profil.completion
+    // Taux de complétion calculé sur les champs réels du profil candidat.
+    const profil = authStore.user?.profil_candidat
+    if (profil) {
+      const champs = ['telephone', 'adresse', 'date_naissance', 'diplome', 'cv_pdf', 'photo', 'github', 'linkedin']
+      profileCompletion.value = Math.round(champs.filter(c => profil[c]).length / champs.length * 100)
     }
 
   } catch (err) {
