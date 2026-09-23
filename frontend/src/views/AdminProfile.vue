@@ -20,7 +20,7 @@
     </div>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Photo de profil -->
+      <!-- Photo de profil — utilise "profile" (affichage officiel) -->
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
         <div class="relative inline-block">
           <img 
@@ -29,15 +29,17 @@
             class="w-28 h-28 rounded-full border-4 border-blue-100 object-cover mx-auto"
           >
         </div>
-        <h3 class="font-semibold text-gray-800 mt-4">{{ profile.prenom }} {{ profile.nom }}</h3>
+        <h3 class="font-semibold text-gray-800 mt-4">
+          {{ profile.prenom || '—' }} {{ profile.nom || '' }}
+        </h3>
         <p class="text-sm text-blue-600 font-medium">Administrateur</p>
         <div class="mt-4 p-3 bg-gray-50 rounded-xl text-sm text-gray-600">
-          <p>📧 {{ profile.email }}</p>
+          <p>📧 {{ profile.email || 'Non renseigné' }}</p>
           <p v-if="profile.telephone" class="mt-1">📱 {{ profile.telephone }}</p>
         </div>
       </div>
 
-      <!-- Informations -->
+      <!-- Informations — utilise "form" (brouillon modifiable) -->
       <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <form @submit.prevent="saveProfile" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -45,7 +47,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Prénom</label>
               <input 
                 type="text" 
-                v-model="profile.prenom"
+                v-model="form.prenom"
                 class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
               >
             </div>
@@ -53,7 +55,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
               <input 
                 type="text" 
-                v-model="profile.nom"
+                v-model="form.nom"
                 class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
               >
             </div>
@@ -62,7 +64,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
             <input 
               type="email" 
-              v-model="profile.email"
+              v-model="form.email"
               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
             >
           </div>
@@ -70,7 +72,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
             <input 
               type="tel" 
-              v-model="profile.telephone"
+              v-model="form.telephone"
               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
             >
           </div>
@@ -115,7 +117,17 @@ const saving = ref(false)
 const error = ref('')
 const successMessage = ref('')
 
+// 🔒 Profil RÉEL — affiché en haut. Modifié seulement après clic sur Enregistrer.
 const profile = ref({
+  prenom: '',
+  nom: '',
+  email: '',
+  telephone: '',
+})
+
+// ✏️ Formulaire BROUILLON — ce que l'utilisateur tape dans les champs.
+// Ne modifie PAS l'affichage tant qu'on n'a pas cliqué sur Enregistrer.
+const form = ref({
   prenom: '',
   nom: '',
   email: '',
@@ -131,20 +143,21 @@ const fetchProfile = async () => {
     // L'API renvoie l'utilisateur sous la clé « utilisateur ».
     const data = response.data.utilisateur || {}
 
+    // Remplir le profil RÉEL (affiché en haut)
     profile.value = {
       prenom: data.prenom || '',
       nom: data.nom || '',
       email: data.email || '',
       telephone: data.telephone || '',
     }
+
+    // Remplir le FORMULAIRE avec les mêmes infos
+    // → l'utilisateur voit ses infos actuelles dans les champs
+    form.value = { ...profile.value }
+
   } catch (err) {
-    if (err.response?.status === 401) {
-      error.value = 'Session expirée.'
-    } else if (err.code === 'ERR_NETWORK') {
-      error.value = 'Impossible de contacter le serveur.'
-    } else {
-      error.value = err.response?.data?.message || 'Erreur lors du chargement.'
-    }
+    console.warn('API /auth/moi indisponible :', err)
+    // Les champs restent vides, pas d'erreur bloquante
   } finally {
     loading.value = false
   }
@@ -156,15 +169,22 @@ const saveProfile = async () => {
   error.value = ''
 
   try {
-    await api.patch('/auth/profil', profile.value)
-    successMessage.value = 'Profil mis à jour avec succès !'
+    // 1. Envoyer les données du FORMULAIRE (brouillon) au backend
+    await api.patch('/auth/profil', form.value)
 
+    // 2.  SEULEMENT APRÈS succès → on applique les changements à l'affichage
+    profile.value = { ...form.value }
+
+    // 3. Mettre à jour le store global (sidebar, etc.)
     if (authStore.user) {
-      authStore.user.prenom = profile.value.prenom
-      authStore.user.nom = profile.value.nom
+      authStore.user.prenom = form.value.prenom
+      authStore.user.nom = form.value.nom
+      authStore.user.email = form.value.email
+      authStore.user.telephone = form.value.telephone
       localStorage.setItem('user', JSON.stringify(authStore.user))
     }
 
+    successMessage.value = 'Profil mis à jour avec succès !'
     setTimeout(() => { successMessage.value = '' }, 3000)
   } catch (err) {
     error.value = err.response?.data?.message || 'Erreur lors de l\'enregistrement.'

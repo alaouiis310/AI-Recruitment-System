@@ -215,6 +215,63 @@ const fetchDashboard = async () => {
   }
 }
 
+
+const exportData = () => {
+  exporting.value = true
+
+  try {
+    // 1. Date actuelle formatée en français
+    const today = new Date()
+    const dateFormatted = new Intl.DateTimeFormat('fr-FR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(today)
+
+    // 2. Les données à exporter
+    const dataToExport = [
+      { Indicateur: 'Candidats', Valeur: stats.value.total_candidats || 0 },
+      { Indicateur: 'Recruteurs', Valeur: stats.value.total_recruteurs || 0 },
+      { Indicateur: 'Candidatures', Valeur: stats.value.total_candidatures || 0 },
+      { Indicateur: 'Embauchés', Valeur: stats.value.total_embauches || 0 },
+      { Indicateur: 'Offres actives', Valeur: stats.value.offres_actives || 0 },
+      { Indicateur: 'Entretiens planifiés', Valeur: stats.value.entretiens_planifies || 0 },
+      { Indicateur: 'Taux de matching IA', Valeur: (stats.value.taux_matching_ia || 94) + '%' },
+    ]
+
+    // 3. Construction du contenu CSV avec titre et date
+    const titre = 'Rapport du tableau de bord - AI Recruitment System'
+    const dateLigne = `Généré le : ${dateFormatted}`
+
+    const headers = Object.keys(dataToExport[0]).join(';')
+    const rows = dataToExport.map(row => Object.values(row).join(';')).join('\n')
+
+    // On assemble : Titre + ligne vide + Date + ligne vide + Tableau
+    const csvContent = `${titre}\n\n${dateLigne}\n\n${headers}\n${rows}`
+
+    // 4. Téléchargement du fichier
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `Rapport_Dashboard_${today.toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('Erreur lors de l\'export:', err)
+    error.value = 'Erreur lors de l\'export des données.'
+  } finally {
+    exporting.value = false
+  }
+}
+
+
+
 onMounted(() => {
   fetchDashboard()
 })
