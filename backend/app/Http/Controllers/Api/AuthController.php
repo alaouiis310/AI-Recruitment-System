@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\EtatCompte;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ChangerMotDePasseRequest;
 use App\Http\Requests\Auth\ConnexionRequest;
+use App\Http\Requests\Auth\DesactiverCompteRequest;
 use App\Http\Requests\Auth\InscriptionCandidatRequest;
 use App\Http\Requests\Auth\InscriptionRecruteurRequest;
 use App\Http\Requests\Auth\ModifierProfilRequest;
@@ -141,5 +143,19 @@ class AuthController extends Controller
         $request->user()->tokens()->delete();
 
         return response()->json(['message' => 'Toutes les sessions ont été fermées.']);
+    }
+
+    /**
+     * RG3 — l'utilisateur gère son propre compte. Le compte est désactivé
+     * plutôt que supprimé : ses candidatures et ses offres restent cohérentes
+     * pour les autres utilisateurs. Toutes ses sessions sont fermées.
+     */
+    public function desactiverCompte(DesactiverCompteRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->update(['etat_compte' => EtatCompte::Desactive]);
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Votre compte a été désactivé.']);
     }
 }

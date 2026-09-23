@@ -59,6 +59,7 @@ Route::middleware(['auth:sanctum', 'compte.actif'])->group(function () {
         Route::patch('/mot-de-passe', [AuthController::class, 'changerMotDePasse']);
         Route::post('/deconnexion', [AuthController::class, 'deconnexion']);
         Route::post('/deconnexion-globale', [AuthController::class, 'deconnexionGlobale']);
+        Route::post('/desactivation', [AuthController::class, 'desactiverCompte']);
     });
 
     Route::middleware('role:candidat')->prefix('candidat')->group(function () {
