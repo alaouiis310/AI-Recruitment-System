@@ -6,7 +6,7 @@
     page-subtitle="Gérez toutes les offres d'emploi"
   >
     <template #header-actions>
-      <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
+      <button @click="router.push('/admin/jobs/add')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md">
         + Publier une offre
       </button>
     </template>
@@ -86,7 +86,7 @@
             <tbody>
               <tr 
                 v-for="job in jobs" 
-                :key="job.id" 
+                :key="job.id_offre" 
                 class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
               >
                 <td class="px-6 py-4">
@@ -99,7 +99,7 @@
                   {{ job.departement?.entreprise?.nom || 'N/A' }}
                 </td>
                 <td class="px-6 py-4 text-gray-600">
-                  {{ job.candidatures_count || 0 }}
+                  {{ job.nombre_candidatures || 0 }}
                 </td>
                 <td class="px-6 py-4">
                   <span :class="['text-xs font-medium px-2.5 py-1 rounded-full', getStatusBadge(job.statut)]">
@@ -108,9 +108,9 @@
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
-                    <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
+                    <button @click="fiche = construireFiche(job)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
                     <span class="text-gray-300">|</span>
-                    <button class="text-gray-500 hover:text-gray-700 text-sm">✎</button>
+                    <button @click="router.push(`/admin/jobs/${job.id_offre}/edit`)" aria-label="Modifier l’offre" class="text-gray-500 hover:text-gray-700 text-sm">✎</button>
                     <span class="text-gray-300">|</span>
                     <button 
                       @click="deleteJob(job)"
@@ -131,16 +131,20 @@
         </div>
       </div>
     </div>
+    <FicheDetail :ouvert="!!fiche" :titre="fiche?.titre" :lignes="fiche?.lignes || []" @fermer="fiche = null" />
   </DashboardLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
+import FicheDetail from '../components/FicheDetail.vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 const userName = computed(() => {
   const user = authStore.user
@@ -170,7 +174,7 @@ const fetchJobs = async () => {
 
   try {
     const params = {}
-    if (searchQuery.value) params.recherche = searchQuery.value
+    if (searchQuery.value) params.mots_cles = searchQuery.value
     if (selectedStatus.value) params.statut = selectedStatus.value
 
     const response = await api.get('/admin/offres', { params })
@@ -193,10 +197,10 @@ const fetchJobs = async () => {
 const deleteJob = async (job) => {
   if (!confirm(`Supprimer l'offre "${job.titre}" ?`)) return
   try {
-    await api.delete(`/admin/offres/${job.id}`)
-    jobs.value = jobs.value.filter(j => j.id !== job.id)
+    await api.delete(`/admin/offres/${job.id_offre}`)
+    jobs.value = jobs.value.filter(j => j.id_offre !== job.id_offre)
   } catch (err) {
-    alert('❌ Erreur lors de la suppression.')
+    alert('❌ ' + (err.response?.data?.message || 'Erreur lors de la suppression.'))
   }
 }
 
@@ -221,5 +225,27 @@ const getStatusBadge = (status) => {
 
 onMounted(() => {
   fetchJobs()
+})
+
+// Fiche détaillée ouverte par le bouton « Voir ».
+const fiche = ref(null)
+const dateFr = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '')
+const construireFiche = (job) => ({
+  titre: job.titre,
+  lignes: [
+    { label: 'Entreprise', valeur: job.departement?.entreprise?.nom },
+    { label: 'Département', valeur: job.departement?.nom },
+    { label: 'Localisation', valeur: job.localisation },
+    { label: 'Contrat', valeur: job.type_contrat_libelle },
+    { label: 'Salaire', valeur: job.salaire ? `${new Intl.NumberFormat('fr-FR').format(job.salaire)} DH` : '' },
+    { label: 'Expérience min.', valeur: `${job.experience_min ?? 0} an(s)` },
+    { label: "Niveau d'études", valeur: job.niveau_etude_libelle },
+    { label: 'Statut', valeur: job.statut_libelle },
+    { label: 'Publiée le', valeur: dateFr(job.date_publication) },
+    { label: 'Expire le', valeur: dateFr(job.date_expiration) },
+    { label: 'Candidatures', valeur: job.nombre_candidatures },
+    { label: 'Compétences', valeur: (job.competences || []).map(x => `${x.nom} (${x.niveau_requis_libelle}, ${x.importance_libelle})`).join('\n') },
+    { label: 'Description', valeur: job.description },
+  ],
 })
 </script>

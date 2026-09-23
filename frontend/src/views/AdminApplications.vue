@@ -74,7 +74,6 @@
           <option value="en_attente">En attente</option>
           <option value="en_cours">En cours</option>
           <option value="preselectionnee">Présélectionnée</option>
-          <option value="entretien">Entretien</option>
           <option value="acceptee">Acceptée</option>
           <option value="refusee">Refusée</option>
         </select>
@@ -97,7 +96,7 @@
             <tbody>
               <tr 
                 v-for="app in applications" 
-                :key="app.id" 
+                :key="app.id_candidature" 
                 class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
               >
                 <td class="px-6 py-4">
@@ -109,29 +108,29 @@
                     >
                     <div>
                       <p class="font-medium text-gray-800">
-                        {{ app.candidat?.prenom }} {{ app.candidat?.nom }}
+                        {{ app.candidat?.utilisateur?.prenom }} {{ app.candidat?.utilisateur?.nom }}
                       </p>
-                      <p class="text-xs text-gray-500">{{ app.candidat?.user?.email }}</p>
+                      <p class="text-xs text-gray-500">{{ app.candidat?.utilisateur?.email }}</p>
                     </div>
                   </div>
                 </td>
                 <td class="px-6 py-4 text-gray-600">{{ app.offre?.titre || 'N/A' }}</td>
                 <td class="px-6 py-4">
-                  <div v-if="app.analyse_ia?.score_matching" class="flex items-center gap-2">
+                  <div v-if="app.score_final != null" class="flex items-center gap-2">
                     <div class="w-16 bg-gray-200 rounded-full h-1.5">
                       <div 
                         class="h-1.5 rounded-full" 
                         :style="{ 
-                          width: app.analyse_ia.score_matching + '%', 
-                          background: getScoreColor(app.analyse_ia.score_matching) 
+                          width: app.score_final + '%', 
+                          background: getScoreColor(app.score_final) 
                         }"
                       ></div>
                     </div>
                     <span 
                       class="text-xs font-medium" 
-                      :class="getScoreTextColor(app.analyse_ia.score_matching)"
+                      :class="getScoreTextColor(app.score_final)"
                     >
-                      {{ Math.round(app.analyse_ia.score_matching) }}%
+                      {{ Math.round(app.score_final) }}%
                     </span>
                   </div>
                   <span v-else class="text-xs text-gray-400">Non analysé</span>
@@ -143,7 +142,7 @@
                 </td>
                 <td class="px-6 py-4 text-gray-500">{{ formatDate(app.date_candidature) }}</td>
                 <td class="px-6 py-4">
-                  <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
+                  <button @click="fiche = construireFiche(app)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir</button>
                 </td>
               </tr>
               <tr v-if="applications.length === 0">
@@ -156,12 +155,14 @@
         </div>
       </div>
     </div>
+    <FicheDetail :ouvert="!!fiche" :titre="fiche?.titre" :lignes="fiche?.lignes || []" @fermer="fiche = null" />
   </DashboardLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import DashboardLayout from '../layouts/DashboardLayout.vue'
+import FicheDetail from '../components/FicheDetail.vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
@@ -190,7 +191,7 @@ const countByStatus = (status) => {
 }
 
 const getAvatar = (app) => {
-  const name = `${app.candidat?.prenom || ''}+${app.candidat?.nom || ''}`.trim() || 'User'
+  const name = `${app.candidat?.utilisateur?.prenom || ''}+${app.candidat?.utilisateur?.nom || ''}`.trim() || 'User'
   return `https://ui-avatars.com/api/?name=${name}&background=2563eb&color=fff&size=36`
 }
 
@@ -284,5 +285,23 @@ const getScoreTextColor = (score) => {
 
 onMounted(() => {
   fetchApplications()
+})
+
+// Fiche détaillée ouverte par le bouton « Voir ».
+const fiche = ref(null)
+const dateFr = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '')
+const construireFiche = (app) => ({
+  titre: `Candidature n° ${app.id_candidature}`,
+  lignes: [
+    { label: 'Candidat', valeur: app.candidat?.utilisateur?.nom_complet },
+    { label: 'Email', valeur: app.candidat?.utilisateur?.email },
+    { label: 'Offre', valeur: app.offre?.titre },
+    { label: 'Statut', valeur: app.statut_libelle },
+    { label: 'Score IA', valeur: app.score_final != null ? `${app.score_final}/100` : 'Non analysée' },
+    { label: 'Déposée le', valeur: dateFr(app.date_candidature) },
+    { label: 'Décision le', valeur: dateFr(app.date_decision) },
+    { label: 'Commentaire', valeur: app.commentaire_recruteur },
+    { label: 'Lettre', valeur: app.lettre_motivation },
+  ],
 })
 </script>

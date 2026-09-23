@@ -53,7 +53,7 @@
       <div class="space-y-4">
         <div 
           v-for="interview in allInterviews" 
-          :key="interview.id" 
+          :key="interview.id_entretien" 
           class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all"
         >
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -62,7 +62,7 @@
                 {{ interview.offre?.titre || interview.candidature?.offre?.titre || 'Entretien' }}
               </h4>
               <p class="text-sm text-gray-500">
-                {{ interview.offre?.entreprise?.nom || interview.candidature?.offre?.entreprise?.nom || '' }}
+                {{ interview.offre?.departement?.entreprise?.nom || interview.candidature?.offre?.departement?.entreprise?.nom || '' }}
               </p>
               <div class="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-600">
                 <span>📅 {{ formatDate(interview.date) }}</span>
@@ -150,7 +150,7 @@ const fetchInterviews = async () => {
     
     for (const app of applications) {
       try {
-        const interviewsResponse = await api.get(`/candidat/candidatures/${app.id}/entretiens`)
+        const interviewsResponse = await api.get(`/candidat/candidatures/${app.id_candidature}/entretiens`)
         const interviews = interviewsResponse.data.data || interviewsResponse.data.entretiens || interviewsResponse.data || []
         
         interviews.forEach(interview => {

@@ -90,6 +90,7 @@ class AdminService
                 'acceptees'         => $acceptees,
                 'refusees'          => Candidature::where('statut', 'refusee')->count(),
                 'taux_conversion'   => $totalCandidatures > 0 ? round($acceptees / $totalCandidatures * 100, 2) : 0,
+                'delai_moyen_decision_jours' => $this->delaiMoyenDecision(),
             ],
             'traitements' => [
                 'analyses_ia'              => AnalyseIa::count(),
@@ -99,6 +100,21 @@ class AdminService
             ],
             'evolution_candidatures' => $this->evolutionCandidatures(),
         ];
+    }
+
+    /**
+     * RG32/RG33 — délai moyen, en jours, entre le dépôt d'une candidature et
+     * la décision définitive. Calculé en PHP : les fonctions de date diffèrent
+     * entre MySQL et SQLite, qui sert aux tests.
+     */
+    private function delaiMoyenDecision(): float
+    {
+        $delais = Candidature::query()
+            ->whereNotNull('date_decision')
+            ->get(['date_candidature', 'date_decision'])
+            ->map(fn (Candidature $c) => $c->date_candidature->diffInDays($c->date_decision));
+
+        return $delais->isEmpty() ? 0.0 : round((float) $delais->avg(), 1);
     }
 
     public function changerEtat(User $administrateur, User $utilisateur, EtatCompte $etat): User
