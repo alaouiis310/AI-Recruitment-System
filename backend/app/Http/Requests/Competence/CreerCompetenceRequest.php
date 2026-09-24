@@ -16,7 +16,7 @@ class CreerCompetenceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // RG20/RG25 — le nom identifie la compétence dans le référentiel.
+            // Le nom identifie la compétence dans le référentiel (RG20/RG25).
             'nom'         => ['required', 'string', 'max:100', 'unique:competences,nom'],
             'categorie'   => ['required', Rule::enum(CategorieCompetence::class)],
             'description' => ['nullable', 'string'],

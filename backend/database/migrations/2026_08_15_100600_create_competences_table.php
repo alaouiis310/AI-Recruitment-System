@@ -7,9 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Table COMPETENCE du MLD — RG19, RG20, RG24, RG25.
-     */
+    /** Table COMPETENCE du MLD (RG19, RG20, RG24, RG25). */
     public function up(): void
     {
         Schema::create('competences', function (Blueprint $table) {

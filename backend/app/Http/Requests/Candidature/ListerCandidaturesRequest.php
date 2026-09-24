@@ -21,8 +21,7 @@ class ListerCandidaturesRequest extends FormRequest
             'statut'   => ['sometimes', Rule::enum(StatutCandidature::class)],
             'recherche' => ['sometimes', 'string', 'max:150'],
 
-            // RG14 — n'a de sens que sur la liste du recruteur : restreindre
-            // ses candidatures reçues à une de ses offres.
+            // N'a de sens que sur la liste du recruteur (RG14).
             'id_offre' => ['sometimes', 'integer', 'exists:offres_emploi,id_offre'],
 
             // Recherche par nom ou prénom du candidat (liste du recruteur).

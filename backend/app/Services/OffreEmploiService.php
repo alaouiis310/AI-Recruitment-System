@@ -9,22 +9,16 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Logique métier des offres d'emploi (RG10 à RG21).
- */
+/** Logique métier des offres d'emploi (RG10 à RG21). */
 class OffreEmploiService
 {
-    /**
-     * RG17/RG18 — offres visibles des candidats : ouvertes et non expirées.
-     */
+    /** Offres visibles des candidats : ouvertes et non expirées (RG17/RG18). */
     public function listerPubliques(array $filtres): LengthAwarePaginator
     {
         return $this->appliquerFiltres(OffreEmploi::query()->publiable(), $filtres);
     }
 
-    /**
-     * RG12 — offres publiées par un recruteur donné, tous statuts confondus.
-     */
+    /** Offres publiées par un recruteur donné, tous statuts confondus (RG12). */
     public function listerDuRecruteur(Recruteur $recruteur, array $filtres): LengthAwarePaginator
     {
         return $this->appliquerFiltres($recruteur->offres()->getQuery(), $filtres);
@@ -36,19 +30,14 @@ class OffreEmploiService
         return $this->appliquerFiltres(OffreEmploi::query(), $filtres);
     }
 
-    /**
-     * RG12/RG13 — publication d'une offre par le recruteur authentifié.
-     *
-     * L'offre et ses compétences requises forment une seule opération :
-     * l'écriture porte sur deux tables, elle est donc transactionnelle.
-     */
+    /** Publication d'une offre par le recruteur authentifié (RG12/RG13). */
     public function creer(Recruteur $recruteur, array $donnees): OffreEmploi
     {
         return DB::transaction(function () use ($recruteur, $donnees) {
             $competences = $donnees['competences'] ?? [];
             unset($donnees['competences']);
 
-            // RG16 — à défaut de date fournie, l'offre est publiée ce jour.
+            // À défaut de date fournie, l'offre est publiée ce jour (RG16).
             $donnees['date_publication'] ??= now()->toDateString();
 
             $offre = $recruteur->offres()->create($donnees);
@@ -57,13 +46,12 @@ class OffreEmploiService
                 $offre->competences()->sync($this->pivot($competences));
             }
 
-            // fresh() et non load() : statut et experience_min proviennent de
-            // valeurs par défaut de la base, absentes du modèle en mémoire.
+            // fresh() et non load().
             return $offre->fresh(['departement', 'competences']);
         });
     }
 
-    /** RG12/RG13 — mise à jour d'une offre et, le cas échéant, de ses compétences. */
+    /** Mise à jour d'une offre et, le cas échéant, de ses compétences (RG12/RG13). */
     public function modifier(OffreEmploi $offre, array $donnees): OffreEmploi
     {
         return DB::transaction(function () use ($offre, $donnees) {
@@ -98,10 +86,7 @@ class OffreEmploiService
         $offre->delete();
     }
 
-    /**
-     * RG21 — met le pivot requerir en forme attendue par sync() :
-     * la clé est l'identifiant de la compétence, la valeur ses attributs.
-     */
+    /** Met le pivot requerir en forme attendue par sync() (RG21). */
     private function pivot(array $competences): array
     {
         return collect($competences)

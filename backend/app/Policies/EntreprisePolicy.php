@@ -19,33 +19,26 @@ class EntreprisePolicy
         return true;
     }
 
-    /**
-     * RG5 — la création d'une entreprise est réservée à l'administrateur.
-     * Le recruteur crée la sienne lors de son inscription et, conformément
-     * à RG7, il n'en a qu'une : il n'a donc pas d'autre entreprise à créer.
-     */
+    /** La création d'une entreprise est réservée à l'administrateur (RG5). */
     public function create(User $user): bool
     {
         return $user->estAdministrateur();
     }
 
-    /** RG6/RG7 — un recruteur ne modifie que l'entreprise qui l'emploie. */
+    /** Un recruteur ne modifie que l'entreprise qui l'emploie (RG6/RG7). */
     public function update(User $user, Entreprise $entreprise): bool
     {
         return $user->estAdministrateur()
             || $this->estSonEntreprise($user, $entreprise->id_entreprise);
     }
 
-    /**
-     * Suppression réservée à l'administrateur : elle supprime en cascade les
-     * recruteurs (RG6) et les départements (RG8) de l'entreprise.
-     */
+    /** Suppression réservée à l'administrateur. */
     public function delete(User $user, Entreprise $entreprise): bool
     {
         return $user->estAdministrateur();
     }
 
-    /** RG7 — un recruteur appartient à exactement une entreprise. */
+    /** Un recruteur appartient à exactement une entreprise (RG7). */
     private function estSonEntreprise(User $user, int $idEntreprise): bool
     {
         return $user->estRecruteur()

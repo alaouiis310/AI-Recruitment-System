@@ -17,7 +17,7 @@ class PlanifierEntretienRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // RG36 — date, heure et mode sont constitutifs de l'entretien.
+            // Date, heure et mode sont constitutifs de l'entretien (RG36).
             'date'  => ['required', 'date', 'after_or_equal:today'],
             'heure' => ['required', 'date_format:H:i'],
             'mode'  => ['required', Rule::enum(ModeEntretien::class)],

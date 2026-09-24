@@ -68,8 +68,6 @@ class UtilisateurSeeder extends Seeder
             'experience_totale' => 2.5,
         ]);
 
-        // Seconde entreprise : elle rend démontrable le refus d'accès d'un
-        // recruteur aux données d'une entreprise qui n'est pas la sienne.
         $atlas = Entreprise::create([
             'nom'         => 'Atlas Digital',
             'secteur'     => 'Conseil et transformation digitale',

@@ -6,10 +6,7 @@ use App\Enums\StatutCandidature;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/**
- * RG32 — changement de statut. La validité de la transition elle-même est
- * tranchée par le service, qui connaît le statut de départ.
- */
+/** Changement de statut (RG32). */
 class ChangerStatutRequest extends FormRequest
 {
     public function authorize(): bool

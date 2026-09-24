@@ -8,9 +8,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-/**
- * Accès et robustesse du module IA de Nilam une fois intégré au backend.
- */
+/** Accès et robustesse du module IA de Nilam une fois intégré au backend. */
 class AssistantIaTest extends TestCase
 {
     use RefreshDatabase;

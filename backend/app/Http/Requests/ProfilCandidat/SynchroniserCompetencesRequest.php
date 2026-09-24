@@ -6,9 +6,7 @@ use App\Enums\NiveauCompetence;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/**
- * RG24/RG26 — remplacement complet des compétences déclarées.
- */
+/** Remplacement complet des compétences déclarées (RG24/RG26). */
 class SynchroniserCompetencesRequest extends FormRequest
 {
     public function authorize(): bool

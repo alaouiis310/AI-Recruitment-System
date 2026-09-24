@@ -8,15 +8,10 @@ use App\Models\Entreprise;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * Logique métier des départements (RG8, RG9).
- *
- * Comme pour les entreprises, chaque écriture est une instruction unique :
- * aucune transaction n'est nécessaire.
- */
+/** Logique métier des départements (RG8, RG9). */
 class DepartementService
 {
-    /** RG8 — liste paginée des départements d'une entreprise donnée. */
+    /** Liste paginée des départements d'une entreprise donnée (RG8). */
     public function lister(Entreprise $entreprise, array $filtres): LengthAwarePaginator
     {
         return $entreprise->departements()
@@ -27,8 +22,8 @@ class DepartementService
     }
 
     /**
-     * RG9 — le département est rattaché à l'entreprise désignée par l'URL,
-     * jamais à celle qui figurerait dans le corps de la requête.
+     * Le département est rattaché à l'entreprise désignée par l'URL, jamais à celle qui
+     * figurerait dans le corps de la requête (RG9).
      */
     public function creer(Entreprise $entreprise, array $donnees): Departement
     {
@@ -38,7 +33,7 @@ class DepartementService
         ]);
     }
 
-    /** RG8 — mise à jour d'un département. */
+    /** Mise à jour d'un département (RG8). */
     public function modifier(Departement $departement, array $donnees): Departement
     {
         $departement->update($donnees);

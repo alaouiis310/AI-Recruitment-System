@@ -18,7 +18,7 @@ class EntrepriseController extends Controller
 
     public function __construct(private readonly EntrepriseService $entreprises) {}
 
-    /** RG5 — liste paginée des entreprises, ouverte à tout compte authentifié. */
+    /** Liste paginée des entreprises, ouverte à tout compte authentifié (RG5). */
     public function index(ListerEntreprisesRequest $request): JsonResponse
     {
         $this->authorize('viewAny', Entreprise::class);
@@ -30,7 +30,7 @@ class EntrepriseController extends Controller
         );
     }
 
-    /** RG5 — consultation d'une entreprise. */
+    /** Consultation d'une entreprise (RG5). */
     public function show(Entreprise $entreprise): JsonResponse
     {
         $this->authorize('view', $entreprise);
@@ -42,7 +42,7 @@ class EntrepriseController extends Controller
         ]);
     }
 
-    /** RG5 — création d'une entreprise, réservée à l'administrateur. */
+    /** Création d'une entreprise, réservée à l'administrateur (RG5). */
     public function store(CreerEntrepriseRequest $request): JsonResponse
     {
         $this->authorize('create', Entreprise::class);
@@ -55,7 +55,7 @@ class EntrepriseController extends Controller
         ], 201);
     }
 
-    /** RG6/RG7 — modification par l'administrateur ou par le recruteur employé. */
+    /** Modification par l'administrateur ou par le recruteur employé (RG6/RG7). */
     public function update(ModifierEntrepriseRequest $request, Entreprise $entreprise): JsonResponse
     {
         $this->authorize('update', $entreprise);
@@ -68,7 +68,7 @@ class EntrepriseController extends Controller
         ]);
     }
 
-    /** RG6/RG8 — suppression refusée tant que l'entreprise n'est pas vide. */
+    /** Suppression refusée tant que l'entreprise n'est pas vide (RG6/RG8). */
     public function destroy(Entreprise $entreprise): JsonResponse
     {
         $this->authorize('delete', $entreprise);

@@ -2,13 +2,7 @@
 
 namespace Database\Seeders;
 
-/**
- * Données du jeu de démonstration, séparées du seeder pour rester lisibles.
- *
- * Entreprises et personnes sont fictives. Les compétences sont désignées par
- * leur nom dans le référentiel de CompetenceSeeder ; les dates sont exprimées
- * en jours relatifs au jour de l'exécution.
- */
+/** Données du jeu de démonstration, séparées du seeder pour rester lisibles. */
 final class DonneesDemonstration
 {
     public static function entreprises(): array
@@ -179,10 +173,7 @@ final class DonneesDemonstration
         ];
     }
 
-    /**
-     * [email, offre, déposée il y a (jours), statut, décision il y a (jours), commentaire].
-     * Chaque candidature suit la publication de son offre ; les plus anciennes sont tranchées.
-     */
+    /** [email, offre, déposée il y a (jours), statut, décision il y a (jours), commentaire]. */
     public static function candidatures(): array
     {
         $backEnd = 'Développeur back-end PHP / Laravel';
@@ -234,9 +225,7 @@ final class DonneesDemonstration
         ];
     }
 
-    /**
-     * [email, offre, dans (jours ; négatif = passé), heure, mode, résultat, commentaire].
-     */
+    /** [email, offre, dans (jours ; négatif = passé), heure, mode, résultat, commentaire]. */
     public static function entretiens(): array
     {
         return [

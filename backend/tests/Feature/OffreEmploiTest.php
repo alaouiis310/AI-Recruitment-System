@@ -58,10 +58,6 @@ class OffreEmploiTest extends TestCase
         ], $ecrasements);
     }
 
-    // -------------------------------------------------------------------
-    // Publication — RG12, RG13, RG15
-    // -------------------------------------------------------------------
-
     public function test_un_recruteur_peut_publier_une_offre(): void
     {
         $this->actingAs($this->utilisateurRecruteur, 'sanctum')
@@ -138,10 +134,6 @@ class OffreEmploiTest extends TestCase
         $this->postJson('/api/recruteur/offres', $this->donneesValides())
             ->assertUnauthorized();
     }
-
-    // -------------------------------------------------------------------
-    // Competences requises — RG19, RG21
-    // -------------------------------------------------------------------
 
     public function test_une_offre_peut_exiger_des_competences_avec_niveau_et_importance(): void
     {
@@ -224,10 +216,6 @@ class OffreEmploiTest extends TestCase
 
         $this->assertDatabaseHas('requerir', ['id_competence' => $php->id_competence]);
     }
-
-    // -------------------------------------------------------------------
-    // Propriete de l'offre — RG12, RG13
-    // -------------------------------------------------------------------
 
     /** Recruteur d'une autre entreprise, avec son propre departement. */
     private function autreRecruteur(): User
@@ -347,10 +335,6 @@ class OffreEmploiTest extends TestCase
             ->assertJsonCount(1, 'offres')
             ->assertJsonPath('offres.0.statut', StatutOffre::Fermee->value);
     }
-
-    // -------------------------------------------------------------------
-    // Consultation publique — RG15, RG17, RG18
-    // -------------------------------------------------------------------
 
     public function test_un_candidat_peut_lister_les_offres_ouvertes(): void
     {

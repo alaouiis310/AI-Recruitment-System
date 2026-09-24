@@ -14,9 +14,7 @@ class TeleverserCvRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // RG22 — le CV est un PDF. La limite de 10 Mo correspond à
-            // upload_max_filesize du conteneur ; au-delà, PHP rejette la
-            // requête avant d'atteindre la validation.
+            // Le CV est un PDF (RG22).
             'cv' => ['required', 'file', 'mimes:pdf', 'max:10240'],
         ];
     }

@@ -7,10 +7,7 @@ use App\Enums\NiveauCompetence;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * RG21 — compétence exigée par une offre, vue à travers le pivot requerir.
- * Les attributs du pivot sont exposés à plat, à côté de la compétence.
- */
+/** Compétence exigée par une offre, vue à travers le pivot requerir (RG21). */
 class CompetenceRequiseResource extends JsonResource
 {
     public function toArray(Request $request): array

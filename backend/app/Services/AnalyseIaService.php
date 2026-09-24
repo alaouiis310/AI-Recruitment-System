@@ -10,18 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser;
 
-/**
- * Analyse d'une candidature — RG37 à RG43.
- *
- * Trois phases, dans cet ordre, et la séparation est le cœur du module :
- *
- *  1. extraction du CV par le modèle — facultative ;
- *  2. calcul du score par ScoringService — déterministe, toujours exécuté ;
- *  3. rédaction du résumé par le modèle — facultative, à partir des scores.
- *
- * Si le modèle est indisponible, seules les phases 1 et 3 sont sautées :
- * l'analyse aboutit avec un score complet et un résumé rédigé en PHP.
- */
+/** Analyse d'une candidature (RG37 à RG43). */
 class AnalyseIaService
 {
     public function __construct(
@@ -30,22 +19,22 @@ class AnalyseIaService
     ) {}
 
     /**
-     * RG37/RG38 — produit ou remplace l'analyse d'une candidature, et reporte
-     * le score sur la candidature pour le classement de RG43.
+     * Produit ou remplace l'analyse d'une candidature, et reporte le score sur la candidature pour le
+     * classement de RG43 (RG37/RG38).
      */
     public function analyser(Candidature $candidature): AnalyseIa
     {
         $candidature->loadMissing(['candidat.competences', 'offre.competences']);
 
-        // Phase 1 — extraction, facultative.
+        // Phase 1 : extraction, facultative.
         $extraction = $this->extraireLeCv($candidature);
 
-        // Phase 2 — calcul déterministe. Jamais sauté (RG40).
+        // Phase 2 : calcul déterministe. Jamais sauté (RG40).
         $scores = $this->scoring->evaluer($candidature);
 
         $recommandation = Recommandation::depuisScore($scores['score_matching']);
 
-        // Phase 3 — rédaction, facultative, à partir des scores déjà calculés.
+        // Phase 3 : rédaction, facultative, à partir des scores déjà calculés.
         $resume = $this->ia->redigerResume($this->contexte($candidature, $scores, $recommandation))
             ?? $this->resumeDeSecours($candidature, $scores, $recommandation, $extraction?->resume);
 
@@ -64,18 +53,14 @@ class AnalyseIaService
                 ],
             );
 
-            // RG43 — le score alimente le classement des candidatures.
+            // Le score alimente le classement des candidatures (RG43).
             $candidature->update(['score_final' => $scores['score_matching']]);
 
             return $analyse;
         });
     }
 
-    /**
-     * RG22/RG37 — lit le CV du candidat et le confie au modèle. Renvoie null
-     * si le candidat n'a pas de CV, si le fichier est illisible ou si le
-     * modèle est indisponible.
-     */
+    /** Lit le CV du candidat et le confie au modèle (RG22/RG37). */
     private function extraireLeCv(Candidature $candidature): ?Ia\ResultatExtraction
     {
         if (! $this->ia->estDisponible() || ! $candidature->candidat->possedeUnCv()) {
@@ -134,10 +119,7 @@ class AnalyseIaService
         ]);
     }
 
-    /**
-     * Résumé rédigé sans le modèle. Il garantit qu'une analyse comporte
-     * toujours un commentaire exploitable, API disponible ou non.
-     */
+    /** Résumé rédigé sans le modèle. */
     private function resumeDeSecours(Candidature $candidature, array $scores, Recommandation $recommandation, ?string $resumeExtrait): string
     {
         $nombre = count($scores['competences_manquantes']);

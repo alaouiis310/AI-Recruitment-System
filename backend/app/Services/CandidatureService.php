@@ -14,22 +14,13 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 
-/**
- * Logique métier des candidatures (RG27 à RG33, RG43).
- */
+/** Logique métier des candidatures (RG27 à RG33, RG43). */
 class CandidatureService
 {
-    /**
-     * RG27/RG31 — dépôt d'une candidature.
-     *
-     * L'unicité (candidat, offre) est garantie par un index de la base : on la
-     * laisse échouer puis on traduit la violation, plutôt que de tester
-     * l'existence au préalable, ce qui laisserait passer deux requêtes
-     * simultanées.
-     */
+    /** Dépôt d'une candidature (RG27/RG31). */
     public function postuler(Candidat $candidat, OffreEmploi $offre, array $donnees): Candidature
     {
-        // RG17/RG18 — une offre fermée, suspendue ou expirée n'accepte plus rien.
+        // Une offre fermée, suspendue ou expirée n'accepte plus rien (RG17/RG18).
         if (! $offre->accepteCandidatures()) {
             throw new CandidatureImpossibleException(
                 "Cette offre n'accepte plus de candidatures.",
@@ -43,8 +34,7 @@ class CandidatureService
                 'id_offre'          => $offre->id_offre,
                 'lettre_motivation' => $donnees['lettre_motivation'] ?? null,
 
-                // RG33 — la date de dépôt est celle du jour, jamais fournie
-                // par le client.
+                // La date de dépôt est celle du jour, jamais fournie par le client (RG33).
                 'date_candidature'  => now()->toDateString(),
                 'statut'            => StatutCandidature::EnAttente,
             ]);
@@ -59,14 +49,13 @@ class CandidatureService
             throw $e;
         }
 
-        // RG37 — l'analyse est trop lente pour la requête HTTP : elle part
-        // en file d'attente et renseignera score_final (RG43).
+        // L'analyse est trop lente pour la requête HTTP (RG37).
         AnalyseCandidatureJob::dispatch($candidature->id_candidature);
 
         return $candidature->load(['offre.departement', 'offre.recruteur.entreprise']);
     }
 
-    /** RG27 — candidatures déposées par un candidat. */
+    /** Candidatures déposées par un candidat (RG27). */
     public function listerDuCandidat(Candidat $candidat, array $filtres): LengthAwarePaginator
     {
         return $this->filtrer($candidat->candidatures()->getQuery(), $filtres)
@@ -78,8 +67,8 @@ class CandidatureService
     }
 
     /**
-     * RG14/RG43 — candidatures reçues par un recruteur, restreintes à ses
-     * propres offres et classées par score décroissant.
+     * Candidatures reçues par un recruteur, restreintes à ses propres offres et classées par score
+     * décroissant (RG14/RG43).
      */
     public function listerDuRecruteur(Recruteur $recruteur, array $filtres): LengthAwarePaginator
     {
@@ -122,10 +111,7 @@ class CandidatureService
             ->withQueryString();
     }
 
-    /**
-     * RG32 — avancement du dossier. La transition demandée doit suivre le
-     * cycle de vie ; une candidature acceptée ou refusée est définitive.
-     */
+    /** Avancement du dossier (RG32). */
     public function changerStatut(Candidature $candidature, StatutCandidature $cible, ?string $commentaire = null): Candidature
     {
         if (! $candidature->statut->peutDevenir($cible)) {
@@ -161,8 +147,6 @@ class CandidatureService
     /** Reconnaît une violation d'index unique, quel que soit le pilote. */
     private function estViolationUnicite(QueryException $e): bool
     {
-        // 23000 / 23505 : classe SQLSTATE des violations de contrainte
-        // d'intégrité, commune à MySQL, PostgreSQL et SQLite.
         return in_array($e->getCode(), ['23000', '23505'], true);
     }
 }

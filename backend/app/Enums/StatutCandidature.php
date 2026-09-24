@@ -2,12 +2,7 @@
 
 namespace App\Enums;
 
-/**
- * RG32 — cycle de vie d'une candidature.
- *
- * L'ordre des cas suit la progression normale du traitement ; les transitions
- * autorisées sont décrites par suivantes().
- */
+/** Cycle de vie d'une candidature (RG32). */
 enum StatutCandidature: string
 {
     case EnAttente       = 'en_attente';
@@ -28,8 +23,7 @@ enum StatutCandidature: string
     }
 
     /**
-     * Statuts atteignables depuis celui-ci. Une candidature acceptée ou
-     * refusée est définitive : le recruteur ne revient pas sur sa décision.
+     * Statuts atteignables depuis celui-ci.
      *
      * @return array<int, self>
      */

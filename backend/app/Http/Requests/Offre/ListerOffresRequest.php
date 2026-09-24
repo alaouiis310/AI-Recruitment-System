@@ -24,9 +24,7 @@ class ListerOffresRequest extends FormRequest
             'type_contrat'   => ['sometimes', Rule::enum(TypeContrat::class)],
             'id_departement' => ['sometimes', 'integer', 'exists:departements,id_departement'],
 
-            // RG18 — le filtre par statut n'a de sens que sur la liste du
-            // recruteur : la liste publique est déjà restreinte aux offres
-            // ouvertes et non expirées.
+            // Le filtre par statut n'a de sens que sur la liste du recruteur (RG18).
             'statut'         => ['sometimes', Rule::enum(StatutOffre::class)],
         ];
     }

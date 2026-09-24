@@ -9,8 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 trait ReponsePaginee
 {
     /**
-     * Enveloppe standard des collections paginées : la ressource est exposée
-     * sous son nom français au pluriel, accompagnée du bloc de pagination.
+     * Enveloppe standard des collections paginées.
      *
      * @param  class-string<JsonResource>  $resource
      */

@@ -6,19 +6,11 @@ use App\Models\Departement;
 use App\Models\Entreprise;
 use Illuminate\Database\Seeder;
 
-/**
- * Départements de démonstration — RG8, RG9.
- *
- * Les deux entreprises possèdent un département « Ressources humaines » :
- * la contrainte d'unicité porte sur le couple (id_entreprise, nom), pas sur
- * le nom seul.
- */
+/** Départements de démonstration (RG8, RG9). */
 class DepartementSeeder extends Seeder
 {
     public function run(): void
     {
-        // firstOrFail : un ordre d'exécution incorrect doit échouer bruyamment
-        // plutôt que de ne rien insérer silencieusement.
         $technoMaroc = Entreprise::where('nom', 'TechnoMaroc')->firstOrFail();
         $atlas       = Entreprise::where('nom', 'Atlas Digital')->firstOrFail();
 

@@ -32,9 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Les rappels sont typés sur l'exception déjà préparée par le noyau :
-        // une AuthorizationException est devenue AccessDeniedHttpException, et
-        // une ModelNotFoundException une NotFoundHttpException.
+        // Les rappels sont typés sur l'exception déjà préparée par le noyau.
         $exceptions->render(function (AccessDeniedHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([

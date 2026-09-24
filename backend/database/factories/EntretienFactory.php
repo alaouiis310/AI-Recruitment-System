@@ -24,7 +24,7 @@ class EntretienFactory extends Factory
         ];
     }
 
-    /** RG35 — entretien portant sur une candidature donnée. */
+    /** Entretien portant sur une candidature donnée (RG35). */
     public function pour(Candidature $candidature): static
     {
         return $this->state(fn () => ['id_candidature' => $candidature->id_candidature]);
@@ -38,7 +38,7 @@ class EntretienFactory extends Factory
         ]);
     }
 
-    /** RG36 — entretien déjà tenu, avec son issue. */
+    /** Entretien déjà tenu, avec son issue (RG36). */
     public function tenu(ResultatEntretien $resultat = ResultatEntretien::Favorable): static
     {
         return $this->state(fn () => [

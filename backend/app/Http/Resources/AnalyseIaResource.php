@@ -12,18 +12,18 @@ class AnalyseIaResource extends JsonResource
         return [
             'id_analyse' => $this->id_analyse,
 
-            // RG39/RG40 — scores calculés en PHP, jamais produits par le modèle.
+            // Scores calculés en PHP, jamais produits par le modèle (RG39/RG40).
             'score_matching'   => (float) $this->score_matching,
             'score_competence' => (float) $this->score_competence,
             'score_experience' => (float) $this->score_experience,
             'score_diplome'    => (float) $this->score_diplome,
 
-            // RG41 — compétences exigées non couvertes au niveau demandé.
+            // Compétences exigées non couvertes au niveau demandé (RG41).
             'competences_manquantes' => $this->competences_manquantes ?? [],
 
             'resume_cv' => $this->resume_cv,
 
-            // RG42 — déduite du score par des seuils explicites.
+            // Déduite du score par des seuils explicites (RG42).
             'recommandation'         => $this->recommandation->value,
             'recommandation_libelle' => $this->recommandation->libelle(),
 

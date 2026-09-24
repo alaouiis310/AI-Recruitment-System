@@ -24,12 +24,12 @@ class OffreEmploiResource extends JsonResource
             'niveau_etude'         => $this->niveau_etude?->value,
             'niveau_etude_libelle' => $this->niveau_etude?->libelle(),
 
-            // RG16/RG17 — dates de publication et d'expiration.
+            // Dates de publication et d'expiration (RG16/RG17).
             'date_publication' => $this->date_publication?->toDateString(),
             'date_expiration'  => $this->date_expiration?->toDateString(),
             'expiree'          => $this->estExpiree(),
 
-            // RG18 — statut de l'offre.
+            // Statut de l'offre (RG18).
             'statut'                 => $this->statut->value,
             'statut_libelle'         => $this->statut->libelle(),
             'accepte_candidatures'   => $this->accepteCandidatures(),
@@ -40,7 +40,7 @@ class OffreEmploiResource extends JsonResource
             'departement' => new DepartementResource($this->whenLoaded('departement')),
             'recruteur'   => new RecruteurResource($this->whenLoaded('recruteur')),
 
-            // RG19/RG21 — compétences requises et attributs du pivot requerir.
+            // Compétences requises et attributs du pivot requerir (RG19/RG21).
             'competences' => CompetenceRequiseResource::collection($this->whenLoaded('competences')),
             'tests'       => TestTechniqueResource::collection($this->whenLoaded('tests')),
             'nombre_candidatures' => $this->whenCounted('candidatures'),

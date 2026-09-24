@@ -9,15 +9,10 @@ use App\Models\Candidature;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Analyse d'une candidature (RG37 à RG42).
- *
- * La consultation suit la même règle de propriété que la candidature
- * elle-même : c'est CandidaturePolicy qui tranche (RG14).
- */
+/** Analyse d'une candidature (RG37 à RG42). */
 class AnalyseIaController extends Controller
 {
-    /** RG37/RG38 — analyse de la candidature, si elle a déjà été produite. */
+    /** Analyse de la candidature, si elle a déjà été produite (RG37/RG38). */
     public function show(Request $request, Candidature $candidature): JsonResponse
     {
         $this->authorize('view', $candidature);
@@ -36,10 +31,7 @@ class AnalyseIaController extends Controller
         ]);
     }
 
-    /**
-     * Relance l'analyse. Utile après une mise à jour du CV ou des compétences
-     * déclarées, le score reflétant l'état du profil au moment du calcul.
-     */
+    /** Relance l'analyse. */
     public function relancer(Request $request, Candidature $candidature): JsonResponse
     {
         $this->authorize('traiter', $candidature);

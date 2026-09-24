@@ -10,14 +10,7 @@ use App\Models\Competence;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-/**
- * Profils candidats de démonstration — RG22 à RG26.
- *
- * Les compétences déclarées sont volontairement contrastées : un profil très
- * proche de l'offre back-end, un profil front-end, un profil data. Le module 6
- * pourra ainsi produire des scores de compatibilité nettement différenciés
- * (RG40) et le classement de RG43 sera lisible en démonstration.
- */
+/** Profils candidats de démonstration (RG22 à RG26). */
 class ProfilCandidatSeeder extends Seeder
 {
     public function run(): void
@@ -65,7 +58,7 @@ class ProfilCandidatSeeder extends Seeder
         );
     }
 
-    /** RG26 — attributs du pivot posseder. */
+    /** Attributs du pivot posseder (RG26). */
     private function maitrise(NiveauCompetence $niveau, float $annees): array
     {
         return ['niveau' => $niveau->value, 'annees_experience' => $annees];

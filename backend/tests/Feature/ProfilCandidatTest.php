@@ -32,10 +32,6 @@ class ProfilCandidatTest extends TestCase
         $this->utilisateur->refresh();
     }
 
-    // -------------------------------------------------------------------
-    // CV — RG22, RG23
-    // -------------------------------------------------------------------
-
     public function test_un_candidat_peut_deposer_son_cv(): void
     {
         $this->actingAs($this->utilisateur, 'sanctum')
@@ -117,10 +113,6 @@ class ProfilCandidatTest extends TestCase
             ->assertForbidden();
     }
 
-    // -------------------------------------------------------------------
-    // Photo
-    // -------------------------------------------------------------------
-
     public function test_un_candidat_peut_deposer_une_photo(): void
     {
         $this->actingAs($this->utilisateur, 'sanctum')
@@ -137,10 +129,6 @@ class ProfilCandidatTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors('photo');
     }
-
-    // -------------------------------------------------------------------
-    // Competences declarees — RG24, RG25, RG26
-    // -------------------------------------------------------------------
 
     public function test_un_candidat_peut_declarer_ses_competences(): void
     {

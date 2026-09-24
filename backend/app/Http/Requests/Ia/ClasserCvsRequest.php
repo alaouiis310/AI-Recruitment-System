@@ -4,12 +4,7 @@ namespace App\Http\Requests\Ia;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Classement de plusieurs CV face à une même description de poste.
- *
- * La requête complète est plafonnée à 64 Mo par nginx et PHP : 20 fichiers de
- * 10 Mo ne passeraient pas, mais 20 CV d'une taille courante, si.
- */
+/** Classement de plusieurs CV face à une même description de poste. */
 class ClasserCvsRequest extends FormRequest
 {
     public function authorize(): bool

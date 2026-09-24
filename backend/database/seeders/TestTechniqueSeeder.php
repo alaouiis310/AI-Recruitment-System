@@ -10,7 +10,7 @@ use App\Models\ResultatTest;
 use App\Models\TestTechnique;
 use Illuminate\Database\Seeder;
 
-/** Catalogue, affectations et notifications de démonstration — RG44/RG45. */
+/** Catalogue, affectations et notifications de démonstration (RG44/RG45). */
 class TestTechniqueSeeder extends Seeder
 {
     public function run(): void

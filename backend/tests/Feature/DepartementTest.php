@@ -47,8 +47,7 @@ class DepartementTest extends TestCase
         $entreprise = Entreprise::factory()->create();
         Departement::factory()->count(3)->pour($entreprise)->create();
 
-        // Une autre entreprise possède ses propres départements : ils ne
-        // doivent pas apparaître dans la liste.
+        // Une autre entreprise possède ses propres départements : ils ne doivent pas apparaître dans la liste.
         Departement::factory()->count(2)->create();
 
         $this->actingAs(User::factory()->create(), 'sanctum')
@@ -187,7 +186,7 @@ class DepartementTest extends TestCase
         $urlEntreprise    = Entreprise::factory()->create();
         $autreEntreprise  = Entreprise::factory()->create();
 
-        // RG9 — un id_entreprise falsifie dans le corps doit rester sans effet.
+        // Un id_entreprise falsifie dans le corps doit rester sans effet (RG9).
         $this->actingAs(User::factory()->administrateur()->create(), 'sanctum')
             ->postJson("/api/entreprises/{$urlEntreprise->id_entreprise}/departements", [
                 'nom'           => 'Comptabilite',

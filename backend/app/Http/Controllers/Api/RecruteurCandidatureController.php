@@ -15,9 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-/**
- * Candidatures reçues par le recruteur (RG14, RG30, RG32, RG43).
- */
+/** Candidatures reçues par le recruteur (RG14, RG30, RG32, RG43). */
 class RecruteurCandidatureController extends Controller
 {
     use ReponsePaginee;
@@ -25,11 +23,8 @@ class RecruteurCandidatureController extends Controller
     public function __construct(private readonly CandidatureService $candidatures) {}
 
     /**
-     * RG14/RG43 — candidatures portant sur les offres publiées par le
-     * recruteur authentifié, classées par score décroissant.
-     *
-     * La restriction est appliquée par la requête elle-même : à aucun moment
-     * les candidatures d'un autre recruteur ne sont chargées puis filtrées.
+     * Candidatures portant sur les offres publiées par le recruteur authentifié, classées par score
+     * décroissant (RG14/RG43).
      */
     public function index(ListerCandidaturesRequest $request): JsonResponse
     {
@@ -40,7 +35,7 @@ class RecruteurCandidatureController extends Controller
         );
     }
 
-    /** RG14 — consultation d'une candidature reçue sur une de ses offres. */
+    /** Consultation d'une candidature reçue sur une de ses offres (RG14). */
     public function show(Request $request, Candidature $candidature): JsonResponse
     {
         $this->authorize('view', $candidature);
@@ -57,7 +52,7 @@ class RecruteurCandidatureController extends Controller
         ]);
     }
 
-    /** RG32 — avancement du dossier par le recruteur qui a publié l'offre. */
+    /** Avancement du dossier par le recruteur qui a publié l'offre (RG32). */
     public function changerStatut(ChangerStatutRequest $request, Candidature $candidature): JsonResponse
     {
         $this->authorize('traiter', $candidature);
@@ -76,7 +71,7 @@ class RecruteurCandidatureController extends Controller
         ]);
     }
 
-    /** RG7 — le profil recruteur du compte authentifié. */
+    /** Le profil recruteur du compte authentifié (RG7). */
     private function recruteur(Request $request): Recruteur
     {
         $recruteur = $request->user()->recruteur;

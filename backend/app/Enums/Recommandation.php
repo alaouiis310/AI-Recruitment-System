@@ -2,12 +2,7 @@
 
 namespace App\Enums;
 
-/**
- * RG42 — conclusion de l'analyse automatique d'une candidature.
- *
- * La recommandation est déduite du score calculé (RG40), jamais rédigée par
- * le modèle de langage : elle doit rester explicable et reproductible.
- */
+/** Conclusion de l'analyse automatique d'une candidature (RG42). */
 enum Recommandation: string
 {
     case Retenir   = 'retenir';
@@ -23,10 +18,7 @@ enum Recommandation: string
         };
     }
 
-    /**
-     * Seuils de décision. Ils sont volontairement dans le code et non dans la
-     * base : ils doivent pouvoir être justifiés et rejoués à la soutenance.
-     */
+    /** Seuils de décision. */
     public static function depuisScore(float $score): self
     {
         return match (true) {

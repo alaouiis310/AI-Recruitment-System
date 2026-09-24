@@ -50,22 +50,19 @@ class OffreEmploi extends Model
         ];
     }
 
-    /** RG13 — chaque offre est publiée par un seul recruteur. */
+    /** Chaque offre est publiée par un seul recruteur (RG13). */
     public function recruteur(): BelongsTo
     {
         return $this->belongsTo(Recruteur::class, 'id_recruteur');
     }
 
-    /** RG11 — chaque offre relève d'un seul département. */
+    /** Chaque offre relève d'un seul département (RG11). */
     public function departement(): BelongsTo
     {
         return $this->belongsTo(Departement::class, 'id_departement');
     }
 
-    /**
-     * RG19/RG20/RG21 — compétences requises via le pivot requerir.
-     * Table d'association : aucun modèle dédié, on passe par le pivot.
-     */
+    /** Compétences requises via le pivot requerir (RG19/RG20/RG21). */
     public function competences(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -76,19 +73,19 @@ class OffreEmploi extends Model
         )->withPivot('niveau_requis', 'importance');
     }
 
-    /** RG30 — une offre peut recevoir plusieurs candidatures. */
+    /** Une offre peut recevoir plusieurs candidatures (RG30). */
     public function candidatures(): HasMany
     {
         return $this->hasMany(Candidature::class, 'id_offre');
     }
 
-    /** RG45 — tests techniques rattachés à l'offre, via le pivot proposer. */
+    /** Tests techniques rattachés à l'offre, via le pivot proposer (RG45). */
     public function tests(): BelongsToMany
     {
         return $this->belongsToMany(TestTechnique::class, 'proposer', 'id_offre', 'id_test');
     }
 
-    /** RG17/RG18 — une offre est visible des candidats si elle est ouverte et non expirée. */
+    /** Une offre est visible des candidats si elle est ouverte et non expirée (RG17/RG18). */
     public function scopePubliable(Builder $query): Builder
     {
         return $query->where('statut', StatutOffre::Ouverte)
@@ -98,14 +95,14 @@ class OffreEmploi extends Model
             });
     }
 
-    /** RG17 — l'offre a dépassé sa date d'expiration. */
+    /** L'offre a dépassé sa date d'expiration (RG17). */
     public function estExpiree(): bool
     {
         return $this->date_expiration !== null
             && $this->date_expiration->isBefore(now()->startOfDay());
     }
 
-    /** RG18/RG27 — l'offre accepte-t-elle encore des candidatures ? */
+    /** L'offre accepte-t-elle encore des candidatures (RG18/RG27) ? */
     public function accepteCandidatures(): bool
     {
         return $this->statut->accepteCandidatures() && ! $this->estExpiree();

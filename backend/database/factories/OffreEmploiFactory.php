@@ -31,7 +31,7 @@ class OffreEmploiFactory extends Factory
         ];
     }
 
-    /** RG12/RG13 — offre publiée par un recruteur donné, dans un de ses départements. */
+    /** Offre publiée par un recruteur donné, dans un de ses départements (RG12/RG13). */
     public function publieePar(Recruteur $recruteur, Departement $departement): static
     {
         return $this->state(fn () => [
@@ -40,13 +40,13 @@ class OffreEmploiFactory extends Factory
         ]);
     }
 
-    /** RG18 — offre fermée : invisible des candidats. */
+    /** Offre fermée : invisible des candidats (RG18). */
     public function fermee(): static
     {
         return $this->state(fn () => ['statut' => StatutOffre::Fermee]);
     }
 
-    /** RG17 — offre dont la date d'expiration est dépassée. */
+    /** Offre dont la date d'expiration est dépassée (RG17). */
     public function expiree(): static
     {
         return $this->state(fn () => [

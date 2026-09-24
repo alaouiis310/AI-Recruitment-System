@@ -37,17 +37,13 @@ class Entretien extends Model
         ];
     }
 
-    /** RG35 — un entretien porte sur une seule candidature. */
+    /** Un entretien porte sur une seule candidature (RG35). */
     public function candidature(): BelongsTo
     {
         return $this->belongsTo(Candidature::class, 'id_candidature');
     }
 
-    /**
-     * RG14 — restreint aux entretiens des candidatures portant sur les offres
-     * publiées par un recruteur donné. Même principe que Candidature :
-     * la restriction est appliquée par la base.
-     */
+    /** Restreint aux entretiens des candidatures portant sur les offres publiées par un recruteur donné (RG14). */
     public function scopeDuRecruteur(Builder $query, int $idRecruteur): Builder
     {
         return $query->whereHas(

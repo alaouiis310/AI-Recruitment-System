@@ -22,10 +22,7 @@ class Competence extends Model
         return ['categorie' => CategorieCompetence::class];
     }
 
-    /**
-     * RG19/RG20 — offres exigeant cette compétence, via le pivot requerir.
-     * Table d'association : aucun modèle dédié, on passe par le pivot.
-     */
+    /** Offres exigeant cette compétence, via le pivot requerir (RG19/RG20). */
     public function offres(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -36,10 +33,7 @@ class Competence extends Model
         )->withPivot('niveau_requis', 'importance');
     }
 
-    /**
-     * RG24/RG25 — candidats déclarant cette compétence, via posseder.
-     * Table d'association : aucun modèle dédié, on passe par le pivot.
-     */
+    /** Candidats déclarant cette compétence, via posseder (RG24/RG25). */
     public function candidats(): BelongsToMany
     {
         return $this->belongsToMany(

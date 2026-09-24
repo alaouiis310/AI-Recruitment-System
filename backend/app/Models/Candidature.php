@@ -41,50 +41,43 @@ class Candidature extends Model
         ];
     }
 
-    /** RG28 — une candidature appartient à un seul candidat. */
+    /** Une candidature appartient à un seul candidat (RG28). */
     public function candidat(): BelongsTo
     {
         return $this->belongsTo(Candidat::class, 'id_candidat');
     }
 
-    /** RG29 — une candidature concerne une seule offre. */
+    /** Une candidature concerne une seule offre (RG29). */
     public function offre(): BelongsTo
     {
         return $this->belongsTo(OffreEmploi::class, 'id_offre');
     }
 
-    /** RG37/RG38 — une candidature ne reçoit qu'une seule analyse. */
+    /** Une candidature ne reçoit qu'une seule analyse (RG37/RG38). */
     public function analyse(): HasOne
     {
         return $this->hasOne(AnalyseIa::class, 'id_candidature');
     }
 
-    /** RG45 — tests techniques envoyés au candidat pour cette candidature. */
+    /** Tests techniques envoyés au candidat pour cette candidature (RG45). */
     public function resultatsTests(): HasMany
     {
         return $this->hasMany(ResultatTest::class, 'id_candidature');
     }
 
-    /** RG34 — une candidature peut compter zéro, un ou plusieurs entretiens. */
+    /** Une candidature peut compter zéro, un ou plusieurs entretiens (RG34). */
     public function entretiens(): HasMany
     {
         return $this->hasMany(Entretien::class, 'id_candidature');
     }
 
-    /**
-     * RG14 — restreint aux candidatures portant sur les offres publiées par
-     * un recruteur donné. La restriction est appliquée par la base, jamais en
-     * filtrant une collection déjà chargée.
-     */
+    /** Restreint aux candidatures portant sur les offres publiées par un recruteur donné (RG14). */
     public function scopeDuRecruteur(Builder $query, int $idRecruteur): Builder
     {
         return $query->whereHas('offre', fn (Builder $q) => $q->where('id_recruteur', $idRecruteur));
     }
 
-    /**
-     * RG43 — classement par score décroissant. Les candidatures non encore
-     * analysées passent en dernier, sans disparaître de la liste.
-     */
+    /** Classement par score décroissant (RG43). */
     public function scopeClasseeParScore(Builder $query): Builder
     {
         return $query->orderByRaw('score_final IS NULL')

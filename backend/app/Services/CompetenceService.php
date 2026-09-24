@@ -7,12 +7,7 @@ use App\Models\Competence;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * Référentiel des compétences (RG20, RG25).
- *
- * Chaque écriture est une instruction unique : aucune transaction n'est
- * nécessaire ici.
- */
+/** Référentiel des compétences (RG20, RG25). */
 class CompetenceService
 {
     /** Liste paginée du référentiel, filtrable par nom et par catégorie. */

@@ -6,10 +6,7 @@ use App\Enums\NiveauCompetence;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * RG26 — compétence déclarée par un candidat, vue à travers le pivot posseder.
- * Les attributs du pivot sont exposés à plat, à côté de la compétence.
- */
+/** Compétence déclarée par un candidat, vue à travers le pivot posseder (RG26). */
 class CompetenceDeclareeResource extends JsonResource
 {
     public function toArray(Request $request): array

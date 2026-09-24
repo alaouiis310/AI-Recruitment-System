@@ -68,10 +68,6 @@ class CandidatureTest extends TestCase
         return [$user->refresh(), $recruteur, $offre];
     }
 
-    // -------------------------------------------------------------------
-    // Depot — RG27, RG31, RG33
-    // -------------------------------------------------------------------
-
     public function test_un_candidat_peut_postuler_a_une_offre(): void
     {
         $this->actingAs($this->utilisateurCandidat, 'sanctum')
@@ -145,10 +141,6 @@ class CandidatureTest extends TestCase
             ->assertUnauthorized();
     }
 
-    // -------------------------------------------------------------------
-    // Liste du candidat — RG27
-    // -------------------------------------------------------------------
-
     public function test_un_candidat_ne_voit_que_ses_propres_candidatures(): void
     {
         Candidature::factory()->pour($this->candidat, $this->offre)->create();
@@ -210,10 +202,6 @@ class CandidatureTest extends TestCase
             ->getJson("/api/candidat/candidatures/{$candidature->id_candidature}")
             ->assertForbidden();
     }
-
-    // -------------------------------------------------------------------
-    // RG14 — le recruteur ne voit que les candidatures de ses offres
-    // -------------------------------------------------------------------
 
     public function test_un_recruteur_voit_les_candidatures_de_ses_offres(): void
     {
@@ -284,10 +272,6 @@ class CandidatureTest extends TestCase
             ->assertForbidden();
     }
 
-    // -------------------------------------------------------------------
-    // Transitions de statut — RG32
-    // -------------------------------------------------------------------
-
     public function test_un_recruteur_peut_faire_avancer_une_candidature(): void
     {
         $candidature = Candidature::factory()->pour($this->candidat, $this->offre)->create();
@@ -304,8 +288,7 @@ class CandidatureTest extends TestCase
 
     public function test_une_transition_hors_cycle_est_refusee(): void
     {
-        // En attente ne mene pas directement a acceptee : la preselection
-        // est une etape obligatoire.
+        // En attente ne mene pas directement a acceptee : la preselection est une etape obligatoire.
         $candidature = Candidature::factory()->pour($this->candidat, $this->offre)->create();
 
         $this->actingAs($this->utilisateurRecruteur, 'sanctum')
@@ -381,10 +364,6 @@ class CandidatureTest extends TestCase
             ])
             ->assertForbidden();
     }
-
-    // -------------------------------------------------------------------
-    // Classement par score — RG43
-    // -------------------------------------------------------------------
 
     public function test_les_candidatures_sont_classees_par_score_decroissant(): void
     {

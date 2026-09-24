@@ -4,9 +4,7 @@ namespace App\Http\Requests\Ia;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Évaluation d'un CV isolé face à une description de poste.
- */
+/** Évaluation d'un CV isolé face à une description de poste. */
 class EvaluerCvRequest extends FormRequest
 {
     public function authorize(): bool

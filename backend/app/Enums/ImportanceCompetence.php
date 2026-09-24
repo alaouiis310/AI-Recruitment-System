@@ -2,10 +2,7 @@
 
 namespace App\Enums;
 
-/**
- * RG21 — importance d'une compétence dans une offre. Le poids pondère le
- * score de compatibilité (RG40).
- */
+/** Importance d'une compétence dans une offre (RG21). */
 enum ImportanceCompetence: string
 {
     case Essentielle = 'essentielle';

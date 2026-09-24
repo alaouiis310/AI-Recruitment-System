@@ -8,15 +8,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Table ENTRETIEN du MLD — RG34, RG35, RG36.
-     */
+    /** Table ENTRETIEN du MLD (RG34, RG35, RG36). */
     public function up(): void
     {
         Schema::create('entretiens', function (Blueprint $table) {
             $table->id('id_entretien');
 
-            // RG36 — date, heure, mode et résultat.
+            // Date, heure, mode et résultat (RG36).
             $table->date('date');
             $table->time('heure');
             $table->enum('mode', ModeEntretien::valeurs());
@@ -25,9 +23,7 @@ return new class extends Migration
             $table->enum('resultat', ResultatEntretien::valeurs())
                 ->default(ResultatEntretien::EnAttente->value);
 
-            // RG35 — chaque entretien porte sur une seule candidature.
-            // RG34 — une candidature peut en compter zéro, un ou plusieurs :
-            // la clé n'est donc pas unique.
+            // Chaque entretien porte sur une seule candidature (RG35).
             $table->foreignId('id_candidature')
                 ->constrained('candidatures', 'id_candidature')
                 ->cascadeOnDelete();

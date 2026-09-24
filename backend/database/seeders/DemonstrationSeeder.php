@@ -21,18 +21,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-/**
- * Jeu de démonstration — données réalistes pour la présentation de l'application.
- *
- * Complète les seeders de base : quatre entreprises supplémentaires, treize
- * offres, seize candidats pourvus d'un CV PDF et quarante et une candidatures
- * étalées sur cinq mois, de sorte que les tableaux de bord et le graphique
- * d'évolution aient de la matière.
- *
- * Aucun score n'est écrit ici : AnalyseIaSeeder, exécuté ensuite, calcule
- * chaque score avec le vrai ScoringService (RG40). Toutes les dates sont
- * relatives au jour de l'exécution.
- */
+/** Jeu de démonstration : données réalistes pour la présentation de l'application. */
 class DemonstrationSeeder extends Seeder
 {
     private const MOT_DE_PASSE = 'Password123';
@@ -52,10 +41,6 @@ class DemonstrationSeeder extends Seeder
         $this->command?->info('  Jeu de démonstration : '.count($this->offres).' offres, '
             .Candidature::count().' candidatures au total.');
     }
-
-    // -----------------------------------------------------------------
-    // Entreprises, départements et recruteurs (RG5 à RG9)
-    // -----------------------------------------------------------------
 
     private function entreprises(): void
     {
@@ -80,10 +65,6 @@ class DemonstrationSeeder extends Seeder
             ]);
         }
     }
-
-    // -----------------------------------------------------------------
-    // Offres et compétences requises (RG10 à RG21)
-    // -----------------------------------------------------------------
 
     private function offres(): void
     {
@@ -111,10 +92,6 @@ class DemonstrationSeeder extends Seeder
             $this->offres[$o['titre']] = $offre->id_offre;
         }
     }
-
-    // -----------------------------------------------------------------
-    // Candidats, compétences déclarées et CV (RG22 à RG26)
-    // -----------------------------------------------------------------
 
     private function candidats(): void
     {
@@ -144,10 +121,6 @@ class DemonstrationSeeder extends Seeder
         }
     }
 
-    // -----------------------------------------------------------------
-    // Candidatures (RG27 à RG33), étalées sur cinq mois
-    // -----------------------------------------------------------------
-
     private function candidatures(): void
     {
         foreach (DonneesDemonstration::candidatures() as [$email, $titre, $ilYA, $statut, $decisionIlYA, $commentaire]) {
@@ -168,10 +141,6 @@ class DemonstrationSeeder extends Seeder
         }
     }
 
-    // -----------------------------------------------------------------
-    // Entretiens (RG34 à RG36)
-    // -----------------------------------------------------------------
-
     private function entretiens(): void
     {
         foreach (DonneesDemonstration::entretiens() as [$email, $titre, $dansJours, $heure, $mode, $resultat, $commentaire]) {
@@ -187,10 +156,6 @@ class DemonstrationSeeder extends Seeder
             ]);
         }
     }
-
-    // -----------------------------------------------------------------
-    // Notifications (RG44)
-    // -----------------------------------------------------------------
 
     private function notifications(): void
     {
@@ -236,10 +201,6 @@ class DemonstrationSeeder extends Seeder
         }
     }
 
-    // -----------------------------------------------------------------
-    // Utilitaires
-    // -----------------------------------------------------------------
-
     private function utilisateur(string $prenom, string $nom, string $email, RoleUtilisateur $role): User
     {
         return User::create([
@@ -253,8 +214,8 @@ class DemonstrationSeeder extends Seeder
     }
 
     /**
-     * Convertit ['PHP' => ['avance', 3]] en attributs de pivot, les compétences
-     * étant désignées par leur nom dans le référentiel partagé (RG20, RG25).
+     * Convertit ['PHP' => ['avance', 3]] en attributs de pivot, les compétences étant désignées
+     * par leur nom dans le référentiel partagé (RG20, RG25).
      */
     private function pivot(array $liste, string $cle1, string $cle2): array
     {
@@ -280,7 +241,7 @@ class DemonstrationSeeder extends Seeder
             ->firstOrFail();
     }
 
-    /** RG22 — CV PDF généré depuis le profil, déposé sur le disque public. */
+    /** CV PDF généré depuis le profil, déposé sur le disque public (RG22). */
     private function deposerCv(Candidat $candidat, ?array $donnees): void
     {
         $user = $candidat->user;

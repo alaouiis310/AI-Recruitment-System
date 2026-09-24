@@ -7,45 +7,42 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Table CANDIDATURE du MLD — RG27 à RG33, RG43.
-     */
+    /** Table CANDIDATURE du MLD (RG27 à RG33, RG43). */
     public function up(): void
     {
         Schema::create('candidatures', function (Blueprint $table) {
             $table->id('id_candidature');
 
-            // RG33 — date de dépôt de la candidature.
+            // Date de dépôt de la candidature (RG33).
             $table->date('date_candidature');
             $table->text('lettre_motivation')->nullable();
 
-            // RG32 — cycle de vie de la candidature.
+            // Cycle de vie de la candidature (RG32).
             $table->enum('statut', StatutCandidature::valeurs())
                 ->default(StatutCandidature::EnAttente->value);
 
-            // RG43 — score retenu pour le classement, alimenté par l'analyse
-            // du module 6 (RG40) ; nul tant qu'aucune analyse n'a abouti.
+            // Score retenu pour le classement, alimenté par l'analyse du module 6 (RG40) (RG43).
             $table->decimal('score_final', 5, 2)->nullable();
 
             $table->date('date_decision')->nullable();
             $table->text('commentaire_recruteur')->nullable();
 
-            // RG28 — une candidature appartient à un seul candidat.
+            // Une candidature appartient à un seul candidat (RG28).
             $table->foreignId('id_candidat')
                 ->constrained('candidats', 'id_candidat')
                 ->cascadeOnDelete();
 
-            // RG29 — une candidature concerne une seule offre.
+            // Une candidature concerne une seule offre (RG29).
             $table->foreignId('id_offre')
                 ->constrained('offres_emploi', 'id_offre')
                 ->cascadeOnDelete();
 
             $table->timestamps();
 
-            // RG31 — une seule candidature par candidat et par offre.
+            // Une seule candidature par candidat et par offre (RG31).
             $table->unique(['id_candidat', 'id_offre']);
 
-            // RG43 — classement des candidatures d'une offre par score.
+            // Classement des candidatures d'une offre par score (RG43).
             $table->index(['id_offre', 'score_final']);
             $table->index('statut');
         });

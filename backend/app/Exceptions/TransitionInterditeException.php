@@ -7,10 +7,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * RG32 — levée lorsqu'un changement de statut ne suit pas le cycle de vie
- * d'une candidature. Se rend elle-même en 422 sur les routes /api/*.
- */
+/** Levée lorsqu'un changement de statut ne suit pas le cycle de vie d'une candidature (RG32). */
 class TransitionInterditeException extends Exception
 {
     public function __construct(
