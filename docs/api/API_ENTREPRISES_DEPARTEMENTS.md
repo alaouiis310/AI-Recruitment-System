@@ -441,8 +441,8 @@ Authorization: Bearer <token>       administrateur, ou recruteur de l'entreprise
 
 **Réponse `204`** — corps vide.
 
-> Lorsque le module « Offres d'emploi » existera, la suppression d'un
-> département portant des offres devra être refusée (RG10, RG11).
+> La suppression d'un département portant des offres est refusée par une
+> réponse `409` (RG10, RG11).
 
 ---
 
@@ -495,7 +495,7 @@ Renvoyé dans deux situations distinctes :
 | `409` | Suppression impossible en l'état | Afficher `message` et la marche à suivre |
 | `422` | Validation échouée | Afficher les erreurs sous chaque champ |
 
-> Le code `409` complète la liste de `CLAUDE.md` §7.2. Il est employé pour une
+> Le code `409` complète la liste des codes de réponse. Il est employé pour une
 > requête bien formée qui entre en conflit avec l'état de la ressource —
 > ce qu'un `422`, réservé aux erreurs de validation du corps, ne décrit pas.
 

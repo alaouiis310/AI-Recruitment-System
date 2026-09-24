@@ -10,8 +10,8 @@ Module 6 du backend. Couvre les règles de gestion **RG37** à **RG43**.
 
 C'est la contrainte de conception centrale du projet. Le score est calculé en
 PHP par `ScoringService`, à partir des données de la base, selon un barème
-écrit et testé. Il doit pouvoir être expliqué ligne à ligne à la soutenance,
-et rester calculable lorsque l'API est indisponible.
+écrit et testé. Il reste ainsi explicable ligne à ligne, et calculable
+lorsque l'API est indisponible.
 
 L'analyse se déroule en **trois phases**, et leur ordre porte cette garantie :
 

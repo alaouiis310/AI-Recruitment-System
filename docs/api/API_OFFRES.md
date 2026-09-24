@@ -307,8 +307,8 @@ Authorization: Bearer <token>       recruteur ayant publié l'offre
 **Réponse `204`** — corps vide. Les compétences requises sont supprimées en
 cascade avec l'offre.
 
-> Lorsque le module « Candidatures » existera, la suppression d'une offre
-> ayant reçu des candidatures devra être refusée (RG30).
+> La suppression d'une offre ayant reçu des candidatures est refusée par une
+> réponse `409` (RG30).
 
 ---
 
