@@ -65,6 +65,7 @@ class DashboardService
                 'offres_ouvertes' => (clone $offres)->where('statut', 'ouverte')->count(),
                 'candidatures' => (clone $candidatures)->count(),
                 'en_attente' => (clone $candidatures)->where('statut', 'en_attente')->count(),
+                'en_cours' => (clone $candidatures)->where('statut', 'en_cours')->count(),
                 'preselectionnees' => (clone $candidatures)->where('statut', 'preselectionnee')->count(),
                 'acceptees' => (clone $candidatures)->where('statut', 'acceptee')->count(),
                 'entretiens_a_venir' => Entretien::query()

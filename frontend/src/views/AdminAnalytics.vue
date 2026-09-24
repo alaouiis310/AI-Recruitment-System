@@ -67,7 +67,7 @@
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 class="text-sm font-semibold text-gray-800 mb-4">Évolution des candidatures</h3>
           <div class="h-48 flex items-end gap-2">
-            <div v-for="(item, index) in applicationsChart" :key="index" class="flex-1 flex flex-col items-center gap-2">
+            <div v-for="(item, index) in applicationsChart" :key="index" class="flex-1 h-full flex flex-col justify-end items-center gap-2">
               <div 
                 class="w-full rounded-lg transition-all duration-500" 
                 :style="{ height: item.height + '%', background: '#3b82f6' }"

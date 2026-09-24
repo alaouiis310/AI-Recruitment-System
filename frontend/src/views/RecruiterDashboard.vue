@@ -209,16 +209,17 @@ const candidatesCount = ref(0)
 const messagesCount = ref(0)
 
 const pipelineStages = computed(() => {
+  // Étapes du cycle de vie d'une candidature (RG32), telles que renvoyées par l'API.
   const s = stats.value
-  const total = (s.nouvelles_candidatures || 0) + (s.en_cours || 0) + (s.entretiens_a_venir || 0) + (s.offres || 0) + (s.embauches || 0)
-  const max = total || 1
-  return [
-    { label: 'Nouveaux', count: s.nouvelles_candidatures || 0, percentage: ((s.nouvelles_candidatures || 0) / max) * 100, color: '#3b82f6' },
-    { label: 'En cours', count: s.en_cours || 0, percentage: ((s.en_cours || 0) / max) * 100, color: '#60a5fa' },
-    { label: 'Entretien', count: s.entretiens_a_venir || 0, percentage: ((s.entretiens_a_venir || 0) / max) * 100, color: '#f59e0b' },
-    { label: 'Offre', count: s.offres || 0, percentage: ((s.offres || 0) / max) * 100, color: '#10b981' },
-    { label: 'Embauchés', count: s.embauches || 0, percentage: ((s.embauches || 0) / max) * 100, color: '#8b5cf6' },
+  const etapes = [
+    { label: 'Nouvelles', count: s.en_attente || 0, color: '#3b82f6' },
+    { label: 'En cours', count: s.en_cours || 0, color: '#60a5fa' },
+    { label: 'Présélection', count: s.preselectionnees || 0, color: '#f59e0b' },
+    { label: 'Entretiens', count: s.entretiens_a_venir || 0, color: '#8b5cf6' },
+    { label: 'Acceptées', count: s.acceptees || 0, color: '#10b981' },
   ]
+  const max = etapes.reduce((somme, e) => somme + e.count, 0) || 1
+  return etapes.map(e => ({ ...e, percentage: (e.count / max) * 100 }))
 })
 
 const fetchDashboard = async () => {
