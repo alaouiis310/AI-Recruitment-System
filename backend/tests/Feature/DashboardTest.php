@@ -52,7 +52,7 @@ class DashboardTest extends TestCase
         $offre = OffreEmploi::factory()->publieePar($recruteur, $departement)->create();
         $candidatUser = User::factory()->create();
         $candidat = Candidat::factory()->create(['id_user' => $candidatUser->id]);
-        Candidature::factory()->pour($candidat, $offre)->create();
+        Candidature::factory()->pour($candidat, $offre)->create(['statut' => 'en_cours']);
 
         OffreEmploi::factory()->create();
 
@@ -61,6 +61,8 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertJsonPath('statistiques.offres', 1)
             ->assertJsonPath('statistiques.candidatures', 1)
+            ->assertJsonPath('statistiques.en_attente', 0)
+            ->assertJsonPath('statistiques.en_cours', 1)
             ->assertJsonCount(1, 'offres_recentes');
     }
 }
