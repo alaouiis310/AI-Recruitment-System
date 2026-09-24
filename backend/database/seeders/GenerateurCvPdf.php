@@ -2,13 +2,7 @@
 
 namespace Database\Seeders;
 
-/**
- * Génère un CV PDF texte d'une page, pour les données de démonstration.
- *
- * Aucune bibliothèque PDF n'est installée : le fichier est écrit à la main
- * (PDF 1.4, polices standard Helvetica, encodage WinAnsi pour les accents).
- * Il n'est utilisé que par les seeders, jamais par l'application.
- */
+/** Génère un CV PDF texte d'une page, pour les données de démonstration. */
 class GenerateurCvPdf
 {
     /** @var array<int, array{0: string, 1: int, 2: bool}> texte, taille, gras */

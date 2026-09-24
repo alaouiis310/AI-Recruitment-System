@@ -2,11 +2,7 @@
 
 namespace App\Enums;
 
-/**
- * RG21/RG26 — niveau de maîtrise, exigé par une offre (requerir) ou déclaré
- * par un candidat (posseder). L'ordre est significatif : il sert au calcul de
- * l'écart de niveau dans le score de compatibilité (RG40).
- */
+/** Niveau de maîtrise, exigé par une offre (requerir) ou déclaré par un candidat (posseder) (RG21/RG26). */
 enum NiveauCompetence: string
 {
     case Debutant      = 'debutant';

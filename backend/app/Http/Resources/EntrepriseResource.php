@@ -19,7 +19,7 @@ class EntrepriseResource extends JsonResource
             'description'   => $this->description,
             'date_creation' => $this->created_at?->toDateString(),
 
-            // RG6/RG8 — décomptes exposés uniquement lorsqu'ils ont été chargés.
+            // Décomptes exposés uniquement lorsqu'ils ont été chargés (RG6/RG8).
             'nombre_recruteurs'   => $this->whenCounted('recruteurs'),
             'nombre_departements' => $this->whenCounted('departements'),
 

@@ -16,10 +16,7 @@ use App\Services\ScoringService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * RG40 — le calcul du score est deterministe : aucune de ces assertions ne
- * depend d'un modele de langage.
- */
+/** Le calcul du score est deterministe : aucune de ces assertions ne depend d'un modele de langage (RG40). */
 class ScoringServiceTest extends TestCase
 {
     use RefreshDatabase;
@@ -157,10 +154,6 @@ class ScoringServiceTest extends TestCase
         $this->assertSame(100.0, $this->scoring->evaluer($candidature)['score_competence']);
     }
 
-    // -------------------------------------------------------------------
-    // Volet experience
-    // -------------------------------------------------------------------
-
     public function test_l_experience_exigee_atteinte_vaut_le_volet_entier(): void
     {
         $candidature = $this->candidature([], [], ['experience_min' => 3], ['experience_totale' => 3]);
@@ -188,10 +181,6 @@ class ScoringServiceTest extends TestCase
 
         $this->assertSame(100.0, $this->scoring->evaluer($candidature)['score_experience']);
     }
-
-    // -------------------------------------------------------------------
-    // Volet diplome
-    // -------------------------------------------------------------------
 
     public function test_le_diplome_au_niveau_exige_vaut_le_volet_entier(): void
     {
@@ -226,8 +215,7 @@ class ScoringServiceTest extends TestCase
 
     public function test_un_diplome_illisible_neutralise_le_volet(): void
     {
-        // Le volet ne doit pas penaliser sur un critere que la base ne permet
-        // pas de trancher.
+        // Le volet ne doit pas penaliser sur un critere que la base ne permet pas de trancher.
         $candidature = $this->candidature([], [],
             ['niveau_etude' => NiveauEtude::Bac5],
             ['diplome' => 'Formation interne maison'],
@@ -243,16 +231,11 @@ class ScoringServiceTest extends TestCase
         $this->assertSame(100.0, $this->scoring->evaluer($candidature)['score_diplome']);
     }
 
-    // -------------------------------------------------------------------
-    // Score global — RG39, RG40
-    // -------------------------------------------------------------------
-
     public function test_le_score_global_est_la_moyenne_ponderee_des_trois_volets(): void
     {
         $php = Competence::factory()->create();
 
         // Competences 50, experience 50, diplome 100.
-        // 50*0.60 + 50*0.25 + 100*0.15 = 30 + 12.5 + 15 = 57.5
         $mysql = Competence::factory()->create();
 
         $candidature = $this->candidature(
@@ -284,7 +267,7 @@ class ScoringServiceTest extends TestCase
             ['experience_totale' => 0, 'diplome' => 'Baccalauréat'],
         );
 
-        // RG39 — le pire profil possible reste borne.
+        // Le pire profil possible reste borne (RG39).
         foreach ($this->scoring->evaluer($candidature) as $cle => $valeur) {
             if ($cle === 'competences_manquantes') {
                 continue;

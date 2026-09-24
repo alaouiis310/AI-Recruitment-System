@@ -13,13 +13,7 @@ use App\Models\OffreEmploi;
 use App\Models\Recruteur;
 use Illuminate\Database\Seeder;
 
-/**
- * Offres de démonstration — RG10 à RG21.
- *
- * Chaque recruteur publie dans les départements de sa propre entreprise
- * (RG9, RG11). Les trois statuts de RG18 sont représentés, ainsi qu'une offre
- * expirée, afin de rendre visible le filtrage de la liste candidat (RG17).
- */
+/** Offres de démonstration (RG10 à RG21). */
 class OffreEmploiSeeder extends Seeder
 {
     public function run(): void
@@ -34,8 +28,7 @@ class OffreEmploiSeeder extends Seeder
 
             $offre = OffreEmploi::create($definition);
 
-            // RG19/RG21 — les compétences sont désignées par leur nom, le
-            // référentiel étant partagé (RG20).
+            // Les compétences sont désignées par leur nom, le référentiel étant partagé (RG20) (RG19/RG21).
             $offre->competences()->sync(
                 Competence::whereIn('nom', array_keys($competences))
                     ->get()
@@ -167,7 +160,7 @@ class OffreEmploiSeeder extends Seeder
                 'date_publication' => now()->subDays(20)->toDateString(),
                 'date_expiration'  => now()->addWeeks(3)->toDateString(),
 
-                // RG18 — offre suspendue : absente de la liste candidat.
+                // Offre suspendue : absente de la liste candidat (RG18).
                 'statut'           => StatutOffre::Suspendue,
                 'id_recruteur'     => $atlas->id_recruteur,
                 'id_departement'   => $this->departement($atlas, 'Marketing digital'),
@@ -186,7 +179,7 @@ class OffreEmploiSeeder extends Seeder
                 'niveau_etude'     => NiveauEtude::Bac2,
                 'date_publication' => now()->subMonths(3)->toDateString(),
 
-                // RG17/RG18 — offre fermée et expirée : absente de la liste candidat.
+                // Offre fermée et expirée : absente de la liste candidat (RG17/RG18).
                 'date_expiration'  => now()->subWeek()->toDateString(),
                 'statut'           => StatutOffre::Fermee,
                 'id_recruteur'     => $technoMaroc->id_recruteur,

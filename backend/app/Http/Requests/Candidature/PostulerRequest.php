@@ -14,8 +14,7 @@ class PostulerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // RG29 — l'offre visée. Son ouverture est vérifiée par le service
-            // (RG17, RG18), l'existence suffit ici.
+            // L'offre visée (RG29).
             'id_offre'          => ['required', 'integer', 'exists:offres_emploi,id_offre'],
             'lettre_motivation' => ['nullable', 'string', 'max:5000'],
         ];

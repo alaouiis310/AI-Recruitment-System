@@ -102,11 +102,7 @@ class AdminService
         ];
     }
 
-    /**
-     * RG32/RG33 — délai moyen, en jours, entre le dépôt d'une candidature et
-     * la décision définitive. Calculé en PHP : les fonctions de date diffèrent
-     * entre MySQL et SQLite, qui sert aux tests.
-     */
+    /** Délai moyen, en jours, entre le dépôt d'une candidature et la décision définitive (RG32/RG33). */
     private function delaiMoyenDecision(): float
     {
         $delais = Candidature::query()

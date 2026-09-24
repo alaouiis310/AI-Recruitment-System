@@ -14,7 +14,7 @@ use RuntimeException;
  *
  * Outil d'aide au recruteur : il évalue des CV déposés à la volée face à une
  * description de poste, sans rien enregistrer. Il ne remplace pas le score
- * d'une candidature, qui reste calculé par ScoringService (RG40, CLAUDE.md §8).
+ * d'une candidature, qui reste calculé par ScoringService (RG40).
  */
 class AiRecruitmentController extends Controller
 {

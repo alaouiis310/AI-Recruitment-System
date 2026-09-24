@@ -21,8 +21,6 @@ class ModifierDepartementRequest extends FormRequest
                 'sometimes',
                 'string',
                 'max:100',
-                // RG8 — unicité au sein de l'entreprise, l'enregistrement
-                // courant étant ignoré via sa clé primaire personnalisée.
                 Rule::unique('departements', 'nom')
                     ->where('id_entreprise', $departement?->id_entreprise)
                     ->ignore($departement?->id_departement, 'id_departement'),

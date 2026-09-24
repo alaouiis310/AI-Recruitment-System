@@ -6,11 +6,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Levée lorsqu'une candidature ne peut pas être déposée : offre fermée,
- * suspendue ou expirée (RG17, RG18), ou candidature déjà existante (RG31).
- * Se rend elle-même en 422 sur les routes /api/*.
- */
+/** Levée lorsqu'une candidature ne peut pas être déposée. */
 class CandidatureImpossibleException extends Exception
 {
     /** @param  array<string, array<int, string>>  $erreurs */

@@ -12,7 +12,7 @@ class EntretienResource extends JsonResource
         return [
             'id_entretien' => $this->id_entretien,
 
-            // RG36 — date, heure, mode et résultat.
+            // Date, heure, mode et résultat (RG36).
             'date'  => $this->date?->toDateString(),
             'heure' => $this->heure,
 

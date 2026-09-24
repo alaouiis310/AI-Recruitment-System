@@ -145,11 +145,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Toutes les sessions ont été fermées.']);
     }
 
-    /**
-     * RG3 — l'utilisateur gère son propre compte. Le compte est désactivé
-     * plutôt que supprimé : ses candidatures et ses offres restent cohérentes
-     * pour les autres utilisateurs. Toutes ses sessions sont fermées.
-     */
+    /** L'utilisateur gère son propre compte (RG3). */
     public function desactiverCompte(DesactiverCompteRequest $request): JsonResponse
     {
         $user = $request->user();

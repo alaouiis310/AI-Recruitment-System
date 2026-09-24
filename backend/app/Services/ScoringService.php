@@ -9,19 +9,10 @@ use App\Models\Candidature;
 use App\Models\Competence;
 use App\Models\OffreEmploi;
 
-/**
- * RG40 — calcul du score de compatibilité entre un candidat et une offre.
- *
- * Ce service est **entièrement déterministe** : aucune valeur ne provient
- * d'un modèle de langage. C'est la contrainte de conception la plus
- * importante du projet — le score doit pouvoir être expliqué ligne à ligne
- * à la soutenance, et rester calculable lorsque l'API est indisponible.
- *
- * Les mêmes entrées produisent toujours le même score.
- */
+/** Calcul du score de compatibilité entre un candidat et une offre (RG40). */
 class ScoringService
 {
-    /** Pondération des trois volets. Leur somme vaut 1. */
+    /** Pondération des trois volets. */
     private const POIDS_COMPETENCE = 0.60;
 
     private const POIDS_EXPERIENCE = 0.25;
@@ -57,15 +48,8 @@ class ScoringService
     }
 
     /**
-     * RG19/RG21/RG24 — confronte les compétences déclarées par le candidat
-     * (pivot posseder) à celles exigées par l'offre (pivot requerir).
-     *
-     * Chaque compétence exigée vaut son poids d'importance ; le candidat en
-     * obtient une fraction selon l'écart entre son niveau et celui exigé. Le
-     * score est le rapport des points obtenus aux points possibles.
-     *
-     * RG41 — les compétences non déclarées, ou déclarées en deçà du niveau
-     * exigé, sont retournées pour être signalées au recruteur.
+     * Confronte les compétences déclarées par le candidat (pivot posseder) à celles exigées par
+     * l'offre (pivot requerir) (RG19/RG21/RG24).
      *
      * @return array{0: float, 1: array<int, array<string, mixed>>}
      */
@@ -73,8 +57,7 @@ class ScoringService
     {
         $exigees = $offre->competences;
 
-        // Une offre sans exigence ne départage pas les candidats : le volet
-        // est neutre plutôt que nul.
+        // Une offre sans exigence ne départage pas les candidats : le volet est neutre plutôt que nul.
         if ($exigees->isEmpty()) {
             return [100.0, []];
         }
@@ -113,7 +96,7 @@ class ScoringService
         return [($pointsObtenus / $pointsPossible) * 100, $manquantes];
     }
 
-    /** RG41 — description d'une compétence absente ou insuffisante. */
+    /** Description d'une compétence absente ou insuffisante (RG41). */
     private function manquante(Competence $competence, NiveauCompetence $requis, ?NiveauCompetence $possede, string $importance): array
     {
         return [
@@ -125,12 +108,7 @@ class ScoringService
         ];
     }
 
-    /**
-     * Fraction des points accordée selon l'écart de niveau.
-     *
-     * Atteindre ou dépasser le niveau exigé vaut la totalité ; en deçà, la
-     * pénalité est de 25 points de pourcentage par cran manquant.
-     */
+    /** Fraction des points accordée selon l'écart de niveau. */
     private function ratioNiveau(NiveauCompetence $possede, NiveauCompetence $requis): float
     {
         $ecart = $requis->rang() - $possede->rang();
@@ -142,13 +120,7 @@ class ScoringService
         return max(0.0, 1.0 - 0.25 * $ecart);
     }
 
-    /**
-     * Compare l'expérience totale du candidat à celle exigée par l'offre.
-     *
-     * Une offre sans exigence donne le volet à tout le monde. Au-delà du
-     * seuil, le score est plafonné : dépasser largement l'attente n'apporte
-     * pas de bonus, l'écart se jouant sur les compétences.
-     */
+    /** Compare l'expérience totale du candidat à celle exigée par l'offre. */
     private function voletExperience(Candidat $candidat, OffreEmploi $offre): float
     {
         $exigee = (float) $offre->experience_min;
@@ -160,14 +132,7 @@ class ScoringService
         return min(100.0, ((float) $candidat->experience_totale / $exigee) * 100);
     }
 
-    /**
-     * Compare le niveau d'études exigé au diplôme déclaré par le candidat.
-     *
-     * Le diplôme est une chaîne libre : on en déduit un nombre d'années après
-     * le baccalauréat. Faute d'indication exploitable, le volet est neutre —
-     * un diplôme non reconnu ne doit pas pénaliser le candidat sur un critère
-     * que la base ne permet pas de trancher.
-     */
+    /** Compare le niveau d'études exigé au diplôme déclaré par le candidat. */
     private function voletDiplome(Candidat $candidat, OffreEmploi $offre): float
     {
         if ($offre->niveau_etude === null) {
@@ -190,10 +155,7 @@ class ScoringService
         return max(0.0, 100.0 - 20.0 * ($anneesExigees - $anneesCandidat));
     }
 
-    /**
-     * Déduit un niveau en années après le baccalauréat à partir du libellé du
-     * diplôme. Reconnaît les formulations françaises les plus courantes.
-     */
+    /** Déduit un niveau en années après le baccalauréat à partir du libellé du diplôme. */
     private function anneesDepuisDiplome(?string $diplome): ?int
     {
         if ($diplome === null || trim($diplome) === '') {
@@ -230,7 +192,7 @@ class ScoringService
         ];
     }
 
-    /** RG39 — tout score reste compris entre 0 et 100. */
+    /** Tout score reste compris entre 0 et 100 (RG39). */
     private function borner(float $score): float
     {
         return round(max(0.0, min(100.0, $score)), 2);

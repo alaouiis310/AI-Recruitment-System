@@ -2,10 +2,7 @@
 
 namespace App\Enums;
 
-/**
- * Niveau d'études exigé par une offre. L'ordre est significatif : il sert au
- * volet diplôme du score de compatibilité (RG40).
- */
+/** Niveau d'études exigé par une offre. */
 enum NiveauEtude: string
 {
     case Bac      = 'bac';

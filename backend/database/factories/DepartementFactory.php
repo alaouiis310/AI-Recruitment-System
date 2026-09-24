@@ -21,15 +21,15 @@ class DepartementFactory extends Factory
         ];
     }
 
-    /** RG9 — rattache le département à une entreprise donnée. */
+    /** Rattache le département à une entreprise donnée (RG9). */
     public function pour(Entreprise $entreprise): static
     {
         return $this->state(fn () => ['id_entreprise' => $entreprise->id_entreprise]);
     }
 
     /**
-     * Parcourt une liste de noms réalistes puis les suffixe, de façon à rester
-     * lisible tout en restant unique quel que soit le nombre d'instances.
+     * Parcourt une liste de noms réalistes puis les suffixe, de façon à rester lisible tout en
+     * restant unique quel que soit le nombre d'instances.
      */
     private function nomUnique(): string
     {

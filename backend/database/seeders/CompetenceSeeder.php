@@ -6,10 +6,7 @@ use App\Enums\CategorieCompetence;
 use App\Models\Competence;
 use Illuminate\Database\Seeder;
 
-/**
- * Référentiel de départ (RG20, RG25) : langages, frameworks, outils, bases de
- * données, langues et savoir-être couramment demandés au Maroc.
- */
+/** Référentiel de départ (RG20, RG25). */
 class CompetenceSeeder extends Seeder
 {
     public function run(): void

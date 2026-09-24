@@ -9,15 +9,7 @@ use App\Models\OffreEmploi;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-/**
- * Candidatures de démonstration — RG27 à RG33.
- *
- * Les quatre statuts non définitifs et les deux issues sont représentés, de
- * quoi montrer le cycle de vie de RG32 sans manipulation préalable.
- *
- * score_final reste nul : il est alimenté par l'analyse du module 6 (RG40),
- * pas par le dépôt de la candidature.
- */
+/** Candidatures de démonstration (RG27 à RG33). */
 class CandidatureSeeder extends Seeder
 {
     public function run(): void

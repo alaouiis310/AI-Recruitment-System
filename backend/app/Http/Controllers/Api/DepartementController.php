@@ -19,7 +19,7 @@ class DepartementController extends Controller
 
     public function __construct(private readonly DepartementService $departements) {}
 
-    /** RG8 — liste paginée des départements d'une entreprise. */
+    /** Liste paginée des départements d'une entreprise (RG8). */
     public function index(ListerDepartementsRequest $request, Entreprise $entreprise): JsonResponse
     {
         $this->authorize('viewAny', [Departement::class, $entreprise]);
@@ -31,7 +31,7 @@ class DepartementController extends Controller
         );
     }
 
-    /** RG9 — création d'un département dans l'entreprise désignée par l'URL. */
+    /** Création d'un département dans l'entreprise désignée par l'URL (RG9). */
     public function store(CreerDepartementRequest $request, Entreprise $entreprise): JsonResponse
     {
         $this->authorize('create', [Departement::class, $entreprise]);
@@ -44,7 +44,7 @@ class DepartementController extends Controller
         ], 201);
     }
 
-    /** RG8 — consultation d'un département. */
+    /** Consultation d'un département (RG8). */
     public function show(Departement $departement): JsonResponse
     {
         $this->authorize('view', $departement);
@@ -54,7 +54,7 @@ class DepartementController extends Controller
         ]);
     }
 
-    /** RG8/RG9 — modification par l'administrateur ou le recruteur de l'entreprise. */
+    /** Modification par l'administrateur ou le recruteur de l'entreprise (RG8/RG9). */
     public function update(ModifierDepartementRequest $request, Departement $departement): JsonResponse
     {
         $this->authorize('update', $departement);
@@ -67,7 +67,7 @@ class DepartementController extends Controller
         ]);
     }
 
-    /** RG8/RG9 — suppression par l'administrateur ou le recruteur de l'entreprise. */
+    /** Suppression par l'administrateur ou le recruteur de l'entreprise (RG8/RG9). */
     public function destroy(Departement $departement): JsonResponse
     {
         $this->authorize('delete', $departement);

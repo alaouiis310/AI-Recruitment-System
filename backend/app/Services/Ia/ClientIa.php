@@ -6,16 +6,7 @@ use Anthropic\Client;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-/**
- * Accès au modèle de langage (RG37, RG42).
- *
- * Deux usages seulement : extraire le contenu d'un CV et rédiger un résumé.
- * Le score de compatibilité n'est jamais demandé au modèle — il est calculé
- * par ScoringService (RG40).
- *
- * Toute indisponibilité est absorbée ici : les méthodes renvoient null plutôt
- * que de lever, afin que l'analyse aboutisse malgré tout.
- */
+/** Accès au modèle de langage (RG37, RG42). */
 class ClientIa
 {
     private ?Client $client = null;
@@ -26,10 +17,7 @@ class ClientIa
         return filled(config('ia.cle_api'));
     }
 
-    /**
-     * RG37 — extrait du texte d'un CV les compétences, l'ancienneté et le
-     * diplôme. Renvoie null si le modèle est indisponible ou illisible.
-     */
+    /** Extrait du texte d'un CV les compétences, l'ancienneté et le diplôme (RG37). */
     public function extraireCv(string $texteCv): ?ResultatExtraction
     {
         $reponse = $this->demander(
@@ -63,12 +51,7 @@ class ClientIa
         );
     }
 
-    /**
-     * RG42 — rédige le commentaire présenté au recruteur.
-     *
-     * Les scores sont fournis en entrée : le modèle les met en mots, il ne
-     * les produit pas et n'est pas autorisé à les contredire.
-     */
+    /** Rédige le commentaire présenté au recruteur (RG42). */
     public function redigerResume(string $contexte): ?string
     {
         return $this->demander(
@@ -80,7 +63,7 @@ class ClientIa
         );
     }
 
-    /** Appel unitaire au modèle. Renvoie null en cas d'indisponibilité. */
+    /** Appel unitaire au modèle. */
     private function demander(string $consigne, string $message): ?string
     {
         if (! $this->estDisponible()) {
@@ -103,8 +86,7 @@ class ClientIa
 
             return null;
         } catch (Throwable $e) {
-            // L'analyse doit aboutir même API indisponible : on trace et on
-            // rend la main au calcul déterministe.
+            // L'analyse doit aboutir même API indisponible : on trace et on rend la main au calcul déterministe.
             Log::warning("Appel au modèle de langage impossible : {$e->getMessage()}");
 
             return null;

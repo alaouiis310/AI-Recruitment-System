@@ -7,12 +7,7 @@ use App\Models\Entreprise;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * Logique métier des entreprises (RG5, RG6, RG8).
- *
- * Aucune opération de ce service n'écrit dans plusieurs tables : les écritures
- * sont des instructions uniques, il n'y a donc pas de DB::transaction() ici.
- */
+/** Logique métier des entreprises (RG5, RG6, RG8). */
 class EntrepriseService
 {
     /** Liste paginée et filtrée des entreprises. */
@@ -28,13 +23,13 @@ class EntrepriseService
             ->withQueryString();
     }
 
-    /** RG5 — création d'une entreprise. */
+    /** Création d'une entreprise (RG5). */
     public function creer(array $donnees): Entreprise
     {
         return Entreprise::create($donnees);
     }
 
-    /** RG6/RG7 — mise à jour des informations d'une entreprise. */
+    /** Mise à jour des informations d'une entreprise (RG6/RG7). */
     public function modifier(Entreprise $entreprise, array $donnees): Entreprise
     {
         $entreprise->update($donnees);
@@ -43,11 +38,8 @@ class EntrepriseService
     }
 
     /**
-     * RG6/RG8 — la suppression est refusée tant que l'entreprise emploie des
-     * recruteurs ou possède des départements : la cascade détruirait les
-     * profils recruteurs en laissant leurs comptes utilisateurs orphelins, et
-     * effacerait les départements auxquels les offres seront rattachées
-     * (RG10, RG11).
+     * La suppression est refusée tant que l'entreprise emploie des recruteurs ou possède des
+     * départements (RG6/RG8).
      */
     public function supprimer(Entreprise $entreprise): void
     {

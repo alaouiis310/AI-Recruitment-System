@@ -14,16 +14,14 @@ use App\Services\CandidatureService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Candidatures vues du côté candidat (RG27, RG31, RG33).
- */
+/** Candidatures vues du côté candidat (RG27, RG31, RG33). */
 class CandidatCandidatureController extends Controller
 {
     use ReponsePaginee;
 
     public function __construct(private readonly CandidatureService $candidatures) {}
 
-    /** RG27 — candidatures déposées par le candidat authentifié. */
+    /** Candidatures déposées par le candidat authentifié (RG27). */
     public function index(ListerCandidaturesRequest $request): JsonResponse
     {
         return $this->paginee(
@@ -33,7 +31,7 @@ class CandidatCandidatureController extends Controller
         );
     }
 
-    /** RG27/RG31 — dépôt d'une candidature sur une offre ouverte. */
+    /** Dépôt d'une candidature sur une offre ouverte (RG27/RG31). */
     public function store(PostulerRequest $request): JsonResponse
     {
         $this->authorize('create', Candidature::class);

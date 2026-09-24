@@ -19,18 +19,17 @@ class Departement extends Model
 
     protected function casts(): array
     {
-        // La comparaison de propriété dans DepartementPolicy est stricte :
-        // la clé étrangère doit être un entier quel que soit le pilote.
+        // La comparaison de propriété dans DepartementPolicy est stricte.
         return ['id_entreprise' => 'integer'];
     }
 
-    /** RG9 — chaque département appartient à une et une seule entreprise. */
+    /** Chaque département appartient à une et une seule entreprise (RG9). */
     public function entreprise(): BelongsTo
     {
         return $this->belongsTo(Entreprise::class, 'id_entreprise');
     }
 
-    /** RG10 — un département gère plusieurs offres. */
+    /** Un département gère plusieurs offres (RG10). */
     public function offres(): HasMany
     {
         return $this->hasMany(OffreEmploi::class, 'id_departement');

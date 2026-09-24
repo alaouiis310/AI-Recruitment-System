@@ -27,7 +27,7 @@ class CandidatFactory extends Factory
         ];
     }
 
-    /** RG22 — candidat disposant déjà d'un CV enregistré. */
+    /** Candidat disposant déjà d'un CV enregistré (RG22). */
     public function avecCv(string $chemin = 'cv/exemple.pdf'): static
     {
         return $this->state(fn () => ['cv_pdf' => $chemin]);

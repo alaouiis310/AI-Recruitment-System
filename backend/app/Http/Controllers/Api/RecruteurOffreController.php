@@ -15,17 +15,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-/**
- * Gestion des offres par le recruteur qui les publie (RG12, RG13).
- * La propriété de l'enregistrement est tranchée par OffreEmploiPolicy.
- */
+/** Gestion des offres par le recruteur qui les publie (RG12, RG13). */
 class RecruteurOffreController extends Controller
 {
     use ReponsePaginee;
 
     public function __construct(private readonly OffreEmploiService $offres) {}
 
-    /** RG12 — offres publiées par le recruteur authentifié, tous statuts confondus. */
+    /** Offres publiées par le recruteur authentifié, tous statuts confondus (RG12). */
     public function index(ListerOffresRequest $request): JsonResponse
     {
         $this->authorize('viewAny', OffreEmploi::class);
@@ -37,7 +34,7 @@ class RecruteurOffreController extends Controller
         );
     }
 
-    /** RG12/RG13 — publication d'une offre au nom du recruteur authentifié. */
+    /** Publication d'une offre au nom du recruteur authentifié (RG12/RG13). */
     public function store(CreerOffreRequest $request): JsonResponse
     {
         $this->authorize('create', OffreEmploi::class);
@@ -50,7 +47,7 @@ class RecruteurOffreController extends Controller
         ], 201);
     }
 
-    /** RG12/RG13 — modification réservée au recruteur ayant publié l'offre. */
+    /** Modification réservée au recruteur ayant publié l'offre (RG12/RG13). */
     public function update(ModifierOffreRequest $request, OffreEmploi $offre): JsonResponse
     {
         $this->authorize('update', $offre);
@@ -63,7 +60,7 @@ class RecruteurOffreController extends Controller
         ]);
     }
 
-    /** RG12/RG13 — suppression réservée au recruteur ayant publié l'offre. */
+    /** Suppression réservée au recruteur ayant publié l'offre (RG12/RG13). */
     public function destroy(OffreEmploi $offre): JsonResponse
     {
         $this->authorize('delete', $offre);
@@ -73,10 +70,7 @@ class RecruteurOffreController extends Controller
         return response()->json([], 204);
     }
 
-    /**
-     * RG7 — le profil recruteur du compte authentifié. Un administrateur n'en
-     * possède pas : ces points d'accès sont ceux de l'espace recruteur.
-     */
+    /** Le profil recruteur du compte authentifié (RG7). */
     private function recruteur(Request $request): Recruteur
     {
         $recruteur = $request->user()->recruteur;

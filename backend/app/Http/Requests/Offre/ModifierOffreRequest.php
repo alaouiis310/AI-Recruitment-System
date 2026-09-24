@@ -9,17 +9,12 @@ use App\Enums\StatutOffre;
 use App\Enums\TypeContrat;
 use Illuminate\Validation\Rule;
 
-/**
- * Mise à jour partielle : les règles de la création reprises en « sometimes ».
- * La règle sur le département est héritée, un recruteur ne pouvant pas
- * déplacer une offre hors des départements de son entreprise (RG9, RG11).
- */
+/** Mise à jour partielle : les règles de la création reprises en « sometimes ». */
 class ModifierOffreRequest extends CreerOffreRequest
 {
     /**
-     * RG16/RG17 — sur une mise à jour partielle, la date d'expiration se
-     * compare à la date de publication déjà enregistrée lorsque celle-ci
-     * n'est pas renvoyée : sans cela, la règle comparerait à un champ absent.
+     * Sur une mise à jour partielle, la date d'expiration se compare à la date de publication déjà
+     * enregistrée lorsque celle-ci n'est pas renvoyée (RG16/RG17).
      */
     protected function prepareForValidation(): void
     {

@@ -6,19 +6,13 @@ use App\Models\Candidat;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Profil du candidat : documents et compétences déclarées (RG22 à RG26).
- */
+/** Profil du candidat : documents et compétences déclarées (RG22 à RG26). */
 class ProfilCandidatService
 {
     /** Disque public : les fichiers sont servis via storage:link. */
     private const DISQUE = 'public';
 
-    /**
-     * RG22/RG23 — remplace le CV du candidat. L'ancien fichier est supprimé :
-     * le candidat peut mettre son CV à jour à tout moment, sans accumuler de
-     * fichiers orphelins sur le disque.
-     */
+    /** Remplace le CV du candidat (RG22/RG23). */
     public function remplacerCv(Candidat $candidat, UploadedFile $fichier): Candidat
     {
         return $this->remplacerFichier($candidat, 'cv_pdf', $fichier, 'cv');
@@ -42,9 +36,7 @@ class ProfilCandidatService
         return $this->supprimerFichier($candidat, 'photo');
     }
 
-    /**
-     * RG24/RG26 — remplace l'intégralité des compétences déclarées.
-     */
+    /** Remplace l'intégralité des compétences déclarées (RG24/RG26). */
     public function synchroniserCompetences(Candidat $candidat, array $competences): Candidat
     {
         $candidat->competences()->sync($this->pivot($competences));
@@ -52,9 +44,7 @@ class ProfilCandidatService
         return $candidat->fresh('competences');
     }
 
-    /**
-     * RG24/RG26 — ajoute ou met à jour une compétence sans toucher aux autres.
-     */
+    /** Ajoute ou met à jour une compétence sans toucher aux autres (RG24/RG26). */
     public function declarerCompetence(Candidat $candidat, array $competence): Candidat
     {
         $candidat->competences()->syncWithoutDetaching($this->pivot([$competence]));
@@ -70,10 +60,7 @@ class ProfilCandidatService
         return $candidat->fresh('competences');
     }
 
-    /**
-     * RG26 — met le pivot posseder en forme attendue par sync() : la clé est
-     * l'identifiant de la compétence, la valeur ses attributs.
-     */
+    /** Met le pivot posseder en forme attendue par sync() (RG26). */
     private function pivot(array $competences): array
     {
         return collect($competences)

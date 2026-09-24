@@ -23,13 +23,13 @@ class Entreprise extends Model
         'description',
     ];
 
-    /** RG6 — une entreprise emploie un ou plusieurs recruteurs. */
+    /** Une entreprise emploie un ou plusieurs recruteurs (RG6). */
     public function recruteurs(): HasMany
     {
         return $this->hasMany(Recruteur::class, 'id_entreprise');
     }
 
-    /** RG8 — une entreprise est composée d'un ou plusieurs départements. */
+    /** Une entreprise est composée d'un ou plusieurs départements (RG8). */
     public function departements(): HasMany
     {
         return $this->hasMany(Departement::class, 'id_entreprise');

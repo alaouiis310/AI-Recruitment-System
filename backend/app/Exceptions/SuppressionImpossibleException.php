@@ -6,10 +6,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Levée lorsqu'une ressource ne peut pas être supprimée sans détruire des
- * données qui en dépendent. Se rend elle-même en 409 sur les routes /api/*.
- */
+/** Levée lorsqu'une ressource ne peut pas être supprimée sans détruire des données qui en dépendent. */
 class SuppressionImpossibleException extends Exception
 {
     /** @param  array<string, array<int, string>>  $erreurs */

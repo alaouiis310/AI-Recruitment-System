@@ -2,12 +2,7 @@
 
 namespace App\Services\Ia;
 
-/**
- * Contenu extrait d'un CV par le modèle (RG37).
- *
- * Aucun de ces champs n'entre dans le calcul du score : ils servent au résumé
- * présenté au recruteur et à la détection d'informations absentes du profil.
- */
+/** Contenu extrait d'un CV par le modèle (RG37). */
 class ResultatExtraction
 {
     /** @param  array<int, string>  $competencesDetectees */

@@ -19,11 +19,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
-/**
- * RG37 a RG42. Aucune cle d'API n'est configuree dans la suite de tests :
- * ces tests verifient donc aussi que l'analyse aboutit sans modele, ce qui
- * est la contrainte de conception du module.
- */
+/** RG37 a RG42. */
 class AnalyseIaTest extends TestCase
 {
     use RefreshDatabase;
@@ -73,10 +69,6 @@ class AnalyseIaTest extends TestCase
         return Candidature::factory()->pour($candidat, $offre)->create();
     }
 
-    // -------------------------------------------------------------------
-    // Mise en file — RG37
-    // -------------------------------------------------------------------
-
     public function test_le_depot_d_une_candidature_met_l_analyse_en_file(): void
     {
         Queue::fake();
@@ -105,10 +97,6 @@ class AnalyseIaTest extends TestCase
         $this->assertDatabaseCount('analyses_ia', 0);
     }
 
-    // -------------------------------------------------------------------
-    // Analyse sans modele de langage — la contrainte centrale du module
-    // -------------------------------------------------------------------
-
     public function test_l_analyse_aboutit_sans_cle_d_api(): void
     {
         $candidature = $this->candidatureCouvrante();
@@ -128,7 +116,7 @@ class AnalyseIaTest extends TestCase
 
         app(AnalyseIaService::class)->analyser($candidature);
 
-        // RG43 — le classement du recruteur s'appuie sur cette colonne.
+        // Le classement du recruteur s'appuie sur cette colonne (RG43).
         $this->assertSame(100.0, (float) $candidature->fresh()->score_final);
     }
 
@@ -140,7 +128,7 @@ class AnalyseIaTest extends TestCase
         $premiere = $service->analyser($candidature);
         $seconde  = $service->analyser($candidature->fresh());
 
-        // RG38 — la relance remplace l'analyse, elle n'en ajoute pas.
+        // La relance remplace l'analyse, elle n'en ajoute pas (RG38).
         $this->assertSame($premiere->id_analyse, $seconde->id_analyse);
         $this->assertDatabaseCount('analyses_ia', 1);
     }
@@ -165,14 +153,10 @@ class AnalyseIaTest extends TestCase
         $analyse = app(AnalyseIaService::class)
             ->analyser(Candidature::factory()->pour($candidat, $offre)->create());
 
-        // RG41 — MySQL est exigee mais non declaree.
+        // MySQL est exigee mais non declaree (RG41).
         $this->assertCount(1, $analyse->competences_manquantes);
         $this->assertSame('MySQL', $analyse->competences_manquantes[0]['nom']);
     }
-
-    // -------------------------------------------------------------------
-    // Recommandation — RG42
-    // -------------------------------------------------------------------
 
     public function test_la_recommandation_decoule_des_seuils_de_score(): void
     {
@@ -201,10 +185,6 @@ class AnalyseIaTest extends TestCase
 
         $this->assertSame(Recommandation::Rejeter, $analyse->recommandation);
     }
-
-    // -------------------------------------------------------------------
-    // Consultation — RG14
-    // -------------------------------------------------------------------
 
     public function test_le_recruteur_consulte_l_analyse_de_sa_candidature(): void
     {
@@ -245,7 +225,7 @@ class AnalyseIaTest extends TestCase
             'id_entreprise' => $autreEntreprise->id_entreprise,
         ]);
 
-        // RG14 — la propriete de la candidature gouverne aussi son analyse.
+        // La propriete de la candidature gouverne aussi son analyse (RG14).
         $this->actingAs($autreUser->refresh(), 'sanctum')
             ->getJson("/api/recruteur/candidatures/{$candidature->id_candidature}/analyse")
             ->assertForbidden();

@@ -8,7 +8,7 @@ use App\Models\Candidature;
 use App\Models\Entretien;
 use Illuminate\Database\Seeder;
 
-/** Entretiens de démonstration — RG34 à RG36. */
+/** Entretiens de démonstration (RG34 à RG36). */
 class EntretienSeeder extends Seeder
 {
     public function run(): void

@@ -31,7 +31,7 @@ class CandidatResource extends JsonResource
                     : null,
             ),
 
-            // RG24/RG26 — compétences déclarées via le pivot posseder.
+            // Compétences déclarées via le pivot posseder (RG24/RG26).
             'competences' => CompetenceDeclareeResource::collection($this->whenLoaded('competences')),
             'candidatures' => CandidatureResource::collection($this->whenLoaded('candidatures')),
         ];

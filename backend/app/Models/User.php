@@ -49,7 +49,7 @@ class User extends Authenticatable
         return $this->hasOne(Recruteur::class, 'id_user');
     }
 
-    /** RG44 — un utilisateur peut recevoir plusieurs notifications. */
+    /** Un utilisateur peut recevoir plusieurs notifications (RG44). */
     public function notifications(): HasMany
     {
         return $this->hasMany(NotificationApp::class, 'id_user');

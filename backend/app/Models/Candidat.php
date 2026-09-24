@@ -43,10 +43,7 @@ class Candidat extends Model
         return $this->belongsTo(User::class, 'id_user');
     }
 
-    /**
-     * RG24/RG25/RG26 — compétences déclarées, via le pivot posseder.
-     * Table d'association : aucun modèle dédié, on passe par le pivot.
-     */
+    /** Compétences déclarées, via le pivot posseder (RG24/RG25/RG26). */
     public function competences(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -57,13 +54,13 @@ class Candidat extends Model
         )->withPivot('niveau', 'annees_experience');
     }
 
-    /** RG27 — un candidat peut déposer plusieurs candidatures. */
+    /** Un candidat peut déposer plusieurs candidatures (RG27). */
     public function candidatures(): HasMany
     {
         return $this->hasMany(Candidature::class, 'id_candidat');
     }
 
-    /** RG22 — le candidat dispose-t-il d'un CV exploitable par l'analyse (RG37) ? */
+    /** Le candidat dispose-t-il d'un CV exploitable par l'analyse (RG37) (RG22) ? */
     public function possedeUnCv(): bool
     {
         return $this->cv_pdf !== null;

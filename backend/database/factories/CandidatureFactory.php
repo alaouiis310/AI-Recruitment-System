@@ -23,7 +23,7 @@ class CandidatureFactory extends Factory
         ];
     }
 
-    /** RG28/RG29 — candidature d'un candidat donné sur une offre donnée. */
+    /** Candidature d'un candidat donné sur une offre donnée (RG28/RG29). */
     public function pour(Candidat $candidat, OffreEmploi $offre): static
     {
         return $this->state(fn () => [
@@ -32,13 +32,13 @@ class CandidatureFactory extends Factory
         ]);
     }
 
-    /** RG32 — candidature à un statut donné. */
+    /** Candidature à un statut donné (RG32). */
     public function statut(StatutCandidature $statut): static
     {
         return $this->state(fn () => ['statut' => $statut]);
     }
 
-    /** RG43 — candidature déjà analysée, avec son score de compatibilité. */
+    /** Candidature déjà analysée, avec son score de compatibilité (RG43). */
     public function score(float $score): static
     {
         return $this->state(fn () => ['score_final' => $score]);

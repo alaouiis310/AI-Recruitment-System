@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-/** RG36 — modalité de déroulement de l'entretien. */
+/** Modalité de déroulement de l'entretien (RG36). */
 enum ModeEntretien: string
 {
     case Presentiel = 'presentiel';

@@ -14,17 +14,12 @@ use App\Services\ProfilCandidatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Profil du candidat authentifié (RG22 à RG26).
- *
- * Tous ces points d'accès portent sur le profil du compte connecté : il n'y a
- * pas de propriété à trancher, la ressource est toujours la sienne (RG3).
- */
+/** Profil du candidat authentifié (RG22 à RG26). */
 class ProfilCandidatController extends Controller
 {
     public function __construct(private readonly ProfilCandidatService $profils) {}
 
-    /** RG22/RG23 — dépôt ou remplacement du CV. */
+    /** Dépôt ou remplacement du CV (RG22/RG23). */
     public function televerserCv(TeleverserCvRequest $request): JsonResponse
     {
         $candidat = $this->profils->remplacerCv($this->candidat($request), $request->file('cv'));
@@ -35,7 +30,7 @@ class ProfilCandidatController extends Controller
         ]);
     }
 
-    /** RG22 — retrait du CV. */
+    /** Retrait du CV (RG22). */
     public function supprimerCv(Request $request): JsonResponse
     {
         return response()->json([
@@ -64,7 +59,7 @@ class ProfilCandidatController extends Controller
         ]);
     }
 
-    /** RG24/RG26 — compétences déclarées par le candidat. */
+    /** Compétences déclarées par le candidat (RG24/RG26). */
     public function competences(Request $request): JsonResponse
     {
         $candidat = $this->candidat($request)->load('competences');
@@ -74,7 +69,7 @@ class ProfilCandidatController extends Controller
         ]);
     }
 
-    /** RG24/RG26 — remplacement complet de la liste des compétences. */
+    /** Remplacement complet de la liste des compétences (RG24/RG26). */
     public function synchroniserCompetences(SynchroniserCompetencesRequest $request): JsonResponse
     {
         $candidat = $this->profils->synchroniserCompetences(
@@ -88,7 +83,7 @@ class ProfilCandidatController extends Controller
         ]);
     }
 
-    /** RG24/RG26 — déclaration ou mise à jour d'une seule compétence. */
+    /** Déclaration ou mise à jour d'une seule compétence (RG24/RG26). */
     public function declarerCompetence(DeclarerCompetenceRequest $request): JsonResponse
     {
         $candidat = $this->profils->declarerCompetence($this->candidat($request), $request->validated());

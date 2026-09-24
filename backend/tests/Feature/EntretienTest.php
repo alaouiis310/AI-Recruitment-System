@@ -74,10 +74,6 @@ class EntretienTest extends TestCase
         ], $ecrasements);
     }
 
-    // -------------------------------------------------------------------
-    // Planification — RG34, RG35, RG36
-    // -------------------------------------------------------------------
-
     public function test_un_recruteur_peut_planifier_un_entretien(): void
     {
         $this->actingAs($this->utilisateurRecruteur, 'sanctum')
@@ -93,7 +89,7 @@ class EntretienTest extends TestCase
 
     public function test_une_candidature_peut_compter_plusieurs_entretiens(): void
     {
-        // RG34 — zero, un ou plusieurs.
+        // Zero, un ou plusieurs (RG34).
         Entretien::factory()->count(3)->pour($this->candidature)->create();
 
         $this->actingAs($this->utilisateurRecruteur, 'sanctum')
@@ -146,10 +142,6 @@ class EntretienTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors('mode');
     }
-
-    // -------------------------------------------------------------------
-    // Propriete — RG14
-    // -------------------------------------------------------------------
 
     public function test_un_recruteur_ne_planifie_pas_sur_la_candidature_d_un_autre(): void
     {
@@ -207,10 +199,6 @@ class EntretienTest extends TestCase
             ->getJson("/api/candidat/candidatures/{$this->candidature->id_candidature}/entretiens")
             ->assertForbidden();
     }
-
-    // -------------------------------------------------------------------
-    // Issue de l'entretien — RG36
-    // -------------------------------------------------------------------
 
     public function test_un_recruteur_renseigne_l_issue_de_l_entretien(): void
     {

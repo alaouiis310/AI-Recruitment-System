@@ -19,7 +19,7 @@ class CompetenceController extends Controller
 
     public function __construct(private readonly CompetenceService $competences) {}
 
-    /** RG20/RG25 — référentiel consultable par tout compte authentifié. */
+    /** Référentiel consultable par tout compte authentifié (RG20/RG25). */
     public function index(ListerCompetencesRequest $request): JsonResponse
     {
         $this->authorize('viewAny', Competence::class);

@@ -4,12 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Désactivation de son propre compte, confirmée par le mot de passe.
- *
- * Un administrateur ne peut pas désactiver son propre compte : la plateforme
- * risquerait de se retrouver sans administrateur actif.
- */
+/** Désactivation de son propre compte, confirmée par le mot de passe. */
 class DesactiverCompteRequest extends FormRequest
 {
     public function authorize(): bool

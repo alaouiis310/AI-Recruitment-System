@@ -15,19 +15,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-/**
- * Entretiens liés aux candidatures (RG34, RG35, RG36).
- *
- * La propriété découle de la candidature : c'est EntretienPolicy qui tranche,
- * RG14 s'applique donc sans règle nouvelle.
- */
+/** Entretiens liés aux candidatures (RG34, RG35, RG36). */
 class EntretienController extends Controller
 {
     use ReponsePaginee;
 
     public function __construct(private readonly EntretienService $entretiens) {}
 
-    /** RG14 — entretiens relevant des offres publiées par le recruteur. */
+    /** Entretiens relevant des offres publiées par le recruteur (RG14). */
     public function index(Request $request): JsonResponse
     {
         return $this->paginee(
@@ -37,7 +32,7 @@ class EntretienController extends Controller
         );
     }
 
-    /** RG34 — entretiens d'une candidature donnée. */
+    /** Entretiens d'une candidature donnée (RG34). */
     public function parCandidature(Request $request, Candidature $candidature): JsonResponse
     {
         $this->authorize('view', $candidature);
@@ -49,7 +44,7 @@ class EntretienController extends Controller
         ]);
     }
 
-    /** RG34/RG35 — planification d'un entretien sur une candidature. */
+    /** Planification d'un entretien sur une candidature (RG34/RG35). */
     public function store(PlanifierEntretienRequest $request, Candidature $candidature): JsonResponse
     {
         $this->authorize('create', [Entretien::class, $candidature]);
@@ -71,7 +66,7 @@ class EntretienController extends Controller
         return response()->json(['entretien' => new EntretienResource($entretien)]);
     }
 
-    /** RG36 — mise à jour de la tenue ou de l'issue de l'entretien. */
+    /** Mise à jour de la tenue ou de l'issue de l'entretien (RG36). */
     public function update(ModifierEntretienRequest $request, Entretien $entretien): JsonResponse
     {
         $this->authorize('update', $entretien);
@@ -93,7 +88,7 @@ class EntretienController extends Controller
         return response()->json([], 204);
     }
 
-    /** RG7 — le profil recruteur du compte authentifié. */
+    /** Le profil recruteur du compte authentifié (RG7). */
     private function recruteur(Request $request): Recruteur
     {
         $recruteur = $request->user()->recruteur;

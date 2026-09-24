@@ -41,7 +41,7 @@ class AnalyseIa extends Model
         ];
     }
 
-    /** RG37/RG38 — une analyse porte sur une seule candidature. */
+    /** Une analyse porte sur une seule candidature (RG37/RG38). */
     public function candidature(): BelongsTo
     {
         return $this->belongsTo(Candidature::class, 'id_candidature');

@@ -10,17 +10,14 @@ use App\Models\OffreEmploi;
 use App\Services\OffreEmploiService;
 use Illuminate\Http\JsonResponse;
 
-/**
- * Consultation des offres ouverte à tout compte authentifié (RG15 à RG18).
- * La gestion par le recruteur publiant relève de RecruteurOffreController.
- */
+/** Consultation des offres ouverte à tout compte authentifié (RG15 à RG18). */
 class OffreEmploiController extends Controller
 {
     use ReponsePaginee;
 
     public function __construct(private readonly OffreEmploiService $offres) {}
 
-    /** RG17/RG18 — seules les offres ouvertes et non expirées sont listées. */
+    /** Seules les offres ouvertes et non expirées sont listées (RG17/RG18). */
     public function index(ListerOffresRequest $request): JsonResponse
     {
         $this->authorize('viewAny', OffreEmploi::class);

@@ -6,11 +6,7 @@ use App\Enums\ModeEntretien;
 use App\Enums\ResultatEntretien;
 use Illuminate\Validation\Rule;
 
-/**
- * Mise à jour partielle : mêmes règles qu'à la planification, en « sometimes ».
- * Une date passée est acceptée ici — on renseigne l'issue d'un entretien qui
- * a déjà eu lieu (RG36).
- */
+/** Mise à jour partielle : mêmes règles qu'à la planification, en « sometimes ». */
 class ModifierEntretienRequest extends PlanifierEntretienRequest
 {
     public function rules(): array

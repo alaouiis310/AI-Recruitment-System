@@ -9,9 +9,7 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
+    /** Seed the application's database. */
     public function run(): void
     {
         $this->call([
@@ -25,8 +23,7 @@ class DatabaseSeeder extends Seeder
             ProfilCandidatSeeder::class,
             // Dépend des offres et des profils candidats.
             CandidatureSeeder::class,
-            // Jeu de démonstration : entreprises, offres, candidats et candidatures
-            // supplémentaires, avant l'analyse qui calculera leurs scores.
+            // Jeu de démonstration.
             DemonstrationSeeder::class,
             // Dépendent des candidatures et complètent les règles RG34 à RG36.
             EntretienSeeder::class,

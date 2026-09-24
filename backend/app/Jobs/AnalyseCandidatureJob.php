@@ -8,13 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 
-/**
- * RG37 — analyse d'une candidature, exécutée en file d'attente.
- *
- * L'analyse lit un PDF et peut appeler un modèle de langage : elle est trop
- * lente pour la requête HTTP de dépôt de candidature, qui doit répondre
- * immédiatement.
- */
+/** Analyse d'une candidature, exécutée en file d'attente (RG37). */
 class AnalyseCandidatureJob implements ShouldQueue
 {
     use Queueable;
@@ -30,8 +24,7 @@ class AnalyseCandidatureJob implements ShouldQueue
     {
         $candidature = Candidature::find($this->idCandidature);
 
-        // La candidature a pu être retirée entre-temps : ce n'est pas une
-        // erreur, il n'y a simplement plus rien à analyser.
+        // La candidature a pu être retirée entre-temps.
         if ($candidature === null) {
             return;
         }

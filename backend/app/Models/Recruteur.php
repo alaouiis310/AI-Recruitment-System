@@ -19,8 +19,7 @@ class Recruteur extends Model
 
     protected function casts(): array
     {
-        // La comparaison de propriété dans les politiques d'accès est stricte :
-        // la clé étrangère doit être un entier quel que soit le pilote.
+        // La comparaison de propriété dans les politiques d'accès est stricte.
         return ['id_entreprise' => 'integer'];
     }
 
@@ -29,13 +28,13 @@ class Recruteur extends Model
         return $this->belongsTo(User::class, 'id_user');
     }
 
-    /** RG7 — un recruteur appartient à exactement une entreprise. */
+    /** Un recruteur appartient à exactement une entreprise (RG7). */
     public function entreprise(): BelongsTo
     {
         return $this->belongsTo(Entreprise::class, 'id_entreprise');
     }
 
-    /** RG12 — un recruteur peut publier plusieurs offres. */
+    /** Un recruteur peut publier plusieurs offres (RG12). */
     public function offres(): HasMany
     {
         return $this->hasMany(OffreEmploi::class, 'id_recruteur');

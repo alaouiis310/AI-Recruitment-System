@@ -8,12 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Pivot REQUERIR du MLD — RG19, RG20, RG21.
-     *
-     * Table d'association, pas une entité : clé primaire composite et aucun
-     * modèle Eloquent dédié. L'accès se fait par belongsToMany()->withPivot().
-     */
+    /** Pivot REQUERIR du MLD (RG19, RG20, RG21). */
     public function up(): void
     {
         Schema::create('requerir', function (Blueprint $table) {
@@ -25,7 +20,7 @@ return new class extends Migration
                 ->constrained('competences', 'id_competence')
                 ->cascadeOnDelete();
 
-            // RG21 — niveau minimal exigé et importance de la compétence.
+            // Niveau minimal exigé et importance de la compétence (RG21).
             $table->enum('niveau_requis', NiveauCompetence::valeurs());
             $table->enum('importance', ImportanceCompetence::valeurs())
                 ->default(ImportanceCompetence::Importante->value);

@@ -14,8 +14,7 @@ class CreerDepartementRequest extends FormRequest
 
     public function rules(): array
     {
-        // RG9 — l'entreprise est celle de l'URL : le paramètre est déjà résolu
-        // en modèle par SubstituteBindings.
+        // L'entreprise est celle de l'URL (RG9).
         $idEntreprise = $this->route('entreprise')?->id_entreprise;
 
         return [
@@ -23,8 +22,6 @@ class CreerDepartementRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                // RG8 — doublon rattrapé ici pour renvoyer un 422 plutôt que
-                // de laisser remonter la violation de contrainte en 500.
                 Rule::unique('departements', 'nom')->where('id_entreprise', $idEntreprise),
             ],
             'description' => ['nullable', 'string'],

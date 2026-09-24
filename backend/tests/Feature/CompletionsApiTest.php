@@ -14,10 +14,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Compléments d'API ajoutés lors du raccordement du frontend : désactivation
- * de compte, statistiques des tableaux de bord et recherche par candidat.
- */
+/** Compléments d'API ajoutés lors du raccordement du frontend. */
 class CompletionsApiTest extends TestCase
 {
     use RefreshDatabase;

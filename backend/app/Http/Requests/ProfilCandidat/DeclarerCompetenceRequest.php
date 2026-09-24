@@ -6,9 +6,7 @@ use App\Enums\NiveauCompetence;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/**
- * RG24/RG26 — déclaration ou mise à jour d'une seule compétence.
- */
+/** Déclaration ou mise à jour d'une seule compétence (RG24/RG26). */
 class DeclarerCompetenceRequest extends FormRequest
 {
     public function authorize(): bool

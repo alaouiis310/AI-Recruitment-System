@@ -14,8 +14,8 @@ class OffreEmploiPolicy
     }
 
     /**
-     * RG17/RG18 — une offre fermée, suspendue ou expirée reste visible de son
-     * auteur et de l'administrateur, mais pas des candidats.
+     * Une offre fermée, suspendue ou expirée reste visible de son auteur et de l'administrateur,
+     * mais pas des candidats (RG17/RG18).
      */
     public function view(User $user, OffreEmploi $offre): bool
     {
@@ -24,28 +24,25 @@ class OffreEmploiPolicy
             || $offre->accepteCandidatures();
     }
 
-    /** RG12 — la publication d'une offre est le fait d'un recruteur. */
+    /** La publication d'une offre est le fait d'un recruteur (RG12). */
     public function create(User $user): bool
     {
         return $user->estAdministrateur() || $user->estRecruteur();
     }
 
-    /** RG12/RG13 — un recruteur ne modifie que les offres qu'il a publiées. */
+    /** Un recruteur ne modifie que les offres qu'il a publiées (RG12/RG13). */
     public function update(User $user, OffreEmploi $offre): bool
     {
         return $user->estAdministrateur() || $this->estSonOffre($user, $offre);
     }
 
-    /** RG12/RG13 — mêmes droits que la modification. */
+    /** Mêmes droits que la modification (RG12/RG13). */
     public function delete(User $user, OffreEmploi $offre): bool
     {
         return $this->update($user, $offre);
     }
 
-    /**
-     * RG13 — chaque offre est publiée par un seul recruteur. La comparaison
-     * porte sur la clé étrangère de l'offre, sans charger la relation.
-     */
+    /** Chaque offre est publiée par un seul recruteur (RG13). */
     private function estSonOffre(User $user, OffreEmploi $offre): bool
     {
         return $user->estRecruteur()

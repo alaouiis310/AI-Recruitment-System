@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-/** RG36 — issue d'un entretien. */
+/** Issue d'un entretien (RG36). */
 enum ResultatEntretien: string
 {
     case EnAttente   = 'en_attente';

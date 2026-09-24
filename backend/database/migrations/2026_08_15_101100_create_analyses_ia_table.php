@@ -8,22 +8,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Table ANALYSE_IA du MLD — RG37 à RG42.
-     */
+    /** Table ANALYSE_IA du MLD (RG37 à RG42). */
     public function up(): void
     {
         Schema::create('analyses_ia', function (Blueprint $table) {
             $table->id('id_analyse');
 
-            // RG40 — score global et ses trois composantes, toutes calculées
-            // en PHP par ScoringService : aucune ne provient du modèle.
+            // Score global et ses trois composantes, toutes calculées en PHP par ScoringService (RG40).
             $table->decimal('score_matching', 5, 2);
             $table->decimal('score_competence', 5, 2)->default(0);
             $table->decimal('score_experience', 5, 2)->default(0);
             $table->decimal('score_diplome', 5, 2)->default(0);
 
-            // RG41 — compétences exigées que le candidat ne déclare pas.
+            // Compétences exigées que le candidat ne déclare pas (RG41).
             $table->json('competences_manquantes')->nullable();
 
             // Seules ces deux colonnes peuvent provenir du modèle (RG42).
@@ -32,7 +29,7 @@ return new class extends Migration
 
             $table->date('date_analyse');
 
-            // RG38 — une seule analyse par candidature.
+            // Une seule analyse par candidature (RG38).
             $table->foreignId('id_candidature')->unique()
                 ->constrained('candidatures', 'id_candidature')
                 ->cascadeOnDelete();
@@ -48,13 +45,7 @@ return new class extends Migration
         Schema::dropIfExists('analyses_ia');
     }
 
-    /**
-     * RG39 — les scores sont compris entre 0 et 100.
-     *
-     * SQLite, utilisé par la suite de tests, ne sait pas ajouter une
-     * contrainte à une table existante : elle n'y est donc pas posée. Le
-     * calcul borne les valeurs de son côté et un test unitaire le vérifie.
-     */
+    /** Les scores sont compris entre 0 et 100 (RG39). */
     private function ajouterContraintesDeScore(): void
     {
         if (DB::getDriverName() !== 'mysql') {

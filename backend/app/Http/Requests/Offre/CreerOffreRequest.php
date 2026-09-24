@@ -21,7 +21,7 @@ class CreerOffreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // RG15 — titre, description, type de contrat, localisation, statut.
+            // Titre, description, type de contrat, localisation, statut (RG15).
             'titre'          => ['required', 'string', 'max:150'],
             'description'    => ['required', 'string'],
             'type_contrat'   => ['required', Rule::enum(TypeContrat::class)],
@@ -31,14 +31,14 @@ class CreerOffreRequest extends FormRequest
             'niveau_etude'   => ['nullable', Rule::enum(NiveauEtude::class)],
             'statut'         => ['sometimes', Rule::enum(StatutOffre::class)],
 
-            // RG16/RG17 — dates de publication et d'expiration.
+            // Dates de publication et d'expiration (RG16/RG17).
             'date_publication' => ['sometimes', 'date'],
             'date_expiration'  => ['nullable', 'date', 'after_or_equal:date_publication'],
 
-            // RG11 — le département doit relever de l'entreprise du recruteur.
+            // Le département doit relever de l'entreprise du recruteur (RG11).
             'id_departement' => ['required', 'integer', $this->regleDepartement()],
 
-            // RG19/RG21 — compétences requises et leurs attributs de pivot.
+            // Compétences requises et leurs attributs de pivot (RG19/RG21).
             'competences'                 => ['sometimes', 'array'],
             'competences.*.id_competence' => ['required', 'integer', 'distinct', 'exists:competences,id_competence'],
             'competences.*.niveau_requis' => ['required', Rule::enum(NiveauCompetence::class)],
@@ -46,10 +46,7 @@ class CreerOffreRequest extends FormRequest
         ];
     }
 
-    /**
-     * RG9/RG11 — un recruteur ne publie que dans les départements de son
-     * entreprise ; l'administrateur n'est pas restreint.
-     */
+    /** Un recruteur ne publie que dans les départements de son entreprise (RG9/RG11). */
     protected function regleDepartement(): Exists
     {
         $regle = Rule::exists('departements', 'id_departement');

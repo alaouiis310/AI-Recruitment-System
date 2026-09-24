@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-/** RG18 — une offre est ouverte, fermée ou suspendue. */
+/** Une offre est ouverte, fermée ou suspendue (RG18). */
 enum StatutOffre: string
 {
     case Ouverte   = 'ouverte';

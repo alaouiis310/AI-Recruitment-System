@@ -7,12 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Pivot POSSEDER du MLD — RG24, RG25, RG26.
-     *
-     * Table d'association, pas une entité : clé primaire composite et aucun
-     * modèle Eloquent dédié. L'accès se fait par belongsToMany()->withPivot().
-     */
+    /** Pivot POSSEDER du MLD (RG24, RG25, RG26). */
     public function up(): void
     {
         Schema::create('posseder', function (Blueprint $table) {
@@ -24,7 +19,7 @@ return new class extends Migration
                 ->constrained('competences', 'id_competence')
                 ->cascadeOnDelete();
 
-            // RG26 — niveau de maîtrise et ancienneté déclarés par le candidat.
+            // Niveau de maîtrise et ancienneté déclarés par le candidat (RG26).
             $table->enum('niveau', NiveauCompetence::valeurs());
             $table->decimal('annees_experience', 4, 1)->default(0);
 

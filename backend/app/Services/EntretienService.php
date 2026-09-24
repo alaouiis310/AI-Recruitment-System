@@ -8,15 +8,10 @@ use App\Models\Recruteur;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * Logique métier des entretiens (RG34, RG35, RG36).
- *
- * Chaque écriture est une instruction unique : aucune transaction n'est
- * nécessaire.
- */
+/** Logique métier des entretiens (RG34, RG35, RG36). */
 class EntretienService
 {
-    /** RG34 — entretiens planifiés pour une candidature. */
+    /** Entretiens planifiés pour une candidature (RG34). */
     public function listerDeLaCandidature(Candidature $candidature): iterable
     {
         return $candidature->entretiens()
@@ -25,7 +20,7 @@ class EntretienService
             ->get();
     }
 
-    /** RG14 — entretiens relevant des offres publiées par un recruteur. */
+    /** Entretiens relevant des offres publiées par un recruteur (RG14). */
     public function listerDuRecruteur(Recruteur $recruteur, array $filtres): LengthAwarePaginator
     {
         return Entretien::query()
@@ -39,17 +34,16 @@ class EntretienService
             ->withQueryString();
     }
 
-    /** RG34/RG35 — planifie un entretien sur une candidature. */
+    /** Planifie un entretien sur une candidature (RG34/RG35). */
     public function planifier(Candidature $candidature, array $donnees): Entretien
     {
         $entretien = $candidature->entretiens()->create($donnees);
 
-        // fresh() et non le modèle retourné : resultat provient d'une valeur
-        // par défaut de la base, absente du modèle en mémoire.
+        // fresh() et non le modèle retourné.
         return $entretien->fresh();
     }
 
-    /** RG36 — met à jour la tenue ou l'issue de l'entretien. */
+    /** Met à jour la tenue ou l'issue de l'entretien (RG36). */
     public function modifier(Entretien $entretien, array $donnees): Entretien
     {
         $entretien->update($donnees);
