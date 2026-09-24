@@ -27,8 +27,8 @@ class ImportanceCompetenceTest extends TestCase
     public function test_les_valeurs_string_sont_stables(): void
     {
         $this->assertSame('essentielle', ImportanceCompetence::Essentielle->value);
-        $this->assertSame('importante',  ImportanceCompetence::Importante->value);
-        $this->assertSame('souhaitee',   ImportanceCompetence::Souhaitee->value);
+        $this->assertSame('importante', ImportanceCompetence::Importante->value);
+        $this->assertSame('souhaitee', ImportanceCompetence::Souhaitee->value);
     }
 
     public function test_la_methode_valeurs_renvoie_les_trois_valeurs(): void

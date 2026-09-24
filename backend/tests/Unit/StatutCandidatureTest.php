@@ -25,11 +25,11 @@ class StatutCandidatureTest extends TestCase
 
     public function test_les_valeurs_string_sont_stables(): void
     {
-        $this->assertSame('en_attente',       StatutCandidature::EnAttente->value);
-        $this->assertSame('en_cours',         StatutCandidature::EnCours->value);
-        $this->assertSame('preselectionnee',  StatutCandidature::Preselectionnee->value);
-        $this->assertSame('acceptee',         StatutCandidature::Acceptee->value);
-        $this->assertSame('refusee',          StatutCandidature::Refusee->value);
+        $this->assertSame('en_attente', StatutCandidature::EnAttente->value);
+        $this->assertSame('en_cours', StatutCandidature::EnCours->value);
+        $this->assertSame('preselectionnee', StatutCandidature::Preselectionnee->value);
+        $this->assertSame('acceptee', StatutCandidature::Acceptee->value);
+        $this->assertSame('refusee', StatutCandidature::Refusee->value);
     }
 
     public function test_la_methode_valeurs_renvoie_les_cinq_valeurs(): void

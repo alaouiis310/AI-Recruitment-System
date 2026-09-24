@@ -25,8 +25,8 @@ class StatutOffreTest extends TestCase
 
     public function test_les_valeurs_string_sont_stables(): void
     {
-        $this->assertSame('ouverte',   StatutOffre::Ouverte->value);
-        $this->assertSame('fermee',    StatutOffre::Fermee->value);
+        $this->assertSame('ouverte', StatutOffre::Ouverte->value);
+        $this->assertSame('fermee', StatutOffre::Fermee->value);
         $this->assertSame('suspendue', StatutOffre::Suspendue->value);
     }
 

@@ -26,8 +26,8 @@ class RoleUtilisateurTest extends TestCase
     public function test_les_valeurs_string_sont_stables(): void
     {
         $this->assertSame('administrateur', RoleUtilisateur::Administrateur->value);
-        $this->assertSame('recruteur',      RoleUtilisateur::Recruteur->value);
-        $this->assertSame('candidat',       RoleUtilisateur::Candidat->value);
+        $this->assertSame('recruteur', RoleUtilisateur::Recruteur->value);
+        $this->assertSame('candidat', RoleUtilisateur::Candidat->value);
     }
 
     // -----------------------------------------------------------------
@@ -60,7 +60,7 @@ class RoleUtilisateurTest extends TestCase
 
     public function test_l_inscription_publique_autorise_candidat_et_recruteur(): void
     {
-        $this->assertContains('candidat',  RoleUtilisateur::inscriptionPublique());
+        $this->assertContains('candidat', RoleUtilisateur::inscriptionPublique());
         $this->assertContains('recruteur', RoleUtilisateur::inscriptionPublique());
     }
 

@@ -26,12 +26,12 @@ class TypeContratTest extends TestCase
 
     public function test_les_valeurs_string_sont_stables(): void
     {
-        $this->assertSame('cdi',        TypeContrat::Cdi->value);
-        $this->assertSame('cdd',        TypeContrat::Cdd->value);
-        $this->assertSame('stage',      TypeContrat::Stage->value);
+        $this->assertSame('cdi', TypeContrat::Cdi->value);
+        $this->assertSame('cdd', TypeContrat::Cdd->value);
+        $this->assertSame('stage', TypeContrat::Stage->value);
         $this->assertSame('alternance', TypeContrat::Alternance->value);
-        $this->assertSame('freelance',  TypeContrat::Freelance->value);
-        $this->assertSame('interim',    TypeContrat::Interim->value);
+        $this->assertSame('freelance', TypeContrat::Freelance->value);
+        $this->assertSame('interim', TypeContrat::Interim->value);
     }
 
     public function test_la_methode_valeurs_renvoie_les_six_valeurs(): void
