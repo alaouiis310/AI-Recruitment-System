@@ -1,0 +1,276 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import AdminDashboard from '../views/AdminDashboard.vue'
+import RecruiterDashboard from '../views/RecruiterDashboard.vue'
+import CandidateDashboard from '../views/CandidateDashboard.vue'
+import LoginPage from '../components/auth/LoginPage.vue'
+import CandidateApplications from '../views/CandidateApplications.vue'
+import CandidateJobs from '../views/CandidateJobs.vue'
+import CandidateInterviews from '../views/CandidateInterviews.vue'
+import CandidateProfile from '../views/CandidateProfile.vue'
+import CandidateCV from '../views/CandidateCV.vue'
+import CandidateSavedJobs from '../views/CandidateSavedJobs.vue'
+import RecruiterJobs from '../views/RecruiterJobs.vue'
+import RecruiterAddJob from '../views/RecruiterAddJob.vue'
+import RecruiterEditJob from '../views/RecruiterEditJob.vue'
+import RecruiterCandidates from '../views/RecruiterCandidates.vue'
+import RecruiterSearch from '../views/RecruiterSearch.vue'
+import RecruiterAIHelper from '../views/RecruiterAIHelper.vue'
+import NotificationsView from '../views/NotificationsView.vue'
+import RecruiterProfile from '../views/RecruiterProfile.vue'
+import CandidateAIHelper from '../views/CandidateAIHelper.vue'
+import AdminRecruiters from '../views/AdminRecruiters.vue'
+import AdminAddRecruiter from '../views/AdminAddRecruiter.vue'
+import AdminCandidates from '../views/AdminCandidates.vue'
+import AdminAddCandidate from '../views/AdminAddCandidate.vue'
+import AdminJobs from '../views/AdminJobs.vue'
+import AdminAddJob from '../views/AdminAddJob.vue'
+import AdminEditJob from '../views/AdminEditJob.vue'
+import AdminApplications from '../views/AdminApplications.vue'
+import AdminAnalytics from '../views/AdminAnalytics.vue'
+import AdminSettings from '../views/AdminSettings.vue'
+import AdminProfile from '../views/AdminProfile.vue'
+import { dashboardPathForRole, useAuthStore } from '../stores/auth'
+
+
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: LoginPage,
+      meta: { public: true },
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: AdminDashboard,
+      meta: { requiresAuth: true, role: 'admin' }
+    },
+    {
+      path: '/recruiter',
+      name: 'recruiter',
+      component: RecruiterDashboard,
+      meta: { requiresAuth: true, role: 'recruiter' }
+    },
+    {
+      path: '/candidate',
+      name: 'candidate',
+      component: CandidateDashboard,
+      meta: { requiresAuth: true, role: 'candidate' }
+    },
+
+
+    {
+  path: '/candidate/applications',
+  name: 'candidate-applications',
+  component: CandidateApplications,
+  meta: { requiresAuth: true, role: 'candidate' }
+},
+{
+  path: '/candidate/jobs',
+  name: 'candidate-jobs',
+  component: CandidateJobs,
+  meta: { requiresAuth: true, role: 'candidate' }
+},
+{
+  path: '/candidate/interviews',
+  name: 'candidate-interviews',
+  component: CandidateInterviews,
+  meta: { requiresAuth: true, role: 'candidate' }
+},
+{
+  path: '/candidate/profile',
+  name: 'candidate-profile',
+  component: CandidateProfile,
+  meta: { requiresAuth: true, role: 'candidate' }
+},
+{
+  path: '/candidate/cv',
+  name: 'candidate-cv',
+  component: CandidateCV,
+  meta: { requiresAuth: true, role: 'candidate' }
+},
+{
+  path: '/candidate/saved',
+  name: 'candidate-saved',
+  component: CandidateSavedJobs,
+  meta: { requiresAuth: true, role: 'candidate' }
+},
+{
+  path: '/recruiter/jobs',
+  name: 'recruiter-jobs',
+  component: RecruiterJobs,
+  meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
+  path: '/recruiter/jobs/add',
+  name: 'recruiter-add-job',
+  component: RecruiterAddJob,
+  meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
+  path: '/recruiter/jobs/:id/edit',
+  name: 'recruiter-edit-job',
+  component: RecruiterEditJob,
+  meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
+  path: '/recruiter/candidates',
+  name: 'recruiter-candidates',
+  component: RecruiterCandidates,
+  meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
+  path: '/recruiter/search',
+  name: 'recruiter-search',
+  component: RecruiterSearch,
+  meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
+  path: '/recruiter/ai-helper',
+  name: 'recruiter-ai-helper',
+  component: RecruiterAIHelper,
+  meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
+  path: '/recruiter/notifications',
+  name: 'recruiter-notifications',
+  component: NotificationsView,
+  meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
+  // Le MLD ne prévoit pas de messagerie : l'ancienne page mène aux notifications (RG44).
+  path: '/recruiter/messages',
+  redirect: '/recruiter/notifications'
+},
+{
+  path: '/candidate/notifications',
+  name: 'candidate-notifications',
+  component: NotificationsView,
+  meta: { requiresAuth: true, role: 'candidate' }
+},
+{
+  path: '/recruiter/profile',
+  name: 'recruiter-profile',
+  component: RecruiterProfile,
+  meta: { requiresAuth: true, role: 'recruiter' }
+},
+{
+  path: '/candidate/ai-helper',
+  name: 'candidate-ai-helper',
+  component: CandidateAIHelper,
+  meta: { requiresAuth: true, role: 'candidate' }
+},
+{
+  path: '/admin/recruiters',
+  name: 'admin-recruiters',
+  component: AdminRecruiters,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/recruiters/add',
+  name: 'admin-add-recruiter',
+  component: AdminAddRecruiter,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/candidates',
+  name: 'admin-candidates',
+  component: AdminCandidates,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/candidates/add',
+  name: 'admin-add-candidate',
+  component: AdminAddCandidate,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/jobs',
+  name: 'admin-jobs',
+  component: AdminJobs,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/jobs/add',
+  name: 'admin-add-job',
+  component: AdminAddJob,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/jobs/:id/edit',
+  name: 'admin-edit-job',
+  component: AdminEditJob,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/applications',
+  name: 'admin-applications',
+  component: AdminApplications,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/analytics',
+  name: 'admin-analytics',
+  component: AdminAnalytics,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/settings',
+  name: 'admin-settings',
+  component: AdminSettings,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+{
+  path: '/admin/profile',
+  name: 'admin-profile',
+  component: AdminProfile,
+  meta: { requiresAuth: true, role: 'admin' }
+},
+  ],
+})
+
+const backendRoleForRouteRole = {
+  admin: 'administrateur',
+  recruiter: 'recruteur',
+  candidate: 'candidat',
+}
+
+router.beforeEach(async (to) => {
+  const auth = useAuthStore()
+
+  if (to.meta.public) {
+    if (!auth.estConnecte) return true
+
+    try {
+      const utilisateur = auth.utilisateur || await auth.chargerUtilisateur()
+      return dashboardPathForRole(utilisateur.role)
+    } catch {
+      return true
+    }
+  }
+
+  if (to.meta.requiresAuth && !auth.estConnecte) {
+    return { name: 'home', query: { redirect: to.fullPath } }
+  }
+
+  if (to.meta.requiresAuth && !auth.utilisateur) {
+    try {
+      await auth.chargerUtilisateur()
+    } catch {
+      return { name: 'home' }
+    }
+  }
+
+  const requiredRole = backendRoleForRouteRole[to.meta.role]
+
+  if (requiredRole && auth.utilisateur?.role !== requiredRole) {
+    return dashboardPathForRole(auth.utilisateur?.role)
+  }
+
+  return true
+})
+
+export default router

@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Services;
+
+use App\Exceptions\SuppressionImpossibleException;
+use App\Models\Departement;
+use App\Models\Entreprise;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+
+/** Logique métier des départements (RG8, RG9). */
+class DepartementService
+{
+    /** Liste paginée des départements d'une entreprise donnée (RG8). */
+    public function lister(Entreprise $entreprise, array $filtres): LengthAwarePaginator
+    {
+        return $entreprise->departements()
+            ->when($filtres['recherche'] ?? null, fn (Builder $q, string $terme) => $q->where('nom', 'like', '%'.$this->echapper($terme).'%'))
+            ->orderBy('nom')
+            ->paginate(perPage: $filtres['per_page'] ?? 15)
+            ->withQueryString();
+    }
+
+    /**
+     * Le département est rattaché à l'entreprise désignée par l'URL, jamais à celle qui
+     * figurerait dans le corps de la requête (RG9).
+     */
+    public function creer(Entreprise $entreprise, array $donnees): Departement
+    {
+        return $entreprise->departements()->create([
+            'nom'         => $donnees['nom'],
+            'description' => $donnees['description'] ?? null,
+        ]);
+    }
+
+    /** Mise à jour d'un département (RG8). */
+    public function modifier(Departement $departement, array $donnees): Departement
+    {
+        $departement->update($donnees);
+
+        return $departement->fresh();
+    }
+
+    /** Suppression d'un département. */
+    public function supprimer(Departement $departement): void
+    {
+        $nombreOffres = $departement->offres()->count();
+
+        if ($nombreOffres > 0) {
+            throw new SuppressionImpossibleException(
+                "Ce département ne peut pas être supprimé : il porte encore {$nombreOffres} offre(s).",
+                ['departement' => ['Supprimez ou déplacez les offres au préalable.']],
+            );
+        }
+
+        $departement->delete();
+    }
+
+    /** Neutralise les jokers SQL saisis par l'utilisateur. */
+    private function echapper(string $terme): string
+    {
+        return str_replace(['%', '_'], ['\%', '\_'], $terme);
+    }
+}

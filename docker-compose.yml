@@ -1,0 +1,172 @@
+# docker-compose.yml
+services:
+
+  # -------------------------------------------------------------------------
+  # app — Laravel PHP-FPM
+  # -------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: airs_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # nginx — Serveur web
+  # -------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: airs_nginx
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:80"
+    volumes:
+      - ./backend:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # mysql — Base de données
+  # -------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: airs_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-ai_recruitment}
+      MYSQL_USER: ${DB_USERNAME:-airs_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${DB_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # redis — Cache et queue
+  # -------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: airs_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # queue — Worker Laravel
+  # -------------------------------------------------------------------------
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: airs_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan queue:work redis --tries=3 --timeout=180 --sleep=3
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - app
+      - redis
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # phpmyadmin — Interface MySQL
+  # -------------------------------------------------------------------------
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: airs_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "${PMA_PORT:-8081}:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # mailpit — Email de test
+  # -------------------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: airs_mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAIL_UI_PORT:-8025}:8025"
+    networks:
+      - airs_network
+
+  # -------------------------------------------------------------------------
+  # frontend — Vue.js
+  # -------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: airs_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    depends_on:
+      - nginx
+    networks:
+      - airs_network
+
+# -------------------------------------------------------------------------
+# Volumes
+# -------------------------------------------------------------------------
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# -------------------------------------------------------------------------
+# Réseau
+# -------------------------------------------------------------------------
+networks:
+  airs_network:
+    driver: bridge

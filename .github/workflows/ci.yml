@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installation de PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          # La suite de tests tourne sur SQLite en mémoire (voir phpunit.xml),
+          # aucun service MySQL n'est donc nécessaire ici.
+          extensions: mbstring, pdo_sqlite, sqlite3, bcmath, intl
+          coverage: none
+
+      - name: Cache des dépendances Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Installation des dépendances
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Préparation de l'environnement
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Vérification du style (Pint)
+        run: ./vendor/bin/pint --test
+
+      - name: Suite de tests
+        run: php artisan test

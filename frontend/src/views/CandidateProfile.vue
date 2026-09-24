@@ -1,0 +1,291 @@
+<template>
+  <DashboardLayout 
+    :user-name="userName" 
+    user-role="Candidat" 
+    page-title="Mon profil" 
+    page-subtitle="Gérez vos informations personnelles"
+  >
+    <template #menu>
+      <SidebarItem to="/candidate" icon="🏠" label="Accueil" />
+      <SidebarItem to="/candidate/applications" icon="📝" label="Mes candidatures" :badge="applicationsCount" />
+      <SidebarItem to="/candidate/jobs" icon="💼" label="Offres d'emploi" :badge="jobsCount" />
+      <SidebarItem to="/candidate/interviews" icon="🗓️" label="Mes entretiens" :badge="interviewsCount" />
+      <SidebarItem to="/candidate/saved" icon="⭐" label="Offres sauvegardées" :badge="savedCount" />
+      <SidebarItem to="/candidate/profile" icon="👤" label="Mon profil" />
+      <SidebarItem to="/candidate/cv" icon="📄" label="Mon CV" />
+    </template>
+
+    <!-- Loading -->
+    <div v-if="loading" class="flex items-center justify-center py-20">
+      <div class="text-center">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <p class="text-gray-500 mt-4 text-sm">Chargement du profil...</p>
+      </div>
+    </div>
+
+    <!-- Erreur -->
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+      <p class="text-4xl mb-2">⚠️</p>
+      <p class="text-red-700 font-medium">{{ error }}</p>
+      <button @click="fetchProfile" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">
+        Réessayer
+      </button>
+    </div>
+
+    <!-- Contenu -->
+    <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Photo de profil -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
+        <div class="relative inline-block">
+          <img 
+            :src="avatarUrl" 
+            alt="Avatar" 
+            class="w-28 h-28 rounded-full border-4 border-blue-100 object-cover mx-auto"
+          >
+          <button @click="champPhoto.click()" :disabled="envoiPhoto" aria-label="Changer la photo" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-60 transition-colors text-sm">
+            📷
+          </button>
+          <input ref="champPhoto" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" @change="televerserPhoto">
+        </div>
+        <h3 class="font-semibold text-gray-800 mt-4">{{ profile.prenom }} {{ profile.nom }}</h3>
+        <p class="text-sm text-gray-500">Candidat</p>
+        <div class="mt-4 p-3 bg-gray-50 rounded-xl text-sm text-gray-600">
+          <p>📧 {{ profile.email }}</p>
+          <p v-if="profile.telephone" class="mt-1">📱 {{ profile.telephone }}</p>
+        </div>
+        <button v-if="!desactivation.ouvert" @click="desactivation.ouvert = true" class="w-full mt-4 py-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-xl text-sm font-medium transition-all">
+          Désactiver mon compte
+        </button>
+        <!-- Désactivation plutôt que suppression : les candidatures restent cohérentes. -->
+        <form v-else @submit.prevent="desactiverCompte" class="mt-4 p-3 border border-red-200 rounded-xl text-left space-y-2">
+          <p class="text-xs text-gray-600">Votre compte sera désactivé et toutes vos sessions fermées. Confirmez avec votre mot de passe.</p>
+          <input type="password" v-model="desactivation.password" autocomplete="current-password" placeholder="Mot de passe" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-red-400">
+          <p v-if="desactivation.erreur" class="text-xs text-red-600">{{ desactivation.erreur }}</p>
+          <div class="flex gap-2">
+            <button type="button" @click="Object.assign(desactivation, { ouvert: false, password: '', erreur: '' })" class="flex-1 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">Annuler</button>
+            <button type="submit" class="flex-1 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg">Désactiver</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Informations -->
+      <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <form @submit.prevent="saveProfile" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Prénom</label>
+              <input 
+                type="text" 
+                v-model="profile.prenom"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
+              <input 
+                type="text" 
+                v-model="profile.nom"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+              >
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <input 
+              type="email" 
+              v-model="profile.email"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
+            <input 
+              type="tel" 
+              v-model="profile.telephone"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Adresse</label>
+            <input 
+              type="text" 
+              v-model="profile.adresse"
+              placeholder="Ville, Pays" 
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Années d'expérience</label>
+            <input 
+              type="number" 
+              v-model="profile.experience_totale"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            >
+          </div>
+
+          <!-- Message succès -->
+          <div v-if="successMessage" class="p-3 bg-green-50 border border-green-200 rounded-xl">
+            <p class="text-sm text-green-700">✅ {{ successMessage }}</p>
+          </div>
+
+          <button 
+            type="submit" 
+            :disabled="saving"
+            class="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-lg hover:shadow-blue-200"
+          >
+            {{ saving ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </DashboardLayout>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import DashboardLayout from '../layouts/DashboardLayout.vue'
+import SidebarItem from '../components/SidebarItem.vue'
+import api from '../services/api'
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
+const router = useRouter()
+
+const userName = computed(() => {
+  const user = authStore.user
+  return user?.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : 'Candidat'
+})
+
+// Photo réelle si le candidat en a déposé une, initiales sinon.
+const photoUrl = ref('')
+const avatarUrl = computed(() => {
+  if (photoUrl.value) return photoUrl.value
+  const name = `${profile.value.prenom || ''}+${profile.value.nom || ''}`.trim() || 'Candidat'
+  return `https://ui-avatars.com/api/?name=${name}&background=2563eb&color=fff&size=120`
+})
+
+const champPhoto = ref(null)
+const envoiPhoto = ref(false)
+
+const televerserPhoto = async (event) => {
+  const fichier = event.target.files[0]
+  if (!fichier) return
+  if (fichier.size > 2 * 1024 * 1024) {
+    alert('❌ La photo ne doit pas dépasser 2 Mo.')
+    return
+  }
+  const donnees = new FormData()
+  donnees.append('photo', fichier)
+  envoiPhoto.value = true
+  try {
+    const response = await api.post('/candidat/photo', donnees)
+    photoUrl.value = response.data.candidat?.photo || ''
+  } catch (err) {
+    alert('❌ ' + (err.response?.data?.errors?.photo?.[0] || err.response?.data?.message || "Erreur lors de l'envoi de la photo."))
+  } finally {
+    envoiPhoto.value = false
+    event.target.value = ''
+  }
+}
+
+// RG3 : le candidat gère son propre compte.
+const desactivation = ref({ ouvert: false, password: '', erreur: '' })
+
+const desactiverCompte = async () => {
+  desactivation.value.erreur = ''
+  try {
+    await api.post('/auth/desactivation', { password: desactivation.value.password })
+    authStore.effacerSession()
+    router.push('/')
+  } catch (err) {
+    desactivation.value.erreur = err.response?.data?.errors?.password?.[0]
+      || err.response?.data?.message
+      || 'La désactivation a échoué.'
+  }
+}
+
+const loading = ref(true)
+const saving = ref(false)
+const error = ref('')
+const successMessage = ref('')
+
+const applicationsCount = ref(0)
+const jobsCount = ref(0)
+const interviewsCount = ref(0)
+const savedCount = ref(0)
+
+const profile = ref({
+  prenom: '',
+  nom: '',
+  email: '',
+  telephone: '',
+  adresse: '',
+  experience_totale: 0,
+})
+
+const fetchProfile = async () => {
+  loading.value = true
+  error.value = ''
+
+  try {
+    const response = await api.get('/auth/moi')
+    // L'API renvoie l'utilisateur sous la clé « utilisateur ».
+    const data = response.data.utilisateur || {}
+
+    profile.value = {
+      prenom: data.prenom || '',
+      nom: data.nom || '',
+      email: data.email || '',
+      telephone: data.profil_candidat?.telephone || '',
+      adresse: data.profil_candidat?.adresse || '',
+      experience_totale: data.profil_candidat?.experience_totale || 0,
+    }
+    photoUrl.value = data.profil_candidat?.photo || ''
+  } catch (err) {
+    console.error('Erreur profil:', err)
+    if (err.response?.status === 401) {
+      error.value = 'Session expirée.'
+    } else if (err.code === 'ERR_NETWORK') {
+      error.value = 'Impossible de contacter le serveur.'
+    } else {
+      error.value = err.response?.data?.message || 'Erreur lors du chargement.'
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const saveProfile = async () => {
+  saving.value = true
+  successMessage.value = ''
+  error.value = ''
+
+  try {
+    await api.patch('/auth/profil', profile.value)
+    successMessage.value = 'Profil mis à jour avec succès !'
+    
+    // Mettre à jour le store
+    if (authStore.user) {
+      authStore.user.prenom = profile.value.prenom
+      authStore.user.nom = profile.value.nom
+      localStorage.setItem('user', JSON.stringify(authStore.user))
+    }
+
+    setTimeout(() => { successMessage.value = '' }, 3000)
+  } catch (err) {
+    console.error('Erreur sauvegarde:', err)
+    if (err.response?.status === 422) {
+      error.value = 'Veuillez vérifier les informations saisies.'
+    } else {
+      error.value = err.response?.data?.message || 'Erreur lors de l\'enregistrement.'
+    }
+  } finally {
+    saving.value = false
+  }
+}
+
+onMounted(() => {
+  fetchProfile()
+})
+</script>
